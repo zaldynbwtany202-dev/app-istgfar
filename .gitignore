@@ -1,2 +1,4 @@
 # لا يُستثنى أي ملف — بطلب المستخدم كل شيء يُحفظ في المستودع
 # (بما في ذلك مجلد uploads/ وملفات *.apk)
+analysis/wemuslim/dexwork/
+analysis/wemuslim/strings_all.txt

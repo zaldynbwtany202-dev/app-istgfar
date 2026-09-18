@@ -72,4 +72,7 @@
 
 ## أدوات مثبّتة في البيئة
 - Python 3.11.2.
+- `androguard 4.1.4` (تحليل APK/dex) + أداتنا `tools/dex_strings.py` لاستخراج سلاسل الـ dex بسرعة.
 - `axmlparserpy` (مثبتة لكن معطوبة — لا تُستخدم).
+- **قيود البيئة:** لا يوجد Java (تعذّر تثبيته: مستودعات Debian محجوبة وتنزيلات `*.githubusercontent.com` محجوبة)، لذا لا يتوفر `jadx`/`apktool` حاليًا. نعوّض بأدوات بايثون.
+- **مجلدات عمل محلية لا تُحفظ في Git** (مولّدة وقابلة لإعادة الإنشاء): `analysis/wemuslim/dexwork/`، `analysis/wemuslim/strings_all.txt`.
