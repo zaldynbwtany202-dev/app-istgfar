@@ -12,6 +12,7 @@
 - **المسلَّم:** `dist/WeMuslim-Noor-v3.5.2-reskinned.apk` (74.1 م.ب)
   - بصمة التحقق: `9d57cb2d023ac2129b10859d96e4cf530d34e43bdf13cd65867fc94fc6b70bed`
   - متاح للتنزيل عبر خادم الرفع: `…/files/WeMuslim-Noor-v3.5.2-reskinned.apk`
+  - **محفوظ في GitHub** (بطلب المستخدم): `dist/WeMuslim-Noor-v3.5.2-reskinned.apk` على الفرع `arena/01a0b425-app-istgfar` — التنزيل المباشر: `…/raw/arena/01a0b425-app-istgfar/dist/WeMuslim-Noor-v3.5.2-reskinned.apk`
 - **ما تم بناؤه (خط إنتاج كامل بلغة بايثون، لأن البيئة تحجب Java):**
   1. `tools/arsc_colors.py` — محلل `resources.arsc` يعطي أسماء الألوان وقيمها **وإزاحاتها البائتة** (1235 لونًا).
   2. `tools/apk_reskin.py` — إزاحة لونية لعائلة الأخضر (لون العلامة `#00A349` ← بنفسجي `#6400A3`) شملت **150 لونًا** بكل درجات الشفافية، مع كاتب ZIP خاص يحافظ المحاذاة الرباعية (0 خطأ محاذاة، 0 خطأ CRC، 5507 مدخلات)، وحذف ملفات توقيع v1 القديمة.
