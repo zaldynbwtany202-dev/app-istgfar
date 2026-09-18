@@ -10,10 +10,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 HOST = "0.0.0.0"
 PORT = int(os.environ.get("UPLOAD_PORT", "8080"))
 UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "uploads"))
+DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dist"))
 MAX_SIZE = 500 * 1024 * 1024  # 500 MB
 
 RECEIVED_LOG = os.path.join(UPLOAD_DIR, "RECEIVED.log")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(DIST_DIR, exist_ok=True)
 
 
 def human(n):
@@ -187,11 +189,40 @@ class Handler(BaseHTTPRequestHandler):
             )
         else:
             block = ""
+        downs = []
+        for name in sorted(os.listdir(DIST_DIR)):
+            path = os.path.join(DIST_DIR, name)
+            if os.path.isfile(path):
+                downs.append(
+                    "<li><a href='/files/%s' style='color:#047857;font-weight:700'>⬇️ %s</a> — %s</li>"
+                    % (urllib.parse.quote(name), html.escape(name), human(os.path.getsize(path)))
+                )
+        if downs:
+            block += (
+                "<h3 style='margin:24px 0 0;color:#065f46'>📥 ملفات جاهزة للتنزيل:</h3>"
+                "<ul class='files'>%s</ul>" % "".join(downs)
+            )
         return PAGE.replace("__FILES__", block)
 
     def do_GET(self):
-        if self.path.split("?")[0] in ("/", "/index.html"):
+        path = self.path.split("?")[0]
+        if path in ("/", "/index.html"):
             self._send(200, self._page())
+        elif path.startswith("/files/"):
+            name = urllib.parse.unquote(path[len("/files/"):])
+            safe = os.path.basename(name)
+            full = os.path.join(DIST_DIR, safe)
+            if os.path.isfile(full):
+                with open(full, "rb") as f:
+                    data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/vnd.android.package-archive")
+                self.send_header("Content-Disposition", 'attachment; filename="%s"' % safe)
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+            else:
+                self._send(404, "Not found")
         else:
             self._send(404, "Not found")
 

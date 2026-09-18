@@ -2,3 +2,6 @@
 # (بما في ذلك مجلد uploads/ وملفات *.apk)
 analysis/wemuslim/dexwork/
 analysis/wemuslim/strings_all.txt
+dist/
+keys/
+analysis/wemuslim/resources.arsc
