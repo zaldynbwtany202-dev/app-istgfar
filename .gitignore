@@ -2,6 +2,8 @@
 # (بما في ذلك مجلد uploads/ وملفات *.apk)
 analysis/wemuslim/dexwork/
 analysis/wemuslim/strings_all.txt
-dist/
+dist/*
+!dist/WeMuslim-Noor-v3.5.2-reskinned.apk
+!dist/SHA256SUMS.txt
 keys/
 analysis/wemuslim/resources.arsc
