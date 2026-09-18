@@ -1,10 +1,7 @@
-# لا يُستثنى أي ملف — بطلب المستخدم كل شيء يُحفظ في المستودع
-# (بما في ذلك مجلد uploads/ وملفات *.apk)
+# ملفات العمل الكبيرة المولدة (تُعاد إنشاؤها من الأدوات عند الحاجة)
+dist/
+keys/
 analysis/wemuslim/dexwork/
 analysis/wemuslim/strings_all.txt
-dist/*
-!dist/WeMuslim-Noor-v3.5.2-reskinned.apk
-!dist/SHA256SUMS.txt
-keys/
 analysis/wemuslim/resources.arsc
-!dist/WeMuslim-Noor-v3.5.2-FULL.apk
+androguard.db
