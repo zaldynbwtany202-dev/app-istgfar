@@ -54,6 +54,7 @@
 | # | الملف | الحالة | الوصف |
 |---|---|---|---|
 | 1 | `uploads/Istighfar.apk` | ✅ تم التحليل | التسبيح والاستغفار — LUXE، حزمة `com.genspark.istighfar`، WebView |
+| 2 | `uploads/WeMuslim- ... v3.5.2.apk` | ✅ تحليل أولي | حزمة `com.fyxtech.muslim`، تطبيق Kotlin أصلي ضخم (مسبحة، شجرة تحفيزية، مصحف، قبلة، اجتماعي) — تفاصيل في `analysis/wemuslim/ANALYSIS.md` |
 
 ## قرارات مهمة
 | التاريخ | القرار |

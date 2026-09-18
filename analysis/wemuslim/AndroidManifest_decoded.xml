@@ -1,0 +1,1125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest android:versionCode="146" android:versionName="3.5.2" android:compileSdkVersion="35" android:compileSdkVersionCodename="15" package="com.fyxtech.muslim" platformBuildVersionCode="35" platformBuildVersionName="15">
+  <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="35">
+  </uses-sdk>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK">
+  </uses-permission>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE">
+  </uses-permission>
+  <uses-permission android:name="android.permission.VIBRATE">
+  </uses-permission>
+  <uses-permission android:name="android.permission.CAMERA">
+  </uses-permission>
+  <uses-permission android:name="android.permission.INSTALL_SHORTCUT">
+  </uses-permission>
+  <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT">
+  </uses-permission>
+  <uses-permission android:name="android.permission.RECORD_AUDIO">
+  </uses-permission>
+  <permission android:name="com.fyxtech.muslim.miniprogram.ipc.main" android:protectionLevel="0x00000002">
+  </permission>
+  <permission android:name="com.fyxtech.muslim.miniprogram.ipc.sub" android:protectionLevel="0x00000002">
+  </permission>
+  <permission android:name="com.fyxtech.muslim.miniprogram.ipc.pre" android:protectionLevel="0x00000002">
+  </permission>
+  <uses-permission android:name="android.permission.INTERNET">
+  </uses-permission>
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO">
+  </uses-permission>
+  <queries>
+    <package android:name="com.whatsapp">
+    </package>
+    <package android:name="com.facebook.katana">
+    </package>
+    <package android:name="com.facebook.lite">
+    </package>
+    <provider android:authorities="com.facebook.katana.provider.PlatformProvider">
+    </provider>
+    <provider android:authorities="com.facebook.orca.provider.PlatformProvider">
+    </provider>
+    <intent>
+      <action android:name="com.attribution.REFERRAL_PROVIDER">
+      </action>
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.VIEW">
+      </action>
+      <category android:name="android.intent.category.BROWSABLE">
+      </category>
+      <data android:scheme="https">
+      </data>
+    </intent>
+    <intent>
+      <action android:name="android.support.customtabs.action.CustomTabsService">
+      </action>
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.INSERT">
+      </action>
+      <data android:mimeType="vnd.android.cursor.dir/event">
+      </data>
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.VIEW">
+      </action>
+      <data android:scheme="sms">
+      </data>
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.DIAL">
+      </action>
+      <data android:path="tel:">
+      </data>
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.MAIN">
+      </action>
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.VIEW">
+      </action>
+    </intent>
+    <package android:name="com.google.android.apps.maps">
+    </package>
+    <intent>
+      <action android:name="com.android.vending.billing.InAppBillingService.BIND">
+      </action>
+    </intent>
+    <intent>
+      <action android:name="com.appsflyer.referrer.INSTALL_PROVIDER">
+      </action>
+    </intent>
+    <package android:name="com.instagram.android">
+    </package>
+    <package android:name="com.samsung.android.mapsagent">
+    </package>
+  </queries>
+  <uses-permission android:name="android.permission.REORDER_TASKS">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE">
+  </uses-permission>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS">
+  </uses-permission>
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES">
+  </uses-permission>
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO">
+  </uses-permission>
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION">
+  </uses-permission>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32">
+  </uses-permission>
+  <uses-permission android:name="android.permission.WRITE_SETTINGS">
+  </uses-permission>
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW">
+  </uses-permission>
+  <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY">
+  </uses-permission>
+  <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS">
+  </uses-permission>
+  <uses-permission android:name="android.permission.USE_EXACT_ALARM">
+  </uses-permission>
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32">
+  </uses-permission>
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED">
+  </uses-permission>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE">
+  </uses-permission>
+  <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT">
+  </uses-permission>
+  <uses-permission android:name="android.permission.DISABLE_KEYGUARD">
+  </uses-permission>
+  <uses-permission android:name="com.google.android.gms.permission.AD_ID">
+  </uses-permission>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE">
+  </uses-permission>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE">
+  </uses-permission>
+  <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30">
+  </uses-permission>
+  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT">
+  </uses-permission>
+  <uses-permission android:name="android.permission.READ_PHONE_STATE">
+  </uses-permission>
+  <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE">
+  </uses-permission>
+  <uses-permission android:name="com.asus.msa.SupplementaryDID.ACCESS">
+  </uses-permission>
+  <uses-permission android:name="com.asus.permission.READ_SDID_PROVIDER">
+  </uses-permission>
+  <uses-permission android:name="freemme.permission.msa">
+  </uses-permission>
+  <uses-permission android:name="android.permission.READ_PHONE_OAID">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_ADSERVICES_TOPICS">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION">
+  </uses-permission>
+  <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID">
+  </uses-permission>
+  <uses-permission android:name="android.permission.WAKE_LOCK">
+  </uses-permission>
+  <uses-permission android:name="com.android.vending.CHECK_LICENSE">
+  </uses-permission>
+  <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE">
+  </uses-permission>
+  <uses-feature android:glEsVersion="0x00020000" android:required="true">
+  </uses-feature>
+  <uses-permission android:name="com.android.vending.BILLING">
+  </uses-permission>
+  <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE">
+  </uses-permission>
+  <permission android:name="com.fyxtech.muslim.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="0x00000002">
+  </permission>
+  <uses-permission android:name="com.fyxtech.muslim.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION">
+  </uses-permission>
+  <uses-permission android:name="com.samsung.android.mapsagent.permission.READ_APP_INFO">
+  </uses-permission>
+  <uses-permission android:name="com.huawei.appmarket.service.commondata.permission.GET_COMMON_DATA">
+  </uses-permission>
+  <application android:theme="@0x7f150013" android:label="@0x7f14017e" android:icon="@0x7f100000" android:name="com.fyxtech.muslim.MuslimApp" android:persistent="true" android:allowBackup="false" android:largeHeap="true" android:supportsRtl="true" android:fullBackupContent="@0x7f180003" android:networkSecurityConfig="@0x7f180009" android:roundIcon="@0x7f100004" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:gwpAsanMode="1" android:dataExtractionRules="@0x7f180005">
+    <activity android:theme="@0x7f15016a" android:name="com.fyxtech.muslim.LauncherActivity" android:exported="true" android:screenOrientation="1">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN">
+        </action>
+        <category android:name="android.intent.category.LAUNCHER">
+        </category>
+      </intent-filter>
+      <meta-data android:name="android.app.shortcuts" android:resource="@0x7f180008">
+      </meta-data>
+    </activity>
+    <activity android:theme="@0x7f150169" android:name="com.fyxtech.muslim.LauncherWaitActivity" android:exported="false" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.GuideActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.BrandLogoVideoActivity" android:exported="false">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.MainActivity" android:exported="true" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000022">
+    </activity>
+    <meta-data android:name="AF_STORE" android:value="GooglePlay">
+    </meta-data>
+    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-9080207115930548~1618516968">
+    </meta-data>
+    <provider android:name="androidx.startup.InitializationProvider" android:exported="false" android:authorities="com.fyxtech.muslim.androidx-startup">
+      <meta-data android:name="androidx.lifecycle.ProcessLifecycleInitializer" android:value="androidx.startup">
+      </meta-data>
+      <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer" android:value="androidx.startup">
+      </meta-data>
+      <meta-data android:name="androidx.profileinstaller.ProfileInstallerInitializer" android:value="androidx.startup">
+      </meta-data>
+    </provider>
+    <activity android:theme="@0x7f150000" android:name="com.fyxtech.muslim.bizaccount.module.login.LoginActivity" android:exported="false" android:launchMode="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150000" android:name="com.fyxtech.muslim.bizaccount.module.email.InputEmailActivity" android:exported="false" android:windowSoftInputMode="0x00000010">
+    </activity>
+    <activity android:theme="@0x7f150000" android:name="com.fyxtech.muslim.bizaccount.module.captcha.ui.CaptchaActivity" android:exported="false" android:launchMode="1" android:windowSoftInputMode="0x00000012">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizaccount.module.delete.DeleteAccountActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000010">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahPostMessagesActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahPostPrayActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahMinePostActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahPostActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.detail.UmmahDetailActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.detail.UmmahCommentDetailActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150012" android:name="com.fyxtech.muslim.ummah.ui.UmmahPostPreviewActivity" android:exported="false" android:windowSoftInputMode="0x00000033">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahTopicPostListActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahPersonalActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.VerificationActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahFollowFansListActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahSearchUserActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150162" android:name="com.fyxtech.muslim.ummah.ui.UmmahVideoPreviewActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00000480" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.fyxtech.muslim.ummah.ui.UmmahShareTokenActivity" android:exported="false">
+    </activity>
+    <activity android:theme="@0x7f150162" android:name="com.fyxtech.muslim.ummah.ui.UmmahVideoStreamingActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00000480" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150162" android:name="com.fyxtech.muslim.ummah.ui.UmmahVideoStreamingPersonalActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00000480" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150162" android:name="com.fyxtech.muslim.ummah.ui.UmmahNearbyVideoStreamingActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00000480" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150162" android:name="com.fyxtech.muslim.ummah.ui.UmmahVideoDetailActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00000480" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f1501a4" android:name="com.yallatech.yallachat.libcrop.crop.UCropActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.UmmahCollectPostListActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.ui.UmmahBlockListActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.search.UmmahSearchActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.ui.UmmahVisitorActivity" android:exported="false" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.status.info.other.single.StatusOtherSingleActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.status.info.other.list.StatusOtherListActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.status.info.me.StatusMeActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.status.post.statuspost.StatusPostActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.status.post.doublepost.DoublePostActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.status.history.StatusHistoryActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.feed.FeedCollectActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00000480" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.ummah.ui.feed.FeedCollectDetailActivity" android:exported="false" android:screenOrientation="1" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.geo.ui.NearbyMainActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.geo.ui.NearbyLocationNewActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.honor.ui.HonorPersonalActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.honor.ui.HonorDetailActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.honor.ui.HonorRuleWebPage" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.ui.UmmahPersonalWallActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.ummah.social.ui.SayHiCardDetailActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizmessage.ui.activity.ChatSettingActivity" android:exported="false" android:launchMode="1" android:screenOrientation="1" android:windowSoftInputMode="0x00000010">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizmessage.ui.activity.ChatRoomActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:configChanges="0x00002004" android:windowSoftInputMode="0x00000030">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizmessage.ui.activity.ChatTeamActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:configChanges="0x00002004">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizmessage.ui.activity.ForwardMsgActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00002004">
+    </activity>
+    <receiver android:name="com.fyxtech.muslim.bizmessage.receiver.ChatNotificationReplyReceiver" android:permission="com.fyxtech.muslim.delete_notification" android:exported="false">
+    </receiver>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizmessage.ui.activity.ChatStrangerMessageActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00002004">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizmessage.ui.activity.ChatStrangerMessageSettingActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00002004">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizmessage.ui.activity.ChatCampaignMessageActivity" android:exported="false" android:screenOrientation="1" android:configChanges="0x00002004">
+    </activity>
+    <activity android:theme="@0x7f150012" android:name="com.fyxtech.muslim.bizmessage.album.PreviewActivity" android:configChanges="0x00002204">
+    </activity>
+    <receiver android:name="com.fyxtech.muslim.bizmessage.notification.DeleteNotificationReceiver" android:permission="com.fyxtech.muslim.delete_notification" android:exported="false">
+    </receiver>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.mothcalendar.MonthCalendarActivity" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000032">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.worshiptrack.tracker.TrackerActivity" android:exported="false" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000032">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.worshiptrack.tracker.TrackerV2Activity" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000032">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.worshiptrack.statistics.TrackerStatisticsActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000032">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.settings.ui.AdhanSettingActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.settings.ui.AdhanAudioPackageActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.settings.ui.AlgorithmSelectActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.settings.ui.HighLatitudeAlgorithmSelectActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.settings.ui.AdjustTimeActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.azkar.ui.AzkarListActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.azkar.ui.FavoriteAzkarEmptyActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.worship.qibla.QiblaActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.worship.qibla.QiblaMapPreviewActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.tasbih.ui.WorshipTasbihActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000032">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.azkar.ui.AzkarDetailActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.adhan.ui.AdhanActivity" android:launchMode="2" android:screenOrientation="1" android:configChanges="0x00000200" android:windowSoftInputMode="0x00000033" android:showOnLockScreen="true">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.adhan.ui.AdhanEndActivity" android:launchMode="2" android:screenOrientation="1" android:configChanges="0x00000200" android:windowSoftInputMode="0x00000033">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.adhan.ui.AdhanGuideActivity" android:launchMode="2" android:screenOrientation="1" android:windowSoftInputMode="0x00000033">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.adhan.ui.AdhanSettingBackgroundThemesActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000032">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.detection.ui.activity.DetectionActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.settings.ui.PrayerTimeActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150002" android:name="com.fyxtech.muslim.worship.dialog.ShareReminderActivity">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.donate.DonateActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.donate.QuestionActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.fasting.calendar.FastingCalendarActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.hadith.ui.HadithCollectionActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.hadith.ui.HadithBooksActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.hadith.ui.HadithReaderActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.hadith.ui.HadithSettingsActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.hadith.ui.HadithSearchActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.hadith.ui.HadithCollectionInfoActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.worship.jummah.ui.JummahActivity" android:screenOrientation="1">
+    </activity>
+    <service android:name="com.fyxtech.muslim.worship.notification.WorshipCountdownService" android:exported="false" android:foregroundServiceType="0x40000000">
+      <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="@0x7f140efc">
+      </property>
+    </service>
+    <service android:name="com.fyxtech.muslim.worship.notification.WorshipCountdownService2" android:exported="false" android:foregroundServiceType="0x40000000">
+      <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="@0x7f140efc">
+      </property>
+    </service>
+    <receiver android:name="com.fyxtech.muslim.worship.notification.WorshipNotificationReceiver" android:permission="com.fyxtech.muslim.delete_notification" android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.TIMEZONE_CHANGED">
+        </action>
+        <action android:name="android.intent.action.DATE_CHANGED">
+        </action>
+        <action android:name="android.intent.action.TIME_SET">
+        </action>
+        <action android:name="android.intent.action.SCREEN_ON">
+        </action>
+        <action android:name="com.fyxtech.muslim.worship.EVENT_UPDATE_COUNTDOWN">
+        </action>
+        <action android:name="com.fyxtech.muslim.notification.CANCEL">
+        </action>
+        <action android:name="com.fyxtech.muslim.worship.SHOW_NOTIFICATION">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="com.fyxtech.muslim.worship.notification.WorshipAlarmReceiver" android:permission="com.fyxtech.muslim.delete_notification" android:exported="false">
+      <intent-filter>
+        <action android:name="com.fyxtech.muslim.worship.ALARM_NOTICE">
+        </action>
+      </intent-filter>
+    </receiver>
+    <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAOvusfUi8R80glykcjobxbmwQIShHH0PI">
+    </meta-data>
+    <meta-data android:name="preloaded_fonts" android:resource="@0x7f030004">
+    </meta-data>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.ui.activity.AboutActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.ui.activity.LanguageGuideActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.ui.activity.LanguageSettingActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.personal.ModifyAvatarActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.personal.ModifyAvatarMyActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.personal.ModifyGenderActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.personal.ModifyCoverActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.personal.CoverViewerActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.personal.PersonalInfoActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.personal.BasicInfoActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.ui.activity.SettingActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.setting.PointRewardSettingActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.setting.OtherSettingActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.point.main.point.detail.PointDetailActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.point.store.StoreNewActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.point.store.StorePackageActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.point.main.PointActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.ui.activity.ThemeActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.invite.list.InviteActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.setting.linkedaccount.LinkedAccountActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.setting.notification.NotificationSettingActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.setting.notification.NotificationSettingDetailActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.module.setting.privacysettings.PrivacySettingsActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.point.main.rule.PointsRuleWebPage" android:launchMode="2" android:screenOrientation="1" android:configChanges="0x000005b0">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.point.main.deedtree.DeedTreeDetailActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.point.main.golds.GoldsDetailActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.ui.activity.MedalCertificationActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150002" android:name="com.fyxtech.muslim.about.point.store.reward.RewardsShareActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.point.main.friendtree.FriendTreeActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.about.device.DeviceListActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizquran.ui.QuranMainActivity" android:screenOrientation="1">
+    </activity>
+    <service android:name="com.fyxtech.muslim.push.firebase.MuslinFirebaseMessagingService" android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT">
+        </action>
+      </intent-filter>
+    </service>
+    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@0x7f0802c3">
+    </meta-data>
+    <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@0x7f060251">
+    </meta-data>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizgeo.ui.ChangeLocationActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizgeo.ui.SearchLocationActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000012">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizgeo.ui.SearchCountryActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000032">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.bizgeo.ui.NearbyLocationActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.news.ui.main.NewsMainActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.news.ui.saved.SavedMainActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.news.ui.detail.NewsDetailActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.inapppay.recharge.ui.RechargeActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.inapppay.donation.DonationActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.inapppay.freegolds.FreeGoldsActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.inapppay.subscription.SubscriptionActivity" android:screenOrientation="1">
+      <meta-data android:name="android.app.activity_animation" android:resource="@0x7f010055">
+      </meta-data>
+      <meta-data android:name="android.app.activity_exit_animation" android:resource="@0x7f010056">
+      </meta-data>
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.inapppay.member.MemberDetailActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.inapppay.member.PrivilegeDetailActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.inapppay.giftbox.GiftBoxMainActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.inapppay.giftbox.GiftBoxRecordActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.fyxtech.muslim.appwidget.core.AppWidgetJumpActivity" android:exported="false" android:launchMode="2">
+    </activity>
+    <receiver android:label="@0x7f140e72" android:name="com.fyxtech.muslim.appwidget.check.Check22Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f180013">
+      </meta-data>
+    </receiver>
+    <receiver android:label="@0x7f140e6d" android:name="com.fyxtech.muslim.appwidget.adhan.Adhan22Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f18000a">
+      </meta-data>
+    </receiver>
+    <receiver android:label="@0x7f140e6d" android:name="com.fyxtech.muslim.appwidget.adhan.Adhan42Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f18000b">
+      </meta-data>
+    </receiver>
+    <receiver android:label="@0x7f140e6d" android:name="com.fyxtech.muslim.appwidget.adhan.Adhan44Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f18000c">
+      </meta-data>
+    </receiver>
+    <receiver android:label="@0x7f140e7d" android:name="com.fyxtech.muslim.appwidget.quran.QuranLastRead22Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f180010">
+      </meta-data>
+    </receiver>
+    <receiver android:label="@0x7f140e7f" android:name="com.fyxtech.muslim.appwidget.quran.QuranReadingPlan22Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f180011">
+      </meta-data>
+    </receiver>
+    <receiver android:label="@0x7f140e7b" android:name="com.fyxtech.muslim.appwidget.daily.QuranDaily22Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f18000e">
+      </meta-data>
+    </receiver>
+    <receiver android:label="@0x7f140e7b" android:name="com.fyxtech.muslim.appwidget.daily.QuranDaily42Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f18000f">
+      </meta-data>
+    </receiver>
+    <receiver android:label="@0x7f140e77" android:name="com.fyxtech.muslim.appwidget.function.Function42Widget" android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@0x7f18000d">
+      </meta-data>
+    </receiver>
+    <receiver android:name="com.fyxtech.muslim.appwidget.broadcast.AppWidgetTimeChangeReceiver" android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.TIME_SET">
+        </action>
+        <action android:name="android.intent.action.TIMEZONE_CHANGED">
+        </action>
+        <action android:name="android.intent.action.DATE_CHANGED">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="com.fyxtech.muslim.appwidget.broadcast.AppWidgetPinSuccessReceiver" android:exported="false">
+      <intent-filter>
+        <action android:name="com.fyxtech.muslim.appwidget.ACTION_PIN_APP_WIDGET_SUCCESS">
+        </action>
+      </intent-filter>
+    </receiver>
+    <activity android:name="com.yallatech.support.miniprogram.yami.ui.YamiActivity0" android:process=":wmyami" android:taskAffinity=".yami0" android:launchMode="2" android:configChanges="0x400037b4" android:windowSoftInputMode="0x00000010" android:hardwareAccelerated="true">
+    </activity>
+    <activity android:name="com.yallatech.support.miniprogram.yami.ui.YamiActivity1" android:process=":wmyami" android:taskAffinity=".yami1" android:launchMode="2" android:configChanges="0x400037b4" android:windowSoftInputMode="0x00000010" android:hardwareAccelerated="true">
+    </activity>
+    <activity android:name="com.yallatech.support.miniprogram.yami.ui.YamiActivity2" android:process=":wmyami" android:taskAffinity=".yami2" android:launchMode="2" android:configChanges="0x400037b4" android:windowSoftInputMode="0x00000010" android:hardwareAccelerated="true">
+    </activity>
+    <activity android:name="com.yallatech.support.miniprogram.yami.ui.YamiActivity3" android:process=":wmyami" android:taskAffinity=".yami3" android:launchMode="2" android:configChanges="0x400037b4" android:windowSoftInputMode="0x00000010" android:hardwareAccelerated="true">
+    </activity>
+    <activity android:name="com.yallatech.support.miniprogram.yami.ui.YamiActivity4" android:process=":wmyami" android:taskAffinity=".yami4" android:launchMode="2" android:configChanges="0x400037b4" android:windowSoftInputMode="0x00000010" android:hardwareAccelerated="true">
+    </activity>
+    <activity android:name="com.yallatech.support.miniprogram.yami.ui.FileExplorerActivity" android:process=":wmyami" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.yallatech.support.miniprogram.yami.ui.StorageViewerActivity" android:exported="false" android:process=":wmyami" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.yallatech.support.mainprocess.list.MiniProgramListActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.yallatech.support.mainprocess.container.MiniRechargeActivity" android:exported="false" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.yallatech.support.mainprocess.container.MiniRewardAdActivity" android:exported="false" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.yallatech.support.mainprocess.container.MiniMessageShareActivity" android:exported="false" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.yallatech.support.mainprocess.container.MiniUmmahShareActivity" android:exported="false" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.yallatech.support.mainprocess.container.MiniQuranNavigateActivity" android:exported="false" android:screenOrientation="1">
+    </activity>
+    <service android:name="com.yallatech.support.miniprogram.MiniProgramWebService" android:permission="com.fyxtech.muslim.miniprogram.ipc.pre" android:exported="false" android:process=":wmyami">
+    </service>
+    <service android:name="com.yallatech.support.miniprogram.yami.service.YamiDispatchService" android:permission="com.fyxtech.muslim.miniprogram.ipc.sub" android:exported="false" android:process=":wmyami">
+    </service>
+    <service android:name="com.yallatech.support.mainprocess.ipc.YCConnectionService" android:permission="com.fyxtech.muslim.miniprogram.ipc.main" android:enabled="true" android:exported="false">
+    </service>
+    <activity android:name="com.fyxtech.muslim.libgalleryis.internal.ui.GalleryIslamicActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.libgalleryis.internal.ui.GalleryShareViewerActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.libgalleryis.internal.ui.Gallery99NamesActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.libgalleryis.internal.shahada.ShahadaActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.libgalleryis.internal.shahada.ShahadaBadgeActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.libquran.internal.ui.activity.QuranReaderActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.libquran.internal.ui.activity.QuranSettingsActivity" android:screenOrientation="1">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.libquran.internal.ui.activity.QuranSearchActivity" android:screenOrientation="1" android:windowSoftInputMode="0x00000004">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.libquran.internal.ui.activity.QuranReadingPlanActivity" android:screenOrientation="1">
+    </activity>
+    <service android:name="com.fyxtech.muslim.libquran.internal.audio.QuranAudioService" android:foregroundServiceType="0x00000002">
+    </service>
+    <service android:name="com.fyxtech.muslim.libquran.internal.audio.QuranAudioDownloadService" android:exported="false" android:foregroundServiceType="0x00000001">
+    </service>
+    <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="1913084462370050">
+    </meta-data>
+    <meta-data android:name="com.facebook.sdk.AutoInitEnabled" android:value="false">
+    </meta-data>
+    <activity android:theme="@0x7f15057a" android:name="com.fyxtech.muslim.bizcore.base.FilterJumpUriActivity" android:exported="true" android:taskAffinity=".filterjump">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW">
+        </action>
+        <category android:name="android.intent.category.DEFAULT">
+        </category>
+        <category android:name="android.intent.category.BROWSABLE">
+        </category>
+        <data android:scheme="wemuslim" android:host="we.muslim.app">
+        </data>
+      </intent-filter>
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.fyxtech.muslim.bizcore.base.DeepLinkActivity" android:exported="true" android:launchMode="2">
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW">
+        </action>
+        <category android:name="android.intent.category.DEFAULT">
+        </category>
+        <category android:name="android.intent.category.BROWSABLE">
+        </category>
+        <data android:scheme="https" android:host="wemuslim-activity.onelink.me" android:pathPrefix="/YB0g">
+        </data>
+      </intent-filter>
+    </activity>
+    <activity android:theme="@0x7f15057a" android:name="com.fyxtech.muslim.bizcore.base.AdjustAppLinkActivity" android:exported="true" android:launchMode="2">
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW">
+        </action>
+        <category android:name="android.intent.category.DEFAULT">
+        </category>
+        <category android:name="android.intent.category.BROWSABLE">
+        </category>
+        <data android:scheme="http">
+        </data>
+        <data android:scheme="https">
+        </data>
+        <data android:host="wemuslim.go.link">
+        </data>
+      </intent-filter>
+    </activity>
+    <meta-data android:name="EXTERNAL_HOSTNAME" android:value="wemuslim-activity.onelink.me">
+    </meta-data>
+    <meta-data android:name="EXTERNAL_PATH" android:value="YB0g">
+    </meta-data>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizcore.browser.pages.FeedbackWebPage" android:screenOrientation="1" android:configChanges="0x400035b4" android:windowSoftInputMode="0x00000010">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizcore.browser.pages.BrowserPage" android:screenOrientation="1">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizcore.browser.pages.MarketingWebPage" android:screenOrientation="1" android:configChanges="0x400035b4" android:windowSoftInputMode="0x00000010">
+    </activity>
+    <activity android:theme="@0x7f150013" android:name="com.fyxtech.muslim.bizcore.browser.pages.OfficialSimpleWebPage" android:screenOrientation="1" android:windowSoftInputMode="0x00000032">
+    </activity>
+    <activity android:name="com.fyxtech.muslim.bizcore.ad.MslmNativeOpenAdActivity" android:launchMode="2" android:screenOrientation="1">
+    </activity>
+    <receiver android:name="com.fyxtech.muslim.bizcore.notification.NotificationReceiver" android:permission="com.fyxtech.muslim.delete_notification" android:exported="false">
+      <intent-filter>
+        <action android:name="com.fyxtech.muslim.worship.UPDATE">
+        </action>
+        <action android:name="com.fyxtech.muslim.worship.CANCEL">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="com.fyxtech.muslim.bizcore.localpush.LocalPushAlarmReceiver" android:permission="com.fyxtech.muslim.delete_notification" android:exported="false">
+      <intent-filter>
+        <action android:name="com.fyxtech.muslim.worship.localPush">
+        </action>
+      </intent-filter>
+    </receiver>
+    <provider android:name="androidx.core.content.FileProvider" android:exported="false" android:authorities="com.fyxtech.muslim.fileprovider" android:grantUriPermissions="true">
+      <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@0x7f180006">
+      </meta-data>
+    </provider>
+    <provider android:name="com.facebook.FacebookContentProvider" android:exported="true" android:authorities="com.facebook.app.FacebookContentProvider1913084462370050">
+    </provider>
+    <activity android:theme="@0x7f150563" android:label="@0x7f14017e" android:name="com.facebook.FacebookActivity" android:configChanges="0x000005b0">
+    </activity>
+    <receiver android:name="com.fyxtech.muslim.bizcore.notification.BootCompleteReceiver" android:permission="android.permission.RECEIVE_BOOT_COMPLETED" android:enabled="true" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED">
+        </action>
+        <category android:name="android.intent.category.HOME">
+        </category>
+        <category android:name="android.intent.category.DEFAULT">
+        </category>
+      </intent-filter>
+    </receiver>
+    <meta-data android:name="com.google.android.gms.ads.flag.OPTIMIZE_AD_LOADING" android:value="true">
+    </meta-data>
+    <meta-data android:name="com.google.android.gms.ads.flag.NATIVE_AD_DEBUGGER_ENABLED" android:value="false">
+    </meta-data>
+    <activity android:theme="@0x7f150003" android:name="com.google.android.gms.ads.AdActivity" android:exported="false" android:configChanges="0x00000fb0" android:enableOnBackInvokedCallback="false">
+    </activity>
+    <activity android:theme="@0x7f1501a2" android:name="com.yallatech.yallachat.libalbum.ui.AlbumActivity" android:screenOrientation="1" android:configChanges="0x00002004">
+    </activity>
+    <activity android:theme="@0x7f1501a4" android:name="com.yallatech.yallachat.libalbum.ui.AlbumPreviewActivity" android:screenOrientation="1" android:configChanges="0x00002204">
+    </activity>
+    <activity android:theme="@0x7f150163" android:name="com.yallatech.yallachat.libalbum.ui.CameraActivity" android:screenOrientation="1" android:configChanges="0x00002284">
+    </activity>
+    <service android:name="com.yallatech.yallachat.libdownloader.exoplayer.service.ExoDownloadService" android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.android.exoplayer.downloadService.action.RESTART">
+        </action>
+        <category android:name="android.intent.category.DEFAULT">
+        </category>
+      </intent-filter>
+    </service>
+    <service android:name="androidx.work.multiprocess.RemoteWorkManagerService" android:exported="false">
+    </service>
+    <activity android:theme="@0x01030007" android:name="com.unity3d.services.ads.adunit.AdUnitActivity" android:exported="false" android:configChanges="0x40000fff" android:hardwareAccelerated="true" android:enableOnBackInvokedCallback="false">
+    </activity>
+    <activity android:theme="@0x01030011" android:name="com.unity3d.services.ads.adunit.AdUnitTransparentActivity" android:exported="false" android:configChanges="0x40000fff" android:hardwareAccelerated="true" android:enableOnBackInvokedCallback="false">
+    </activity>
+    <activity android:theme="@0x01030011" android:name="com.unity3d.services.ads.adunit.AdUnitTransparentSoftwareActivity" android:exported="false" android:configChanges="0x40000fff" android:hardwareAccelerated="false" android:enableOnBackInvokedCallback="false">
+    </activity>
+    <activity android:theme="@0x01030007" android:name="com.unity3d.services.ads.adunit.AdUnitSoftwareActivity" android:exported="false" android:configChanges="0x40000fff" android:hardwareAccelerated="false" android:enableOnBackInvokedCallback="false">
+    </activity>
+    <activity android:theme="@0x01030007" android:name="com.unity3d.ads.adplayer.FullScreenWebViewDisplay" android:exported="false" android:configChanges="0x40000fff" android:hardwareAccelerated="true" android:enableOnBackInvokedCallback="false">
+    </activity>
+    <provider android:name="com.google.android.gms.ads.MobileAdsInitProvider" android:exported="false" android:authorities="com.fyxtech.muslim.mobileadsinitprovider" android:initOrder="100">
+    </provider>
+    <service android:name="com.google.android.gms.ads.AdService" android:enabled="true" android:exported="false">
+    </service>
+    <activity android:name="com.google.android.gms.ads.OutOfContextTestingActivity" android:exported="false" android:configChanges="0x00000fb0">
+    </activity>
+    <activity android:theme="@0x01030010" android:name="com.google.android.gms.ads.NotificationHandlerActivity" android:exported="false" android:taskAffinity="" android:excludeFromRecents="true" android:launchMode="2">
+    </activity>
+    <meta-data android:name="com.google.android.gms.ads.flag.OPTIMIZE_INITIALIZATION" android:value="true">
+    </meta-data>
+    <service android:name="androidx.work.impl.background.systemalarm.SystemAlarmService" android:enabled="@0x7f050002" android:exported="false" android:directBootAware="false">
+    </service>
+    <service android:name="androidx.work.impl.background.systemjob.SystemJobService" android:permission="android.permission.BIND_JOB_SERVICE" android:enabled="@0x7f050004" android:exported="true" android:directBootAware="false">
+    </service>
+    <service android:name="androidx.work.impl.foreground.SystemForegroundService" android:enabled="@0x7f050003" android:exported="false" android:directBootAware="false">
+    </service>
+    <receiver android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver" android:enabled="true" android:exported="false" android:directBootAware="false">
+    </receiver>
+    <receiver android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy" android:enabled="false" android:exported="false" android:directBootAware="false">
+      <intent-filter>
+        <action android:name="android.intent.action.ACTION_POWER_CONNECTED">
+        </action>
+        <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy" android:enabled="false" android:exported="false" android:directBootAware="false">
+      <intent-filter>
+        <action android:name="android.intent.action.BATTERY_OKAY">
+        </action>
+        <action android:name="android.intent.action.BATTERY_LOW">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy" android:enabled="false" android:exported="false" android:directBootAware="false">
+      <intent-filter>
+        <action android:name="android.intent.action.DEVICE_STORAGE_LOW">
+        </action>
+        <action android:name="android.intent.action.DEVICE_STORAGE_OK">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy" android:enabled="false" android:exported="false" android:directBootAware="false">
+      <intent-filter>
+        <action android:name="android.net.conn.CONNECTIVITY_CHANGE">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver" android:enabled="false" android:exported="false" android:directBootAware="false">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED">
+        </action>
+        <action android:name="android.intent.action.TIME_SET">
+        </action>
+        <action android:name="android.intent.action.TIMEZONE_CHANGED">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver" android:enabled="@0x7f050002" android:exported="false" android:directBootAware="false">
+      <intent-filter>
+        <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver" android:permission="android.permission.DUMP" android:enabled="true" android:exported="true" android:directBootAware="false">
+      <intent-filter>
+        <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS">
+        </action>
+      </intent-filter>
+    </receiver>
+    <activity android:name="com.facebook.CustomTabMainActivity">
+    </activity>
+    <activity android:name="com.facebook.CustomTabActivity" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW">
+        </action>
+        <category android:name="android.intent.category.DEFAULT">
+        </category>
+        <category android:name="android.intent.category.BROWSABLE">
+        </category>
+        <data android:scheme="fbconnect" android:host="cct.com.fyxtech.muslim">
+        </data>
+      </intent-filter>
+    </activity>
+    <provider android:name="com.petterp.floatingx.assist.FxContentProvider" android:exported="false" android:multiprocess="true" android:authorities="com.fyxtech.muslim.fx.provider">
+    </provider>
+    <activity android:theme="@0x7f150002" android:name="com.blankj.utilcode.util.UtilsTransActivity4MainProcess" android:exported="false" android:configChanges="0x000004a0" android:windowSoftInputMode="0x00000003">
+    </activity>
+    <activity android:theme="@0x7f150002" android:name="com.blankj.utilcode.util.UtilsTransActivity" android:exported="false" android:multiprocess="true" android:configChanges="0x000004a0" android:windowSoftInputMode="0x00000003">
+    </activity>
+    <provider android:name="com.blankj.utilcode.util.UtilsFileProvider" android:exported="false" android:authorities="com.fyxtech.muslim.utilcode.fileprovider" android:grantUriPermissions="true">
+      <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@0x7f180012">
+      </meta-data>
+    </provider>
+    <service android:name="com.blankj.utilcode.util.MessengerUtils$ServerService" android:exported="false">
+      <intent-filter>
+        <action android:name="com.fyxtech.muslim.messenger">
+        </action>
+      </intent-filter>
+    </service>
+    <meta-data android:name="com.bytedance.sdk.pangle.version" android:value="7.9.0.9">
+    </meta-data>
+    <activity android:name="com.bytedance.sdk.openadsdk.activity.single.TTCeilingLandingPageActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150584" android:name="com.bytedance.sdk.openadsdk.activity.single.TTLandingPageActivity" android:multiprocess="true" android:launchMode="0" android:screenOrientation="1" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150584" android:name="com.bytedance.sdk.openadsdk.activity.single.TTPlayableLandingPageActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150584" android:name="com.bytedance.sdk.openadsdk.activity.single.TTVideoLandingPageLink2Activity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x01030010" android:name="com.bytedance.sdk.openadsdk.activity.single.TTDelegateActivity" android:multiprocess="true" android:launchMode="0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150586" android:name="com.bytedance.sdk.openadsdk.activity.single.TTWebsiteActivity" android:multiprocess="true" android:launchMode="0" android:screenOrientation="1">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f15057c" android:name="com.bytedance.sdk.openadsdk.activity.single.TTAppOpenAdActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f15057d" android:name="com.bytedance.sdk.openadsdk.activity.single.TTAppOpenAdTransActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150583" android:name="com.bytedance.sdk.openadsdk.activity.single.TTRewardVideoActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150583" android:name="com.bytedance.sdk.openadsdk.activity.single.TTRewardExpressVideoActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150583" android:name="com.bytedance.sdk.openadsdk.activity.single.TTFullScreenVideoActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150583" android:name="com.bytedance.sdk.openadsdk.activity.single.TTFullScreenExpressVideoActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <activity android:theme="@0x7f150583" android:name="com.bytedance.sdk.openadsdk.activity.single.TTAdActivity" android:multiprocess="true" android:launchMode="0" android:configChanges="0x000004a0">
+      <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true">
+      </property>
+    </activity>
+    <provider android:name="com.applovin.sdk.AppLovinInitProvider" android:exported="false" android:authorities="com.fyxtech.muslim.applovininitprovider" android:initOrder="101">
+    </provider>
+    <activity android:theme="@0x01030007" android:name="com.applovin.adview.AppLovinFullscreenActivity" android:exported="false" android:launchMode="1" android:screenOrientation="3" android:configChanges="0x40000fb4" android:hardwareAccelerated="true">
+    </activity>
+    <activity android:theme="@0x01030006" android:name="com.applovin.adview.AppLovinFullscreenImmersiveActivity" android:exported="false" android:launchMode="1" android:configChanges="0x40000fb4" android:hardwareAccelerated="true">
+    </activity>
+    <activity android:name="com.applovin.sdk.AppLovinWebViewActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerDetailActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerMultiAdActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerAdUnitsListActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerAdUnitWaterfallsListActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerAdUnitDetailActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerCmpNetworksListActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerTcfConsentStatusesListActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerTcfInfoListActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerTcfStringActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerTestLiveNetworkActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerTestModeNetworkActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerUnifiedFlowActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054f" android:name="com.applovin.mediation.MaxDebuggerWaterfallSegmentsActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054a" android:name="com.applovin.creative.MaxCreativeDebuggerActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <activity android:theme="@0x7f15054a" android:name="com.applovin.creative.MaxCreativeDebuggerDisplayedAdActivity" android:configChanges="0x40000fb4">
+    </activity>
+    <service android:name="com.applovin.impl.adview.activity.FullscreenAdService" android:exported="false" android:stopWithTask="false">
+    </service>
+    <service android:name="com.google.firebase.components.ComponentDiscoveryService" android:exported="false" android:directBootAware="true">
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.analytics.ktx.FirebaseAnalyticsLegacyRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.messaging.ktx.FirebaseMessagingLegacyRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingKtxRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.crashlytics.ktx.FirebaseCrashlyticsKtxRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.crashlytics.FirebaseCrashlyticsKtxRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.crashlytics.CrashlyticsRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.sessions.FirebaseSessionsRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+      <meta-data android:name="com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar" android:value="com.google.firebase.components.ComponentRegistrar">
+      </meta-data>
+    </service>
+    <receiver android:name="com.google.android.gms.measurement.AppMeasurementReceiver" android:enabled="true" android:exported="false">
+    </receiver>
+    <service android:name="com.google.android.gms.measurement.AppMeasurementService" android:enabled="true" android:exported="false">
+    </service>
+    <service android:name="com.google.android.gms.measurement.AppMeasurementJobService" android:permission="android.permission.BIND_JOB_SERVICE" android:enabled="true" android:exported="false">
+    </service>
+    <uses-library android:name="org.apache.http.legacy" android:required="false">
+    </uses-library>
+    <meta-data android:name="com.google.android.play.billingclient.version" android:value="7.0.0">
+    </meta-data>
+    <activity android:theme="@0x01030010" android:name="com.android.billingclient.api.ProxyBillingActivity" android:exported="false" android:configChanges="0x000005b0">
+    </activity>
+    <activity android:theme="@0x01030010" android:name="com.android.billingclient.api.ProxyBillingActivityV2" android:exported="false" android:configChanges="0x000005b0">
+    </activity>
+    <service android:name="androidx.credentials.playservices.CredentialProviderMetadataHolder" android:enabled="true" android:exported="false">
+      <meta-data android:name="androidx.credentials.CREDENTIAL_PROVIDER_KEY" android:value="androidx.credentials.playservices.CredentialProviderPlayServicesImpl">
+      </meta-data>
+    </service>
+    <activity android:theme="@0x7f1502d7" android:name="androidx.credentials.playservices.HiddenActivity" android:enabled="true" android:exported="false" android:configChanges="0x000005a0" android:fitsSystemWindows="true">
+    </activity>
+    <activity android:theme="@0x01030010" android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity" android:exported="false" android:excludeFromRecents="true">
+    </activity>
+    <service android:name="com.google.android.gms.auth.api.signin.RevocationBoundService" android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION" android:exported="true" android:visibleToInstantApps="true">
+    </service>
+    <receiver android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver" android:permission="com.google.android.c2dm.permission.SEND" android:exported="true">
+      <intent-filter>
+        <action android:name="com.google.android.c2dm.intent.RECEIVE">
+        </action>
+      </intent-filter>
+      <meta-data android:name="com.google.android.gms.cloudmessaging.FINISHED_AFTER_HANDLED" android:value="true">
+      </meta-data>
+    </receiver>
+    <service android:name="com.google.firebase.messaging.FirebaseMessagingService" android:exported="false" android:directBootAware="true">
+      <intent-filter android:priority="-500">
+        <action android:name="com.google.firebase.MESSAGING_EVENT">
+        </action>
+      </intent-filter>
+    </service>
+    <activity android:theme="@0x01030010" android:name="com.google.android.gms.common.api.GoogleApiActivity" android:exported="false">
+    </activity>
+    <service android:name="com.google.firebase.sessions.SessionLifecycleService" android:enabled="true" android:exported="false">
+    </service>
+    <provider android:name="com.google.firebase.provider.FirebaseInitProvider" android:exported="false" android:authorities="com.fyxtech.muslim.firebaseinitprovider" android:initOrder="100" android:directBootAware="true">
+    </provider>
+    <receiver android:name="com.facebook.CurrentAccessTokenExpirationBroadcastReceiver" android:exported="false">
+      <intent-filter>
+        <action android:name="com.facebook.sdk.ACTION_CURRENT_ACCESS_TOKEN_CHANGED">
+        </action>
+      </intent-filter>
+    </receiver>
+    <receiver android:name="com.facebook.AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver" android:exported="false">
+      <intent-filter>
+        <action android:name="com.facebook.sdk.ACTION_CURRENT_AUTHENTICATION_TOKEN_CHANGED">
+        </action>
+      </intent-filter>
+    </receiver>
+    <activity android:name="androidx.compose.ui.tooling.PreviewActivity" android:exported="true">
+    </activity>
+    <uses-library android:name="android.ext.adservices" android:required="false">
+    </uses-library>
+    <uses-library android:name="androidx.window.extensions" android:required="false">
+    </uses-library>
+    <uses-library android:name="androidx.window.sidecar" android:required="false">
+    </uses-library>
+    <activity android:theme="@0x01030010" android:name="com.facebook.ads.AudienceNetworkActivity" android:exported="false" android:configChanges="0x00000da0">
+    </activity>
+    <provider android:name="com.facebook.ads.AudienceNetworkContentProvider" android:exported="false" android:authorities="com.fyxtech.muslim.AudienceNetworkContentProvider">
+    </provider>
+    <meta-data android:name="com.google.android.gms.version" android:value="@0x7f0b0012">
+    </meta-data>
+    <service android:name="androidx.room.MultiInstanceInvalidationService" android:exported="false" android:directBootAware="true">
+    </service>
+    <service android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery" android:exported="false">
+      <meta-data android:name="backend:com.google.android.datatransport.cct.CctBackendFactory" android:value="cct">
+      </meta-data>
+    </service>
+    <receiver android:name="androidx.profileinstaller.ProfileInstallReceiver" android:permission="android.permission.DUMP" android:enabled="true" android:exported="true" android:directBootAware="false">
+      <intent-filter>
+        <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE">
+        </action>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="androidx.profileinstaller.action.SKIP_FILE">
+        </action>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="androidx.profileinstaller.action.SAVE_PROFILE">
+        </action>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION">
+        </action>
+      </intent-filter>
+    </receiver>
+    <service android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="false">
+    </service>
+    <receiver android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver" android:exported="false">
+    </receiver>
+    <provider android:name="com.adjust.sdk.SystemLifecycleContentProvider" android:exported="false" android:authorities="com.fyxtech.muslim.adjust-lifecycle-provider">
+    </provider>
+    <activity android:theme="@0x7f150326" android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity" android:exported="false" android:stateNotNeeded="true">
+    </activity>
+  </application>
+</manifest>
