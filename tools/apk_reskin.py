@@ -61,7 +61,7 @@ def raw_deflate(data):
     return c.compress(data) + c.flush()
 
 
-def build_zip(src_path, dst_path, patched_arsc):
+def build_zip(src_path, dst_path, replacements):
     src = zipfile.ZipFile(src_path, "r")
     out = open(dst_path, "wb")
     central = []
@@ -82,7 +82,7 @@ def build_zip(src_path, dst_path, patched_arsc):
         except UnicodeEncodeError:
             name_b = uname.encode("utf-8")
             flags = 0x0800
-        uncomp = patched_arsc if name == "resources.arsc" else src.read(name)
+        uncomp = replacements[name] if name in replacements else src.read(name)
         crc = zlib.crc32(uncomp) & 0xFFFFFFFF
         if info.compress_type == zipfile.ZIP_DEFLATED:
             comp = raw_deflate(uncomp)
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     print("brand color entries:", len(brand))
     buf, changed = patch_arsc(arsc, colors)
     print("colors patched:", changed)
-    skipped = build_zip(src, dst, buf)
+    skipped = build_zip(src, dst, {"resources.arsc": buf})
     print("v1 sig entries stripped:", len(skipped))
     n, bad_crc, mis = check_zip(dst)
     print("entries: %d | crc errors: %s | misaligned: %d" % (n, bad_crc, mis))

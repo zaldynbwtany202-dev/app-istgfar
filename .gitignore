@@ -7,3 +7,4 @@ dist/*
 !dist/SHA256SUMS.txt
 keys/
 analysis/wemuslim/resources.arsc
+!dist/WeMuslim-Noor-v3.5.2-FULL.apk
