@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>نُور — رفيقك اليومي للذكر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ================= هوية «نُور» — بنفسجي ملكي وذهبي هادئ ================= */
+:root{
+  --acc:#4f46e5; --acc-2:#6366f1; --acc-3:#8b5cf6;
+  --gold:#d9a441; --gold-soft:#f3e3c2;
+  --bg:#f5f5fc; --bg-2:#eeeef9; --card:#ffffff; --card-2:#f8f8fe;
+  --ink:#171733; --ink-2:#3f3f63; --muted:#8a8aad;
+  --line:#e6e6f4; --ok:#10b981; --warn:#f59e0b;
+  --nav-bg:rgba(255,255,255,.88);
+  --sh-1:0 2px 12px rgba(23,23,51,.07); --sh-2:0 18px 40px rgba(79,70,229,.22);
+  --r-lg:26px; --r-md:18px; --r-sm:12px;
+}
+[data-theme="dark"]{
+  --acc:#818cf8; --acc-2:#6366f1; --acc-3:#a78bfa;
+  --gold:#e8c06a; --gold-soft:#3a3220;
+  --bg:#0b0d1c; --bg-2:#10132a; --card:#171b36; --card-2:#1d2242;
+  --ink:#eef0ff; --ink-2:#c6c9ec; --muted:#7d81ab;
+  --line:#262b52; 
+  --nav-bg:rgba(13,16,35,.9);
+  --sh-1:0 2px 12px rgba(0,0,0,.45); --sh-2:0 18px 44px rgba(99,102,241,.28);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Tajawal','Segoe UI',Tahoma,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 92% -6%, rgba(217,164,65,.14) 0 160px, transparent 161px),
+    radial-gradient(circle at 2% 104%, rgba(99,102,241,.14) 0 150px, transparent 151px),
+    linear-gradient(180deg,var(--bg),var(--bg-2));
+  background-attachment:fixed;
+  color:var(--ink);min-height:100vh;direction:rtl;
+  padding:0 0 calc(86px + env(safe-area-inset-bottom,0px));
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.dhikr-text{font-family:'Amiri','Tajawal',serif}
+.wrap{max-width:620px;margin:0 auto;padding:16px 16px 10px}
+
+/* ============ Splash ============ */
+#splash{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:conic-gradient(from 0deg at 50% 50%,#171733,#312e81,#4f46e5,#312e81,#171733);
+  background-size:200% 200%;animation:spinbg 7s linear infinite;color:#fff;transition:opacity .7s ease}
+#splash.hide{opacity:0;pointer-events:none}
+@keyframes spinbg{to{background-position:200% 0}}
+#splash .moon{width:104px;height:104px;border-radius:50%;
+  background:radial-gradient(circle at 34% 32%, #fff8e7, #f3d98f 58%, #d9a441);
+  box-shadow:0 0 70px rgba(217,164,65,.55), inset -14px -12px 0 rgba(120,90,20,.25);
+  animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+#splash h2{font-size:2.1rem;font-weight:800;letter-spacing:.5px}
+#splash p{opacity:.85}
+
+/* ============ البطاقات والعناصر العامة ============ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1);padding:18px;margin-bottom:14px}
+.card h3{font-size:1.02rem;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.page{display:none;animation:fadeUp .35s ease}
+.page.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ============ الرئيسية ============ */
+header.hero{position:relative;border-radius:var(--r-lg);padding:24px 20px 20px;color:#fff;overflow:hidden;
+  background:linear-gradient(135deg,#1e1b4b 0%,#3730a3 55%,#6d28d9 100%);
+  box-shadow:var(--sh-2);margin-bottom:14px;border:1px solid rgba(255,255,255,.08)}
+.hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,rgba(232,192,106,.55) 1px,transparent 1.6px);background-size:42px 42px;opacity:.22;animation:drift 40s linear infinite}
+@keyframes drift{from{transform:translate(0)}to{transform:translate(42px,42px)}}
+.hero .greet{opacity:.85;font-size:.95rem;position:relative}
+.hero h1{font-size:1.62rem;font-weight:800;margin:2px 0 8px;position:relative}
+.hero .dhikr{font-size:1.22rem;line-height:2.15;position:relative;font-weight:700}
+.date-line{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;position:relative}
+.pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);padding:5px 13px;border-radius:999px;font-size:.86rem}
+.theme-btn{position:absolute;top:14px;left:14px;z-index:3;width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.14);color:#fff;font-size:1rem;cursor:pointer;backdrop-filter:blur(6px)}
+.theme-btn:active{transform:scale(.88)}
+
+/* التحدي اليومي */
+.challenge{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--gold-soft),var(--card));border:1px solid var(--line)}
+.challenge .ic{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;
+  background:linear-gradient(135deg,var(--gold),#b8860b);box-shadow:0 8px 20px rgba(217,164,65,.35)}
+.challenge b{display:block;font-size:1rem}
+.challenge small{color:var(--muted);font-size:.82rem;line-height:1.8;display:block}
+.challenge .done{color:var(--ok);font-weight:800}
+
+/* ============ المسبحة ============ */
+.tasbih-stage{display:flex;flex-direction:column;align-items:center;padding-top:8px}
+.dhikr-pills{display:flex;gap:8px;overflow-x:auto;width:100%;padding:4px 2px 12px;scrollbar-width:none}
+.dhikr-pills::-webkit-scrollbar{display:none}
+.dpill{flex:0 0 auto;border:1.5px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:999px;padding:9px 18px;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;transition:.2s}
+.dpill.on{background:linear-gradient(135deg,var(--acc),var(--acc-3));color:#fff;border-color:transparent;box-shadow:0 8px 22px rgba(99,102,241,.4)}
+.counter-wrap{position:relative;width:min(78vw,320px);aspect-ratio:1;margin:6px 0 14px}
+.counter-ring{position:absolute;inset:0;transform:rotate(-90deg)}
+.counter-ring circle{fill:none;stroke-width:10;stroke-linecap:round}
+.ring-bg{stroke:var(--line)}
+.ring-fg{stroke:url(#gradRing);transition:stroke-dashoffset .25s ease}
+#tapBtn{position:absolute;inset:16px;border-radius:50%;border:none;cursor:pointer;color:#fff;
+  background:radial-gradient(circle at 32% 28%, var(--acc-2), var(--acc) 55%, #3730a3);
+  box-shadow:0 22px 50px rgba(79,70,229,.45), inset 0 2px 0 rgba(255,255,255,.35);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  font-family:inherit;transition:transform .08s ease}
+#tapBtn:active{transform:scale(.94)}
+#tapBtn .cnt{font-size:3.2rem;font-weight:800;line-height:1}
+#tapBtn .lbl{font-size:1.05rem;opacity:.92;font-weight:700}
+#tapBtn .round{font-size:.82rem;opacity:.75}
+.tasbih-ctrl{display:flex;gap:10px;width:100%}
+.tbtn{flex:1;border:1.5px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:14px;padding:12px;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer}
+.tbtn:active{transform:scale(.96)}
+.tbtn.accent{background:linear-gradient(135deg,var(--acc),var(--acc-3));color:#fff;border-color:transparent}
+.target-line{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
+.tchip{border:1.5px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:6px 14px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer}
+.tchip.on{color:var(--acc);border-color:var(--acc);background:var(--card-2)}
+
+/* ============ الأذكار ============ */
+.zikr-cat{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:10px;cursor:pointer;background:var(--card);transition:.15s}
+.zikr-cat:active{transform:scale(.98)}
+.zikr-cat .ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;flex-shrink:0;background:var(--card-2);border:1px solid var(--line)}
+.zikr-cat b{font-size:.98rem}
+.zikr-cat small{display:block;color:var(--muted);font-size:.8rem}
+.zikr-cat .prog{margin-right:auto;font-size:.8rem;font-weight:800;color:var(--acc)}
+.zikr-item{padding:14px 6px;border-bottom:1px solid var(--line)}
+.zikr-item:last-child{border-bottom:none}
+.zikr-item .txt{font-size:1.12rem;line-height:2.05;margin-bottom:8px}
+.zikr-item .row{display:flex;align-items:center;gap:10px}
+.zcount{margin-right:auto;display:flex;align-items:center;gap:8px}
+.zc-btn{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;color:#fff;font-size:1.15rem;
+  background:linear-gradient(135deg,var(--acc),var(--acc-3));box-shadow:0 8px 18px rgba(99,102,241,.35)}
+.zc-btn:active{transform:scale(.9)}
+.zc-btn.done{background:linear-gradient(135deg,#059669,#10b981)}
+.znum{min-width:52px;text-align:center;font-weight:800;font-size:1.05rem}
+.znum small{display:block;color:var(--muted);font-weight:500;font-size:.72rem}
+.backbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.backbar button{border:1.5px solid var(--line);background:var(--card);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:1.05rem;cursor:pointer}
+.backbar b{font-size:1.05rem}
+
+/* ============ الإحصائيات ============ */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.stat-box{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;text-align:center;box-shadow:var(--sh-1)}
+.stat-box b{font-size:1.7rem;font-weight:800;color:var(--acc);display:block}
+.stat-box.gold b{color:var(--gold)}
+.stat-box span{color:var(--muted);font-size:.82rem}
+.chart{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:6px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%}
+.chart .bar{width:100%;max-width:34px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,var(--acc-3),var(--acc));margin-top:auto;transition:height .4s ease;min-height:3px}
+.chart .d{font-size:.72rem;color:var(--muted)}
+.chart .col.today .bar{background:linear-gradient(180deg,var(--gold),#b8860b)}
+.chart .col.today .d{color:var(--gold);font-weight:800}
+
+/* ============ الإعدادات ============ */
+.set-row{display:flex;align-items:center;gap:12px;padding:13px 4px;border-bottom:1px solid var(--line)}
+.set-row:last-child{border-bottom:none}
+.set-row .t b{font-size:.96rem;display:block}
+.set-row .t small{color:var(--muted);font-size:.78rem}
+.switch{margin-right:auto;width:50px;height:28px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:.2s;flex-shrink:0}
+.switch::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.switch.on{background:linear-gradient(135deg,var(--acc),var(--acc-3))}
+.switch.on::after{right:25px}
+.danger{color:#e11d48;border:1.5px solid #fecdd3;background:transparent;width:100%;padding:12px;border-radius:14px;font-family:inherit;font-weight:800;font-size:.95rem;cursor:pointer}
+
+/* ============ شريط التبويبات ============ */
+#tabbar{position:fixed;bottom:0;right:0;left:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom,0px))}
+.tab{border:none;background:none;font-family:inherit;color:var(--muted);font-size:.72rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 10px;border-radius:14px;min-width:56px}
+.tab .i{font-size:1.3rem;line-height:1}
+.tab.on{color:var(--acc)}
+.tab.on .i{transform:translateY(-2px)}
+.tab{transition:.18s}
+</style>
+</head>
+<body>
+
+<!-- شاشة البداية -->
+<div id="splash">
+  <div class="moon"></div>
+  <h2>نُـور</h2>
+  <p>رفيقك اليومي للذكر والطمأنينة</p>
+</div>
+
+<main class="wrap">
+
+  <!-- ============ الرئيسية ============ -->
+  <section id="page-home" class="page on">
+    <header class="hero">
+      <button class="theme-btn" id="themeBtn" title="الوضع">🌙</button>
+      <div class="greet" id="greet">السلام عليكم</div>
+      <h1 id="title">نُور</h1>
+      <div class="dhikr dhikr-text" id="dailyDhikr">﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾</div>
+      <div class="date-line">
+        <span class="pill">🌙 <span id="hijri"></span></span>
+        <span class="pill">📅 <span id="greg"></span></span>
+      </div>
+    </header>
+
+    <div class="card challenge" id="challengeCard">
+      <div class="ic">🏆</div>
+      <div>
+        <b id="chTitle">تحدّي اليوم</b>
+        <small id="chDesc">…</small>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>✨ محتوى اليوم</h3>
+      <div id="dailyAyah" class="dhikr-text" style="font-size:1.14rem;line-height:2.2"></div>
+      <div id="dailyHadith" style="margin-top:10px;color:var(--ink-2);font-size:.95rem;line-height:2"></div>
+    </div>
+
+    <div class="card" style="display:flex;gap:12px;text-align:center">
+      <div style="flex:1"><b id="homeToday" style="font-size:1.6rem;color:var(--acc)">0</b><div style="color:var(--muted);font-size:.8rem">ذِكر اليوم</div></div>
+      <div style="width:1px;background:var(--line)"></div>
+      <div style="flex:1"><b id="homeStreak" style="font-size:1.6rem;color:var(--gold)">0</b><div style="color:var(--muted);font-size:.8rem">أيام متتالية 🔥</div></div>
+      <div style="width:1px;background:var(--line)"></div>
+      <div style="flex:1"><b id="homeTotal" style="font-size:1.6rem;color:var(--acc-3)">0</b><div style="color:var(--muted);font-size:.8rem">الإجمالي</div></div>
+    </div>
+  </section>
+
+  <!-- ============ المسبحة ============ -->
+  <section id="page-tasbih" class="page">
+    <div class="tasbih-stage">
+      <div class="dhikr-pills" id="dhikrPills"></div>
+
+      <div class="counter-wrap">
+        <svg class="counter-ring" viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="gradRing" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#d9a441"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="100" cy="100" r="94"/>
+          <circle class="ring-fg" id="ringFg" cx="100" cy="100" r="94"/>
+        </svg>
+        <button id="tapBtn">
+          <span class="cnt" id="tapCount">0</span>
+          <span class="lbl" id="tapLbl">سُبْحَانَ الله</span>
+          <span class="round" id="tapRound">الجولات: 0</span>
+        </button>
+      </div>
+
+      <div class="target-line" id="targetLine"></div>
+
+      <div class="tasbih-ctrl">
+        <button class="tbtn accent" id="btnDone">✔ إنهاء الجلسة</button>
+        <button class="tbtn" id="btnReset">↺ تصفير العدّاد</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ الأذكار ============ -->
+  <section id="page-adhkar" class="page">
+    <div id="catList"></div>
+    <div id="catView" hidden>
+      <div class="backbar">
+        <button id="backBtn">→</button>
+        <b id="catTitle"></b>
+      </div>
+      <div class="card" id="catItems"></div>
+    </div>
+  </section>
+
+  <!-- ============ الإحصائيات ============ -->
+  <section id="page-stats" class="page">
+    <div class="stat-grid">
+      <div class="stat-box"><b id="stToday">0</b><span>ذِكر اليوم</span></div>
+      <div class="stat-box gold"><b id="stStreak">0</b><span>أيام متتالية 🔥</span></div>
+      <div class="stat-box"><b id="stTotal">0</b><span>إجمالي الأذكار</span></div>
+      <div class="stat-box gold"><b id="stRounds">0</b><span>جولات المسبحة</span></div>
+    </div>
+    <div class="card">
+      <h3>🗓️ آخر ٧ أيام</h3>
+      <div class="chart" id="weekChart"></div>
+    </div>
+    <div class="card">
+      <h3>📿 ذكرك الأكثر تكرارًا</h3>
+      <div id="topDhikr" style="color:var(--ink-2);line-height:2.1"></div>
+    </div>
+  </section>
+
+  <!-- ============ الإعدادات ============ -->
+  <section id="page-settings" class="page">
+    <div class="card">
+      <h3>⚙️ التخصيص</h3>
+      <div class="set-row">
+        <div class="t"><b>الوضع الليلي</b><small>راحة للعين في المساء</small></div>
+        <div class="switch" id="swTheme"></div>
+      </div>
+      <div class="set-row">
+        <div class="t"><b>الصوت</b><small>نقرة خفيفة عند التسبيح</small></div>
+        <div class="switch on" id="swSound"></div>
+      </div>
+      <div class="set-row">
+        <div class="t"><b>الاهتزاز</b><small>لمسة إحساس عند العدّ</small></div>
+        <div class="switch on" id="swVib"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🗄️ البيانات</h3>
+      <button class="danger" id="btnWipe">مسح كل البيانات</button>
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.8rem;margin-top:8px">نُور · نسخة أولى تجريبية · كل بياناتك تبقى على جهازك</p>
+  </section>
+
+</main>
+
+<!-- شريط التبويبات -->
+<nav id="tabbar">
+  <button class="tab on" data-p="home"><span class="i">🏠</span>الرئيسية</button>
+  <button class="tab" data-p="tasbih"><span class="i">📿</span>المسبحة</button>
+  <button class="tab" data-p="adhkar"><span class="i">📖</span>الأذكار</button>
+  <button class="tab" data-p="stats"><span class="i">📊</span>إحصائياتي</button>
+  <button class="tab" data-p="settings"><span class="i">⚙️</span>الإعدادات</button>
+</nav>
+
+<script>
+"use strict";
+/* ================= نُور — المنطق ================= */
+const KEY="noor.v1";
+const today=()=>new Date().toISOString().slice(0,10);
+const dayOfYear=()=>{const n=new Date(),s=new Date(n.getFullYear(),0,0);return Math.floor((n-s)/864e5);};
+
+const DHIKR=[
+  {id:"istighfar",t:"أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْه",short:"الاستغفار"},
+  {id:"subhan",t:"سُبْحَانَ الله",short:"التسبيح"},
+  {id:"hamd",t:"الْحَمْدُ لِلَّه",short:"التحميد"},
+  {id:"takbir",t:"اللهُ أَكْبَر",short:"التكبير"},
+  {id:"tahlil",t:"لَا إِلَهَ إِلَّا الله",short:"التهليل"},
+  {id:"salawat",t:"اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّد",short:"الصلاة على النبي ﷺ"},
+  {id:"hawqala",t:"لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّه",short:"الحوقلة"}
+];
+
+const AYAT=[
+  "﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾ — الرعد ٢٨",
+  "﴿ فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ ﴾ — البقرة ١٥٢",
+  "﴿ وَاذْكُر رَّبَّكَ فِي نَفْسِكَ تَضَرُّعًا وَخِيفَةً ﴾ — الأعراف ٢٠٥",
+  "﴿ يَا أَيُّهَا الَّذِينَ آمَنُوا اذْكُرُوا اللَّهَ ذِكْرًا كَثِيرًا ﴾ — الأحزاب ٤١",
+  "﴿ وَالذَّاكِرِينَ اللَّهَ كَثِيرًا وَالذَّاكِرَاتِ أَعَدَّ اللَّهُ لَهُم مَّغْفِرَةً وَأَجْرًا عَظِيمًا ﴾ — الأحزاب ٣٥",
+  "﴿ وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ ﴾ — البقرة ١٨٦",
+  "﴿ إِنَّ مَعَ الْعُسْرِ يُسْرًا ﴾ — الشرح ٦"
+];
+const AHADITH=[
+  "قال ﷺ: «كلمتان خفيفتان على اللسان، ثقيلتان في الميزان: سبحان الله وبحمده، سبحان الله العظيم» — متفق عليه",
+  "قال ﷺ: «من قال: أستغفر الله العظيم الذي لا إله إلا هو الحي القيوم وأتوب إليه، غُفر له وإن كان فرّ من الزحف» — رواه الترمذي",
+  "قال ﷺ: «أحب الكلام إلى الله أربع: سبحان الله، والحمد لله، ولا إله إلا الله، والله أكبر» — رواه مسلم",
+  "قال ﷺ: «مَثَل الذي يذكر ربه والذي لا يذكر ربه، مَثَل الحي والميت» — متفق عليه",
+  "قال ﷺ: «من صلى عليّ صلاة صلى الله عليه بها عشرًا» — رواه مسلم",
+  "قال ﷺ: «سَبَق المُفَرِّدون: الذاكرون الله كثيرًا والذاكرات» — رواه مسلم"
+];
+const CHALLENGES=[
+  {dhikr:"istighfar",n:100,t:"١٠٠ استغفار اليوم",d:"لسانك رطب بالاستغفار — املأ يومك نورًا."},
+  {dhikr:"subhan",n:100,t:"١٠٠ تسبيحة",d:"سبّح الله مئة مرة وارفع درجتك اليوم."},
+  {dhikr:"salawat",n:50,t:"٥٠ صلاة على النبي ﷺ",d:"أكثر من الصلاة على نبيّك اليوم."},
+  {dhikr:"tahlil",n:100,t:"١٠٠ تهليلة",d:"جدّد إيمانك: لا إله إلا الله."},
+  {dhikr:"hamd",n:70,t:"٧٠ حمدًا وشكرًا",d:"اشكر النعم يزدك الله منها."},
+  {dhikr:"hawqala",n:60,t:"٦٠ حوقلة",d:"كنز من كنوز الجنة بين يديك."}
+];
+
+const CATS=[
+ {id:"morning",ic:"🌅",t:"أذكار الصباح",d:"تُقال بعد صلاة الفجر",items:[
+   {t:"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ",n:1},
+   {t:"اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ",n:1},
+   {t:"رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا",n:3},
+   {t:"بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",n:3},
+   {t:"سُبْحَانَ اللهِ وَبِحَمْدِهِ",n:100}]},
+ {id:"evening",ic:"🌆",t:"أذكار المساء",d:"تُقال بعد صلاة العصر",items:[
+   {t:"أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ",n:1},
+   {t:"اللَّهُمَّ بِكَ أَمْسَيْنَا وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ الْمَصِيرُ",n:1},
+   {t:"أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",n:3}]},
+ {id:"sleep",ic:"🌙",t:"أذكار النوم",d:"قبل النوم",items:[
+   {t:"بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",n:1},
+   {t:"اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ",n:3},
+   {t:"سُبْحَانَ اللهِ (٣٣) وَالْحَمْدُ لِلَّهِ (٣٣) وَاللهُ أَكْبَرُ (٣٤) عند النوم",n:1}]},
+ {id:"afterprayer",ic:"🕌",t:"أذكار بعد الصلاة",d:"بعد كل صلاة مكتوبة",items:[
+   {t:"أَسْتَغْفِرُ اللهَ",n:3},
+   {t:"اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ",n:1},
+   {t:"سُبْحَانَ اللهِ",n:33},{t:"الْحَمْدُ لِلَّهِ",n:33},{t:"اللهُ أَكْبَرُ",n:33}]}
+];
+
+/* ---------- التخزين ---------- */
+function load(){
+  try{ return Object.assign({theme:"",sound:true,vib:true,cur:"subhan",target:33,
+    counts:{},rounds:0,total:0,streak:{len:0,last:""}}, JSON.parse(localStorage.getItem(KEY)||"{}")); }
+  catch(e){ return {theme:"",sound:true,vib:true,cur:"subhan",target:33,counts:{},rounds:0,total:0,streak:{len:0,last:""}}; }
+}
+let S=load();
+function save(){ localStorage.setItem(KEY,JSON.stringify(S)); }
+function dayCounts(){ return S.counts[today()]||{}; }
+function bump(dhikrId,n=1){
+  const d=today();
+  if(!S.counts[d]) S.counts[d]={};
+  S.counts[d][dhikrId]=(S.counts[d][dhikrId]||0)+n;
+  S.total+=n;
+  // السلسلة
+  const y=new Date(Date.now()-864e5).toISOString().slice(0,10);
+  if(S.streak.last!==d){
+    S.streak.len=(S.streak.last===y)?S.streak.len+1:1;
+    S.streak.last=d;
+  }
+  save();
+}
+const dayTotal=(d)=>{const c=S.counts[d]||{};return Object.values(c).reduce((a,b)=>a+b,0);};
+
+/* ---------- صوت + اهتزاز ---------- */
+let AC=null;
+function tick(){
+  if(S.vib&&navigator.vibrate) try{navigator.vibrate(9);}catch(e){}
+  if(!S.sound) return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.frequency.value=740;o.type="sine";
+    g.gain.setValueAtTime(.09,AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.09);
+    o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+.1);
+  }catch(e){}
+}
+
+/* ---------- التنقل ---------- */
+function show(p){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));
+  document.getElementById("page-"+p).classList.add("on");
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
+  window.scrollTo({top:0});
+  if(p==="home")renderHome(); if(p==="stats")renderStats(); if(p==="tasbih")renderTasbih();
+  if(p==="adhkar")renderCats();
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>show(t.dataset.p)));
+
+/* ---------- الرئيسية ---------- */
+function renderHome(){
+  const h=new Date().getHours();
+  document.getElementById("greet").textContent=h<12?"صباح النور 🌤":h<18?"طاب يومك ✨":"مساء النور 🌙";
+  try{
+    document.getElementById("hijri").textContent=new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura",{day:"numeric",month:"long",year:"numeric"}).format(new Date());
+  }catch(e){document.getElementById("hijri").textContent="";}
+  document.getElementById("greg").textContent=new Intl.DateTimeFormat("ar",{weekday:"long",day:"numeric",month:"long"}).format(new Date());
+  document.getElementById("dailyDhikr").textContent="﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾";
+  const di=dayOfYear();
+  document.getElementById("dailyAyah").textContent="📖 "+AYAT[di%AYAT.length];
+  document.getElementById("dailyHadith").textContent="🕌 "+AHADITH[(di+2)%AHADITH.length];
+  const ch=CHALLENGES[di%CHALLENGES.length];
+  const done=(dayCounts()[ch.dhikr]||0)>=ch.n;
+  document.getElementById("chTitle").textContent="تحدّي اليوم: "+ch.t;
+  document.getElementById("chDesc").innerHTML=ch.d+
+    (done?'<br><span class="done">✔ أُنجز اليوم — تقبّل الله!</span>'
+         :'<br>تقدّمك اليوم: '+(dayCounts()[ch.dhikr]||0)+" / "+ch.n);
+  document.getElementById("homeToday").textContent=dayTotal(today());
+  document.getElementById("homeStreak").textContent=S.streak.len;
+  document.getElementById("homeTotal").textContent=S.total;
+}
+
+/* ---------- المسبحة ---------- */
+const R=94,CIRC=2*Math.PI*R;
+function renderTasbih(){
+  const pills=document.getElementById("dhikrPills");
+  pills.innerHTML="";
+  DHIKR.forEach(d=>{
+    const b=document.createElement("button");
+    b.className="dpill"+(d.id===S.cur?" on":"");b.textContent=d.short;
+    b.onclick=()=>{S.cur=d.id;save();renderTasbih();};
+    pills.appendChild(b);
+  });
+  const line=document.getElementById("targetLine");line.innerHTML="";
+  [33,66,99,0].forEach(v=>{
+    const c=document.createElement("button");
+    c.className="tchip"+(S.target===v?" on":"");
+    c.textContent=v===0?"حرّ":v;
+    c.onclick=()=>{S.target=v;save();renderTasbih();};
+    line.appendChild(c);
+  });
+  const d=DHIKR.find(x=>x.id===S.cur);
+  document.getElementById("tapLbl").textContent=d.t.length>26?d.short:d.t;
+  paint();
+}
+function curCount(){ return dayCounts()[S.cur]||0; }
+function paint(){
+  const c=curCount();
+  document.getElementById("tapCount").textContent=c;
+  document.getElementById("tapRound").textContent="الجولات: "+S.rounds;
+  const fg=document.getElementById("ringFg");
+  fg.setAttribute("stroke-dasharray",CIRC);
+  let ratio=S.target>0?(c%S.target)/S.target:(c%100)/100;
+  if(S.target>0&&c>0&&c%S.target===0)ratio=1;
+  fg.setAttribute("stroke-dashoffset",CIRC*(1-ratio));
+}
+document.getElementById("tapBtn").addEventListener("click",()=>{
+  const before=curCount();
+  bump(S.cur,1);
+  if(S.target>0&&before>0&&before%S.target===0){S.rounds++;save();if(S.vib&&navigator.vibrate)try{navigator.vibrate([20,60,20]);}catch(e){}}
+  tick();paint();
+  renderHomeStatsLite();
+});
+document.getElementById("btnReset").onclick=()=>{
+  if(confirm("تصفير عدّاد هذا الذكر لليوم؟")){
+    const d=today();
+    if(S.counts[d]) delete S.counts[d][S.cur];
+    save();paint();
+  }};
+document.getElementById("btnDone").onclick=()=>{
+  alert("تقبّل الله منك 🤲\nأتممت "+curCount()+" من الذكر اليوم.");
+  show("home");
+};
+function renderHomeStatsLite(){
+  document.getElementById("homeToday").textContent=dayTotal(today());
+  document.getElementById("homeTotal").textContent=S.total;
+  document.getElementById("homeStreak").textContent=S.streak.len;
+}
+
+/* ---------- الأذكار ---------- */
+function zkey(cat,i){return "z_"+cat+"_"+i;}
+function renderCats(){
+  document.getElementById("catList").hidden=false;
+  document.getElementById("catView").hidden=true;
+  const box=document.getElementById("catList");box.innerHTML="";
+  CATS.forEach(cat=>{
+    const doneN=cat.items.filter((_,i)=>{
+      const v=Number(localStorage.getItem(zkey(cat.id,i))||0);
+      return v>=cat.items[i].n;
+    }).length;
+    const el=document.createElement("div");
+    el.className="zikr-cat";
+    el.innerHTML='<div class="ic">'+cat.ic+'</div><div><b>'+cat.t+'</b><small>'+cat.d+'</small></div>'+
+      '<span class="prog">'+doneN+' / '+cat.items.length+'</span>';
+    el.onclick=()=>openCat(cat);
+    box.appendChild(el);
+  });
+}
+let curCat=null;
+function openCat(cat){
+  curCat=cat;
+  document.getElementById("catList").hidden=true;
+  document.getElementById("catView").hidden=false;
+  document.getElementById("catTitle").textContent=cat.ic+" "+cat.t;
+  const box=document.getElementById("catItems");box.innerHTML="";
+  cat.items.forEach((z,i)=>{
+    const v=Number(localStorage.getItem(zkey(cat.id,i))||0);
+    const done=v>=z.n;
+    const el=document.createElement("div");
+    el.className="zikr-item";
+    el.innerHTML='<div class="txt dhikr-text">'+z.t+'</div><div class="row">'+
+      '<div class="zcount"><button class="zc-btn'+(done?' done':'')+'">'+(done?'✓':'📿')+'</button>'+
+      '<div class="znum">'+v+'<small>من '+z.n+'</small></div></div></div>';
+    el.querySelector(".zc-btn").onclick=(e)=>{
+      e.stopPropagation();
+      if(done)return;
+      const nv=v+1;localStorage.setItem(zkey(cat.id,i),nv);
+      bump("adhkar",1);tick();openCat(cat);
+    };
+    box.appendChild(el);
+  });
+}
+document.getElementById("backBtn").onclick=renderCats;
+
+/* ---------- الإحصائيات ---------- */
+function renderStats(){
+  document.getElementById("stToday").textContent=dayTotal(today());
+  document.getElementById("stStreak").textContent=S.streak.len;
+  document.getElementById("stTotal").textContent=S.total;
+  document.getElementById("stRounds").textContent=S.rounds;
+  const chart=document.getElementById("weekChart");chart.innerHTML="";
+  const days=[];let max=1;
+  for(let i=6;i>=0;i--){
+    const d=new Date(Date.now()-i*864e5).toISOString().slice(0,10);
+    const v=dayTotal(d);max=Math.max(max,v);
+    days.push({d,v,name:new Intl.DateTimeFormat("ar",{weekday:"short"}).format(new Date(d))});
+  }
+  days.forEach(x=>{
+    const col=document.createElement("div");
+    col.className="col"+(x.d===today()?" today":"");
+    col.innerHTML='<div class="bar" style="height:'+(x.v?Math.max(6,x.v/max*100):3)+'%"></div><span class="d">'+x.name+'</span>';
+    chart.appendChild(col);
+  });
+  const c=dayCounts();let top=null;
+  for(const k in c){ if(!top||c[k]>c[top]) top=k; }
+  const dh=DHIKR.find(x=>x.id===top);
+  document.getElementById("topDhikr").innerHTML=top?
+    '<b class="dhikr-text" style="font-size:1.15rem">'+dh.t+'</b><br><small style="color:var(--muted)">كررته اليوم '+c[top]+' مرة</small>'
+    :'<span style="color:var(--muted)">ابدأ التسبيح وستظهر إحصائياتك هنا ✨</span>';
+}
+
+/* ---------- الإعدادات ---------- */
+function applyTheme(){
+  const dark=S.theme==="dark"||(!S.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.setAttribute("data-theme",dark?"dark":"light");
+  document.getElementById("themeBtn").textContent=dark?"☀️":"🌙";
+  document.getElementById("swTheme").classList.toggle("on",dark);
+}
+document.getElementById("themeBtn").onclick=()=>{
+  S.theme=(document.documentElement.getAttribute("data-theme")==="dark")?"light":"dark";
+  save();applyTheme();
+};
+function bindSwitch(id,fn){const el=document.getElementById(id);el.onclick=()=>{el.classList.toggle("on");fn(el.classList.contains("on"));};}
+bindSwitch("swTheme",on=>{S.theme=on?"dark":"light";save();applyTheme();});
+bindSwitch("swSound",on=>{S.sound=on;save();});
+bindSwitch("swVib",on=>{S.vib=on;save();});
+document.getElementById("swSound").classList.toggle("on",S.sound);
+document.getElementById("swVib").classList.toggle("on",S.vib);
+document.getElementById("btnWipe").onclick=()=>{
+  if(confirm("سيتم مسح كل بياناتك نهائيًا. هل أنت متأكد؟")){
+    localStorage.removeItem(KEY);
+    Object.keys(localStorage).forEach(k=>{if(k.startsWith("z_"))localStorage.removeItem(k);});
+    S=load();applyTheme();show("home");
+  }};
+
+/* ---------- انطلاق ---------- */
+applyTheme();renderHome();renderTasbih();renderCats();
+setTimeout(()=>document.getElementById("splash").classList.add("hide"),1100);
+</script>
+</body>
+</html>
