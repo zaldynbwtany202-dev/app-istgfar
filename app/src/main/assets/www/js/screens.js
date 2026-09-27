@@ -684,8 +684,47 @@ function segRow(title, sub, key, opts) {
   return '<div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:140px"><div class="t">' + title + '</div>' + (sub ? '<div class="s">' + sub + '</div>' : '') + '</div>' +
     '<div class="seg" data-seg="' + key + '" style="flex:1 1 170px">' + opts.map(([v, t]) => '<button data-v="' + v + '" class="' + (String(Settings[key]) === String(v) ? 'on' : '') + '">' + t + '</button>').join('') + '</div></div>';
 }
-const THEME_NAMES = { dark: 'داكن هادئ', light: 'فاتح', sepia: 'دافئ مريح للعين', auto: 'حسب النظام', prayer: 'تلقائي حسب المواقيت' };
-const ACCENTS = [['emerald', '#0B5D4B', 'زمردي'], ['teal', '#12707E', 'فيروزي'], ['indigo', '#3A4B8A', 'أزرق ليلي'], ['plum', '#7A3F71', 'بنفسجي'], ['rose', '#9A4658', 'عنّابي'], ['amber', '#8A6224', 'عسلي']];
+const THEME_NAMES = Object.assign({ auto: 'حسب النظام', prayer: 'تلقائي حسب المواقيت' }, Object.fromEntries(Object.entries(THEMES).map(([k, v]) => [k, v.n])));
+const THEME_GROUPS = [['calm', 'هادئة'], ['girls', 'ناعمة وردية'], ['more', 'مختلفة']];
+/* وسن 4.5 · اختيار السمة بمعاينة ألوانها */
+function themeSheet() {
+  const card = k => { const T = THEMES[k], sw = T.sw;
+    return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-sw" style="background:' + sw[0] + '"><i style="background:' + sw[1] + '"></i><b style="background:' + sw[2] + '"></b><s style="background:' + sw[3] + '"></s></span><span class="thm-n">' + T.n + '</span></button>'; };
+  const html = '<div class="sh-t">السمة</div><div class="sh-s">اختر ما يريح عينيك ويناسب ذوقك</div>' +
+    THEME_GROUPS.map(([g, t]) => '<div class="thm-g">' + t + '</div><div class="thm-grid">' + Object.keys(THEMES).filter(k => THEMES[k].g === g).map(card).join('') + '</div>').join('') +
+    '<div class="thm-g">تلقائي</div><div class="list mx">' + [['prayer', 'داكن من المغرب إلى الشروق وفاتح نهارًا'], ['auto', 'يتبع إعداد الهاتف']].map(([v, s]) =>
+      '<button class="li opt ' + (Settings.theme === v ? 'on' : '') + '" data-th="' + v + '"><div class="grow"><div class="t">' + THEME_NAMES[v] + '</div><div class="s">' + s + '</div></div><span class="rad"></span></button>').join('') + '</div>';
+  Sheet.open(html, el => el.addEventListener('click', e => {
+    const b = e.target.closest('[data-th]'); if (!b) return; const k = b.dataset.th, T = THEMES[k];
+    setSetting('theme', k);
+    if (Settings.accent !== 'custom') {
+      if (T && T.acc) { setSetting('accent', T.acc); setSetting('accentAuto', true); }
+      else if (Settings.accentAuto) { setSetting('accent', 'emerald'); setSetting('accentAuto', false); }
+    }
+    applyTheme(); $$('[data-th]', el).forEach(x => x.classList.toggle('on', x === b)); vibrate(8);
+  }), () => Router.refresh());
+}
+/* لون حرّ: درجة اللون + قوّته */
+function accentSheet() {
+  let [h] = /^#[0-9a-f]{6}$/i.test(Settings.accentHex || '') ? hexToHsl(Settings.accentHex) : [330];
+  let tone = Settings.accentTone || 'bright';
+  const TONE = { soft: [34, 46], bright: [56, 45], deep: [48, 30] };
+  const col = () => hslToHex(h, TONE[tone][0], TONE[tone][1]);
+  const html = '<div class="sh-t">لون من اختيارك</div><div class="sh-s">حرّك الشريط لتختار اللون، ثم درجته</div>' +
+    '<div class="mx"><div class="acc-pv" id="ac-pv"><span></span><b>وسن</b></div>' +
+    '<input type="range" min="0" max="359" value="' + Math.round(h) + '" id="ac-h" class="hue">' +
+    '<div class="seg" id="ac-t" style="margin-top:14px"><button data-v="soft">هادئ</button><button data-v="bright">زاهٍ</button><button data-v="deep">عميق</button></div>' +
+    '<button class="btn gold block" id="ac-ok" style="margin-top:16px">' + icon('check') + 'اعتمد هذا اللون</button></div>';
+  Sheet.open(html, el => {
+    const upd = () => { const c = col(), pv = $('#ac-pv', el); pv.style.setProperty('--c', c); $$('#ac-t button', el).forEach(b => b.classList.toggle('on', b.dataset.v === tone)); };
+    $('#ac-h', el).oninput = e => { h = +e.target.value; upd(); };
+    $('#ac-t', el).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; tone = b.dataset.v; upd(); };
+    $('#ac-ok', el).onclick = () => { setSetting('accentHex', col()); setSetting('accentTone', tone); setSetting('accent', 'custom'); setSetting('accentAuto', false); applyTheme(); Sheet.close(() => Router.refresh()); };
+    upd();
+  });
+}
+const ACCENTS = [['emerald', '#0B5D4B', 'زمردي'], ['teal', '#12707E', 'فيروزي'], ['ocean', '#1F6F8B', 'بحري'], ['indigo', '#3A4B8A', 'أزرق ليلي'], ['plum', '#7A3F71', 'بنفسجي'], ['lilac', '#7E63B8', 'ليلكي'],
+  ['pink', '#C2587A', 'وردي'], ['rosegold', '#B06A74', 'ذهبي وردي'], ['rose', '#9A4658', 'عنّابي'], ['coral', '#D0694E', 'مرجاني'], ['amber', '#8A6224', 'عسلي'], ['coffee', '#7A5236', 'قهوة'], ['olive', '#5E6B2E', 'زيتوني']];
 const SOUND_NAMES = { adhan: 'الأذان كاملًا', takbir: 'التكبير فقط', system: 'نغمة الإشعارات الافتراضية', chime: 'نغمة وسن', custom: 'نغمة من هاتفك', silent: 'اهتزاز فقط' };
 SCREENS.settings = {
   parent: 'more',
@@ -695,8 +734,10 @@ SCREENS.settings = {
     return hdr('الإعدادات', 'خصّص وسن كما تحب', { back: true, compact: true }) +
       sec('المظهر') + '<div class="list mx">' +
       '<button class="li" id="s-th"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">السمة</div><div class="s">' + THEME_NAMES[Settings.theme] + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
-      '<div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:120px"><div class="t">لون التطبيق</div><div class="s">' + (ACCENTS.find(a => a[0] === Settings.accent) || ACCENTS[0])[2] + '</div></div>' +
-      '<div class="accents" id="s-acc">' + ACCENTS.map(([k, c]) => '<button class="' + (Settings.accent === k ? 'on' : '') + '" data-acc="' + k + '" style="background:' + c + '" aria-label="' + k + '"></button>').join('') + '</div></div>' +
+      '<div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:120px"><div class="t">لون التطبيق</div><div class="s">' + (Settings.accent === 'custom' ? 'لون من اختيارك' : (ACCENTS.find(a => a[0] === Settings.accent) || ACCENTS[0])[2]) + '</div></div>' +
+      '<div class="accents" id="s-acc">' + ACCENTS.map(([k, c]) => '<button class="' + (Settings.accent === k ? 'on' : '') + '" data-acc="' + k + '" style="background:' + c + '" aria-label="' + k + '"></button>').join('') +
+      '<button class="acc-any' + (Settings.accent === 'custom' ? ' on' : '') + '" id="s-acc-c" aria-label="لون من اختيارك"' + (Settings.accent === 'custom' ? ' style="--c:' + Settings.accentHex + '"' : '') + '>' + icon('plus') + '</button></div></div>' +
+      segRow('حجم خط التطبيق', 'يكبّر كل النصوص — مريح للعين', 'uiScale', [['0.9', 'صغير'], ['1', 'عادي'], ['1.12', 'كبير'], ['1.25', 'أكبر']]) +
       segRow('مرشّح الضوء الدافئ', 'يقلّل الضوء الأزرق لراحة العين', 'warm', [['off', 'متوقف'], ['night', 'ليلًا'], ['on', 'دائمًا']]) +
       segRow('الأرقام', '', 'digits', [['latn', '123'], ['arab', '١٢٣']]) +
       segRow('صيغة الوقت', '', 'clock', [['24', '24 ساعة'], ['12', '12 ساعة']]) +
@@ -719,11 +760,11 @@ SCREENS.settings = {
         '<button class="li" data-pin="day"><div class="ic">' + icon('widget') + '</div><div class="grow"><div class="t">«مواقيت اليوم»</div><div class="s">الصلاة القادمة وعدّ تنازلي والصلوات الخمس (4×2)</div></div><div class="end">' + icon('plus') + '</div></button>' +
         '<button class="li" data-pin="next"><div class="ic">' + icon('clock') + '</div><div class="grow"><div class="t">«الصلاة القادمة»</div><div class="s">أداة صغيرة بعدّ تنازلي حيّ (2×1)</div></div><div class="end">' + icon('plus') + '</div></button></div>' : '') +
       sec('القراءة') + '<div class="list mx">' +
-      segRow('خلفية المصحف', '', 'readTheme', [['night', 'ليلي'], ['paper', 'ورقي'], ['white', 'أبيض']]) +
+      '<button class="li" id="s-rd"><div class="ic">' + icon('text') + '</div><div class="grow"><div class="t">مظهر المصحف</div><div class="s">' + esc(readerSummary()) + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
       segRow('طريقة العرض', '', 'readMode', [['surah', 'سورة'], ['page', 'صفحات']]) +
       '<button class="li" id="s-rec"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">القارئ</div><div class="s">' + esc(reciterName(Settings.reciter)) + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
-      '<div class="li" style="flex-direction:column;align-items:stretch"><div class="row" style="justify-content:space-between"><div class="t">حجم خط المصحف</div><b class="gold num" id="s-qv">' + N(Settings.qfs) + '</b></div>' +
-      '<input type="range" min="20" max="42" value="' + Settings.qfs + '" id="s-qfs"><div id="s-qpv" style="font-family:var(--font-q);font-size:' + Settings.qfs + 'px;text-align:center;line-height:2">' + qd(BASMALA_U) + '</div></div></div>' +
+      '<button class="li" data-go="downloads"><div class="ic">' + icon('save') + '</div><div class="grow"><div class="t">تنزيلات التلاوة</div><div class="s">استمع دون إنترنت</div></div><div class="end">' + icon('chev') + '</div></button>' +
+      '</div>' +
       sec('بياناتك') + '<div class="list mx">' +
       '<button class="li" data-go="backup"><div class="ic">' + icon('save') + '</div><div class="grow"><div class="t">النسخ الاحتياطي والاستعادة</div><div class="s">' +
         (Backup.lastAt() ? 'آخر نسخة: ' + fmtG(new Date(Backup.lastAt())) : 'احفظ بستانك وسجلّاتك في ملف') + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
@@ -738,26 +779,22 @@ SCREENS.settings = {
       const b = e.target.closest('button'); if (!b) return; const k = s.dataset.seg; let v = b.dataset.v;
       if (k === 'hijriOffset') v = +v;
       setSetting(k, v); $$('button', s).forEach(x => x.classList.toggle('on', x === b));
-      if (k === 'theme' || k === 'warm') { applyTheme(); Router.refresh(); } else if (['digits', 'clock', 'gmonths', 'asr'].includes(k)) Router.refresh();
+      if (k === 'theme' || k === 'warm') { applyTheme(); Router.refresh(); } else if (k === 'uiScale') { applyUiScale(); } else if (['digits', 'clock', 'gmonths', 'asr'].includes(k)) Router.refresh();
     }));
     $('#s-m', el).onclick = () => methodSheet(() => Router.refresh());
     $('#s-hl', el).onclick = () => pickSheet('خطوط العرض العليا', 'لتقدير الفجر والعشاء حين لا تغيب الشفق (شمال أوروبا مثلًا)', [
       { v: 'angle', t: 'حسب الزاوية', s: 'الأدق غالبًا' }, { v: 'middle', t: 'منتصف الليل', s: '' }, { v: 'seventh', t: 'سُبع الليل', s: '' }], Settings.highLat, v => { setSetting('highLat', v); Router.refresh(); });
     $('#s-adj', el).onclick = () => adjustSheet(() => Router.refresh());
     $('#s-hj', el).onclick = () => hijriAdjSheet(() => Router.refresh());
-    const r = $('#s-qfs', el); const upd = () => r.style.setProperty('--p', ((r.value - 20) / 22 * 100) + '%'); upd();
-    r.oninput = () => { upd(); setSetting('qfs', +r.value); $('#s-qv', el).textContent = N(r.value); $('#s-qpv', el).style.fontSize = r.value + 'px'; };
+    $('#s-rd', el).onclick = () => loadQuran().then(() => readerSettings()).catch(() => readerSettings());
     $('#s-vib', el).onclick = e => { setSetting('vibrate', !Settings.vibrate); e.currentTarget.classList.toggle('on', Settings.vibrate); if (Settings.vibrate) vibrate(30); };
     $('#s-onb', el).onclick = () => Onboarding.show();
     $$('[data-nt]', el).forEach(b => b.onclick = () => { const k = b.dataset.nt, nt = Object.assign({}, Settings.notif); nt[k] = !nt[k]; setSetting('notif', nt); b.classList.toggle('on', nt[k]);
       if (nt[k]) Native.call('ensureNotifPermission'); });
     const pre = $('#s-pre', el); if (pre) pre.onclick = () => pickSheet('تذكير قبل الصلاة', '', [0, 5, 10, 15, 20, 30].map(v => ({ v, t: v ? 'قبل ' + pM(v) : 'بدون تذكير' })), Settings.preNotif, v => { setSetting('preNotif', v); Router.refresh(); });
     const pm = $('#s-perm', el); if (pm) pm.onclick = () => notifHealthSheet();
-    $('#s-th', el).onclick = () => pickSheet('السمة', 'اختر ما يريح عينيك', [
-      { v: 'dark', t: THEME_NAMES.dark, s: 'ألوان داكنة ناعمة للاستعمال الطويل' }, { v: 'light', t: THEME_NAMES.light, s: 'واضح في النهار' },
-      { v: 'sepia', t: THEME_NAMES.sepia, s: 'ألوان ورقية دافئة تقلّل إجهاد العين' }, { v: 'prayer', t: THEME_NAMES.prayer, s: 'داكن من المغرب إلى الشروق وفاتح نهارًا' },
-      { v: 'auto', t: THEME_NAMES.auto, s: 'يتبع إعداد الهاتف' }], Settings.theme, v => { setSetting('theme', v); applyTheme(); Router.refresh(); });
-    $('#s-acc', el).onclick = e => { const b = e.target.closest('[data-acc]'); if (!b) return; setSetting('accent', b.dataset.acc); applyTheme(); Router.refresh(); };
+    $('#s-th', el).onclick = () => themeSheet();
+    $('#s-acc', el).onclick = e => { if (e.target.closest('#s-acc-c')) { accentSheet(); return; } const b = e.target.closest('[data-acc]'); if (!b) return; setSetting('accent', b.dataset.acc); setSetting('accentAuto', false); applyTheme(); Router.refresh(); };
     const snd = $('#s-snd', el); if (snd) snd.onclick = () => soundSheet();
     $$('[data-rm]', el).forEach(b => b.onclick = () => { const k = b.dataset.rm, rm = Object.assign({}, Settings.remind); rm[k] = !rm[k]; setSetting('remind', rm); b.classList.toggle('on', rm[k]);
       if (rm[k]) Native.call('ensureNotifPermission'); Notif.schedule(); });
@@ -770,7 +807,7 @@ SCREENS.settings = {
     });
     $$('[data-pin]', el).forEach(b => b.onclick = () => { const ok = Native.has('canPinWidget') && Native.call('canPinWidget') && Native.call('pinWidget', b.dataset.pin);
       if (!ok) toast('اضغط مطوّلًا على الشاشة الرئيسية ← الأدوات (Widgets) ← وسن', 4200); });
-    const rec = $('#s-rec', el); if (rec) rec.onclick = () => pickSheet('القارئ', 'يُستخدم في التلاوة الصوتية', RECITERS.map(([v, t]) => ({ v, t })), Settings.reciter, v => { setSetting('reciter', v); Router.refresh(); });
+    const rec = $('#s-rec', el); if (rec) rec.onclick = () => reciterSheet(() => Router.refresh());
   },
 };
 const REMINDERS = [
@@ -829,6 +866,12 @@ window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.tex
 /* ═══════════════ عن التطبيق ═══════════════ */
 const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '4.4';
 const WHATS_NEW = [
+  ['4.5', [['palette', 'سمات جديدة ناعمة ومختلفة', 'وردي ناعم، ليل وردي، لافندر، خوخي، ذهبي وردي، بنفسجي حالم وغيرها — مع لون من اختيارك'],
+    ['headphones', 'أكثر من ٢٣٠ قارئًا', 'سورة كاملة مع متابعة الآيات، وتنزيل السور للاستماع دون إنترنت'],
+    ['leaf', 'أصوات الطبيعة أثناء القراءة', 'أمواج ومطر وعصافير ونسيم وجدول وليل هادئ، تهدأ وحدها عند التلاوة'],
+    ['marker', 'تظليل الآيات وتدوين التدبّر', 'خمسة ألوان للتظليل، وملاحظة لكل آية تجدها في «المحفوظات»'],
+    ['text', 'إعدادات أوسع للمصحف', 'خطّان، تسع خلفيات، تباعد ومحاذاة، تخفيف السطوع، قراءة كاملة، تمرير تلقائي، ومواضع السجود'],
+    ['clock', 'مؤقّت النوم وحجم خط التطبيق', 'تتوقّف التلاوة بهدوء بعد المدة التي تختارها']]],
   ['4.4', [['minaret', 'الأذان كاملًا بصوت مؤذّن حقيقي', 'صوتان للاختيار، وزر «إيقاف» في الإشعار وداخل التطبيق'], ['hands', 'دعاء ما بعد الأذان', 'يظهر في المواقيت بعد دخول الوقت مع زر «صلّيت»'],
     ['mosque', 'تذكير صلاة الجمعة', 'قبل وقت الجمعة بالمدة التي تختارها'], ['shield', 'تجربة الأذان', 'تأكّد بنفسك أن الأذان يصلك في وقته']]],
   ['4.3', [['moonstar', 'رمضان يومًا بيوم', 'الإمساك والإفطار وعدّ تنازلي وتسجيل الصيام'], ['bell', 'أذان أوثق', 'جدولة ثلاثين يومًا تتجدّد وحدها حتى لو لم تفتح التطبيق'],
@@ -843,11 +886,13 @@ SCREENS.about = {
       WHATS_NEW.map(([v, xs], vi) => sec('ما الجديد في ' + N(v)) + '<div class="list mx' + (vi ? ' wn-old' : '') + '">' + xs.map(([ic, t, s]) => '<div class="li"><div class="ic' + (vi ? '' : ' g') + '">' + icon(ic) + '</div><div class="grow"><div class="t">' + t + '</div><div class="s">' + s + '</div></div></div>').join('') + '</div>').join('') +
       sec('المصادر والتراخيص') + '<div class="list mx">' +
       '<div class="li"><div class="ic">' + icon('book') + '</div><div class="grow"><div class="t">نص القرآن الكريم</div><div class="s">الرسم العثماني برواية حفص عن عاصم، بخط مجمّع الملك فهد (KFGQPC Uthmanic Hafs)</div></div></div>' +
-      '<div class="li"><div class="ic">' + icon('text') + '</div><div class="grow"><div class="t">الخطوط</div><div class="s">IBM Plex Sans Arabic وReem Kufi وAmiri — رخصة SIL Open Font License 1.1</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('text') + '</div><div class="grow"><div class="t">الخطوط</div><div class="s">IBM Plex Sans Arabic وReem Kufi وAmiri وAmiri Quran — رخصة SIL Open Font License 1.1</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">بيانات المدن</div><div class="s">إحداثيات من GeoNames.org برخصة CC BY 4.0</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('hands') + '</div><div class="grow"><div class="t">الأذكار والأدعية</div><div class="s">من كتاب «حصن المسلم» وكتب السنة مع ذكر المصدر لكل ذكر</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('clock') + '</div><div class="grow"><div class="t">المواقيت والتقويم</div><div class="s">حساب فلكي محلي، والتاريخ الهجري وفق تقويم أم القرى مع إمكانية التعديل</div></div></div>' +
-      '<div class="li"><div class="ic">' + icon('minaret') + '</div><div class="grow"><div class="t">تسجيلات الأذان</div><div class="s">«أذان هادئ»: Adam-synagda — ملك عام CC0 · «من المسجد النبوي»: ejaz215 (Freesound) — CC BY 3.0 · عبر ويكيميديا كومنز</div></div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('minaret') + '</div><div class="grow"><div class="t">تسجيلات الأذان</div><div class="s">«أذان هادئ»: Adam-synagda — ملك عام CC0 · «من المسجد النبوي»: ejaz215 (Freesound) — CC BY 3.0 · عبر ويكيميديا كومنز</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">التلاوات</div><div class="s">«آية بآية» من EveryAyah.com، والسور الكاملة وتوقيتات الآيات من mp3quran.net</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('leaf') + '</div><div class="grow"><div class="t">أصوات الطبيعة</div><div class="s">الأمواج: Jarrod Stanley (CC0) · المطر والنسيم: Gravity Sound (CC BY 4.0) · العصافير: Department of Conservation، نيوزيلندا (CC BY 4.0) · الجدول: jackthemurray (Freesound، CC0) · الليل: Glaneur de sons (Freesound، CC BY 3.0)</div></div></div></div>' +
       '<div class="foot-note">صُنع بحبّ لخدمة المسلمين · اللهم اجعله خالصًا لوجهك الكريم</div>';
   },
 };

@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   وسن 4.2 · القرآن الكريم: الفهرس · البحث · القارئ · العلامات · الختمة
+   وسن 4.5 · القرآن الكريم: الفهرس · البحث · القارئ · العلامات · التظليل والتدبّر · الختمة
    ════════════════════════════════════════════════════════════════ */
 'use strict';
 
@@ -33,14 +33,38 @@ function loadQuran() {
 /* عرض المصحف بخط مجمّع الملك فهد (KFGQPC Hafs): النص المخزّن بترميز Tanzil، والخط يتبع ترميز المجمّع؛
    السكون ← رأس الخاء (U+06E1)، والصفر المستدير ← U+0652 (يرسمه الخط دائرة صغيرة)، وتُحذف السين الصغيرة السفلية
    (موضع واحد 52:37) لأن الخط لا يرسمها. النسخ والمشاركة تبقى بالنص القياسي الأصلي. */
-const qd = t => String(t).replace(/\u0652/g, '\u06E1').replace(/\u06DF/g, '\u0652').replace(/\u06E3/g, '');
+const qdH = t => String(t).replace(/\u0652/g, '\u06E1').replace(/\u06DF/g, '\u0652').replace(/\u06E3/g, '');
+/* وسن 4.5 · خط «أميري قرآن» يقرأ ترميز Tanzil مباشرة */
+const qd = t => Settings.qfont === 'amiri' ? String(t).replace(/\u0652/g, '\u06E1') : qdH(t);
+/** رقم الآية: خط المدينة يرسم الزخرفة حول الأرقام تلقائيًا، وأميري يحتاج علامة نهاية الآية U+06DD قبلها */
+const ayNum = n => Settings.qfont === 'amiri' ? '\u06DD' + arDigits(n) : arDigits(n);
 const surahOf = i => Q.S[Q.s[i] - 1];
 const gIndex = (s, a) => Q.S[s - 1].start + (a - 1);
-const surahMeta = s => (s.mk ? 'مكية' : 'مدنية') + ' · ' + N(s.n) + ' آية';
+const surahMeta = s => (s.mk ? 'مكية' : 'مدنية') + ' · ' + plural(s.n, 'آية', 'آيتان', 'آيات', 'آية');
 const hizbLbl = i => { const q = Q.h[i]; const hz = Math.ceil(q / 4), r = (q - 1) % 4; return 'الحزب ' + N(hz) + (r ? ' · ' + ['', 'ربع', 'نصف', 'ثلاثة أرباع'][r] : ''); };
 const ayahRef = i => 'سورة ' + surahOf(i).name + ' · الآية ' + N(Q.a[i]);
 const BASMALA_U = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
 function quranText(s, a, b) { const out = []; for (let k = a; k <= b; k++) { const i = gIndex(s, k); out.push(Q.t[i] + ' ' + arDigits(k)); } return out; }
+
+/* ───────── وسن 4.5 · مواضع السجود · التظليل الملوّن · ملاحظات التدبّر ───────── */
+const SAJDA = new Set([1159, 1721, 1950, 2137, 2307, 2612, 2671, 2914, 3184, 3517, 3993, 4255, 4845, 5904, 6124]);
+const HL_COLORS = [['y', 'أصفر', '#F2C94C'], ['g', 'أخضر', '#5FC48D'], ['b', 'أزرق', '#64A6E8'], ['p', 'وردي', '#F08DB5'], ['v', 'بنفسجي', '#AE93E6']];
+const Marks = {
+  hl: Store.get('qhl', {}), nt: Store.get('qnt', {}),
+  setHl(i, c) { if (c) this.hl[i] = c; else delete this.hl[i]; Store.set('qhl', this.hl); },
+  setNote(i, t) { t = String(t || '').trim(); if (t) this.nt[i] = { t, ts: Date.now() }; else delete this.nt[i]; Store.set('qnt', this.nt); },
+  hlList() { return Object.keys(this.hl).map(Number).filter(i => i >= 0 && i < 6236).sort((a, b) => a - b); },
+  ntList() { return Object.keys(this.nt).map(Number).filter(i => i >= 0 && i < 6236).sort((a, b) => this.nt[b].ts - this.nt[a].ts); },
+};
+/** إعادة رسم آية واحدة في القارئ بعد تغيير تظليلها أو ملاحظتها (دون تحريك الصفحة) */
+function refreshAyah(i) {
+  const sp = $('.ay[data-i="' + i + '"]'); if (!sp) return;
+  HL_COLORS.forEach(([c]) => sp.classList.remove('hc-' + c)); if (Marks.hl[i]) sp.classList.add('hc-' + Marks.hl[i]);
+  let n = sp.nextElementSibling; while (n && !n.classList.contains('an')) n = n.nextElementSibling;
+  const has = n && n.nextElementSibling && n.nextElementSibling.classList.contains('ntm');
+  if (Marks.nt[i] && !has && n) n.insertAdjacentHTML('afterend', '<span class="ntm" data-nt="' + i + '" role="button" aria-label="ملاحظة تدبّر"></span>');
+  if (!Marks.nt[i] && has) n.nextElementSibling.remove();
+}
 
 /* ───────── العلامات · آخر قراءة · الختمة ───────── */
 const Bookmarks = {
@@ -116,12 +140,21 @@ function drawQBody() {
     }).join('') + '</div>';
     return;
   }
-  const bm = Bookmarks.list;
-  box.innerHTML = bm.length ? '<div class="list mx">' + bm.map(b => {
-    const s = surahOf(b.i); const snip = qd(Q.t[b.i]).split(' ').slice(0, 9).join(' ');
-    return '<button class="li" data-go="reader" data-a=\'{"s":' + s.id + ',"i":' + b.i + '}\'><div class="ic">' + icon('bookmarkf') + '</div><div class="grow"><div class="t">سورة ' + esc(s.name) + ' · الآية ' + N(Q.a[b.i]) + '</div>' +
-      '<div class="s" style="font-family:var(--font-q);font-size:15px">' + esc(snip) + '…</div></div><div class="end">' + icon('chev') + '</div></button>';
-  }).join('') + '</div>' : '<div class="empty">' + icon('bookmark') + 'لا توجد آيات محفوظة بعد.<br>اضغط على أي آية أثناء القراءة لحفظها.</div>';
+  const bm = Bookmarks.list, nts = Marks.ntList(), hls = Marks.hlList();
+  if (!bm.length && !nts.length && !hls.length) { box.innerHTML = '<div class="empty">' + icon('bookmark') + 'لا توجد آيات محفوظة بعد.<br>المس أي آية أثناء القراءة لحفظها أو تظليلها أو كتابة تدبّرك.</div>'; return; }
+  const link = i => 'data-go="reader" data-a=\'{"s":' + Q.s[i] + ',"i":' + i + '}\'';
+  const snip = i => esc(qd(Q.t[i]).split(' ').slice(0, 9).join(' ')) + '…';
+  let h = '';
+  if (bm.length) h += sec('العلامات · ' + N(bm.length)) + '<div class="list mx">' + bm.map(b =>
+    '<button class="li" ' + link(b.i) + '><div class="ic">' + icon('bookmarkf') + '</div><div class="grow"><div class="t">' + ayahRef(b.i) + '</div>' +
+    '<div class="s" style="font-family:var(--font-q);font-size:15px">' + snip(b.i) + '</div></div><div class="end">' + icon('chev') + '</div></button>').join('') + '</div>';
+  if (nts.length) h += sec('تدبّراتي · ' + N(nts.length)) + '<div class="list mx">' + nts.map(i =>
+    '<button class="li" ' + link(i) + '><div class="ic">' + icon('edit') + '</div><div class="grow"><div class="t">' + ayahRef(i) + '</div>' +
+    '<div class="s nt-snip">' + esc(Marks.nt[i].t) + '</div></div><div class="end">' + icon('chev') + '</div></button>').join('') + '</div>';
+  if (hls.length) h += sec('الآيات المظلّلة · ' + N(hls.length)) + '<div class="list mx">' + hls.map(i => { const c = HL_COLORS.find(z => z[0] === Marks.hl[i]) || HL_COLORS[0];
+    return '<button class="li" ' + link(i) + '><div class="ic hl-ic" style="--c:' + c[2] + '">' + icon('marker') + '</div><div class="grow"><div class="t">' + ayahRef(i) + '</div>' +
+      '<div class="s" style="font-family:var(--font-q);font-size:15px">' + snip(i) + '</div></div><div class="end">' + icon('chev') + '</div></button>'; }).join('') + '</div>';
+  box.innerHTML = h;
 }
 
 /* ───────── البحث ───────── */
@@ -169,14 +202,21 @@ function bannerHTML(s) {
   return '<div class="sbanner">' + BANNER_SVG + '<div class="nm">سورة ' + esc(s.name) + '</div><div class="mt">' + (s.mk ? 'مكية' : 'مدنية') + ' · آياتها ' + arDigits(s.n) + '</div></div>';
 }
 function ayahSpan(i) {
-  return (Q.qStart.has(i) ? '<span class="an">۞</span> ' : '') + '<span class="ay" data-i="' + i + '">' + esc(qd(Q.t[i])) + '</span> <span class="an">' + arDigits(Q.a[i]) + '</span> ';
+  let t = esc(qd(Q.t[i])); const sp = t.indexOf(' ');
+  t = sp > 0 ? '<span class="fw">' + t.slice(0, sp) + '</span>' + t.slice(sp) : '<span class="fw">' + t + '</span>';
+  const sj = SAJDA.has(i); if (sj) t = t.replace('\u06E9', '<span class="sjm">\u06E9</span>');
+  const c = Marks.hl[i];
+  return (Q.qStart.has(i) ? '<span class="an">۞</span> ' : '') + '<span class="ay' + (c ? ' hc-' + c : '') + '" data-i="' + i + '">' + t + '</span> <span class="an">' + ayNum(Q.a[i]) + '</span>' +
+    (Marks.nt[i] ? '<span class="ntm" data-nt="' + i + '" role="button" aria-label="ملاحظة تدبّر"></span>' : '') + (sj ? '<span class="sjd">سجدة</span>' : '') + ' ';
 }
 SCREENS.reader = {
   parent: 'quran', nav: false, keepOn: true,
   render() {
-    return '<div class="reader' + (Settings.hifz ? ' hifz' : '') + '" id="reader" data-rt="' + Settings.readTheme + '" style="--qfs:' + Settings.qfs + 'px">' +
+    const cls = 'reader' + (Settings.hifz ? ' hifz' : '') + (Settings.hifzMode === 'first' ? ' hz-first' : '') + (Settings.readFull ? ' full' : '');
+    return '<div class="' + cls + '" id="reader" data-rt="' + Settings.readTheme + '" data-qa="' + (Settings.qalign || 'justify') + '" style="--qfs:' + Settings.qfs + 'px;--qlh:' + (+Settings.qlh || 2.3) + '">' +
       '<div class="rbar"><button class="ibtn" data-back aria-label="رجوع">' + icon('back') + '</button>' +
       '<div class="ttl"><div class="t1" id="r-t1">…</div><div class="t2 num" id="r-t2"></div></div>' +
+      '<button class="ibtn' + (window.Ambient && Ambient.on ? ' on' : '') + '" id="r-amb" aria-label="أصوات الطبيعة">' + icon('leaf') + '</button>' +
       '<button class="ibtn" id="r-play" aria-label="استماع">' + icon('headphones') + '</button>' +
       '<button class="ibtn" id="r-set" aria-label="إعدادات القراءة">' + icon('text') + '</button></div>' +
       '<div class="rbody" id="rb"><div class="empty">جارٍ تحميل المصحف…</div></div><div id="r-nav"></div></div>';
@@ -192,8 +232,20 @@ SCREENS.reader = {
     this.applyBg();
     if (Q.ready) start(); else loadQuran().then(start).catch(() => { $('#rb').innerHTML = '<div class="empty">تعذّر تحميل المصحف</div>'; });
     $('#r-set', el).onclick = () => readerSettings();
+    $('#r-amb', el).onclick = () => ambientSheet();
     $('#r-play', el).onclick = () => { if (!Q.ready) return; if (Player.on) { playerSheet(); return; } Player.start(this.topAyah()); };
-    $('#rb', el).addEventListener('click', e => { const s = e.target.closest('.ay'); if (!s) return;
+    this._amb = () => { const b = $('#r-amb'); if (b) b.classList.toggle('on', Ambient.on); };
+    Bus.on('ambient', this._amb);
+    clearTimeout(Ambient._lv);
+    // طبقة تخفيف السطوع: تُلحق بجسم الصفحة كي تغطي الشاشة كلها
+    const dim = this.dim = document.createElement('div'); dim.className = 'rdim'; dim.id = 'rdim'; dim.style.opacity = +Settings.readDim || 0;
+    document.body.appendChild(dim);
+    this.fullMode(!!Settings.readFull, true);
+    $('#rb', el).addEventListener('click', e => {
+      const nt = e.target.closest('[data-nt]'); if (nt) { noteSheet(+nt.dataset.nt); return; }
+      if (AutoScroll.on) AutoScroll.nudge();
+      const s = e.target.closest('.ay');
+      if (!s) { if (Settings.readFull) this.showBar(!this.barOn); return; }
       // وضع الحفظ: اللمسة الأولى تُظهر الآية، والثانية تفتح خياراتها
       if (Settings.hifz && !s.classList.contains('rv')) { s.classList.add('rv'); vibrate(6); return; }
       $$('.ay.sel').forEach(x => x.classList.remove('sel')); s.classList.add('sel'); ayahSheet(+s.dataset.i, s); });
@@ -206,7 +258,10 @@ SCREENS.reader = {
       if (v === 'all') $$('.ay', el).forEach(x => x.classList.add('rv'));
       else if (v === 'hide') $$('.ay.rv', el).forEach(x => x.classList.remove('rv'));
       else setHifz(false); });
-    this.onScroll = throttle(() => this.track(), 350);
+    this.onScroll = throttle(() => {
+      this.track();
+      if (Settings.readFull) { const y = window.scrollY, d = y - (this.lastY || 0); if (y < 60) this.showBar(true); else if (d > 14) this.showBar(false); else if (d < -24) this.showBar(true); this.lastY = y; }
+    }, 200);
     window.addEventListener('scroll', this.onScroll, { passive: true });
     let sx = 0, sy = 0;
     const rb = $('#rb', el);
@@ -217,7 +272,24 @@ SCREENS.reader = {
       if (Math.abs(dx) > 70 && Math.abs(dy) < 50) this.page(dx > 0 ? 1 : -1);
     }, { passive: true });
   },
-  leave() { if (this.hb) { this.hb.remove(); this.hb = null; } window.removeEventListener('scroll', this.onScroll); document.body.style.background = ''; ReadTrack.detach(); $$('.ay.playing').forEach(x => x.classList.remove('playing')); },
+  leave() {
+    if (this.hb) { this.hb.remove(); this.hb = null; }
+    if (this.dim) { this.dim.remove(); this.dim = null; }
+    AutoScroll.stop(true);
+    window.removeEventListener('scroll', this.onScroll); document.body.style.background = ''; ReadTrack.detach(); $$('.ay.playing').forEach(x => x.classList.remove('playing'));
+    const h = Bus.h.ambient; if (h && this._amb) Bus.h.ambient = h.filter(f => f !== this._amb);
+    if (Settings.readFull) Native.call('setImmersive', false);
+    // أصوات الطبيعة ترافق المصحف فقط: تتلاشى عند مغادرته (لا عند إعادة الرسم)
+    clearTimeout(Ambient._lv); Ambient._lv = setTimeout(() => { if (!Router.cur || Router.cur.r !== 'reader') Ambient.stop(); }, 500);
+  },
+  /** وضع القراءة الكاملة: إخفاء أشرطة النظام، وشريط القارئ يختفي عند التمرير للأسفل ويظهر عند الصعود أو اللمس */
+  fullMode(on, init) {
+    const r = $('#reader'); if (r) r.classList.toggle('full', on);
+    if (on || !init) Native.call('setImmersive', on);
+    this.lastY = window.scrollY; this.showBar(true);
+    if (!init) toast(on ? 'وضع القراءة الكاملة · المس الصفحة لإظهار الشريط' : 'أُنهي وضع القراءة الكاملة');
+  },
+  showBar(on) { this.barOn = on; const r = $('#reader'); if (r) r.classList.toggle('bar-off', !on && !!Settings.readFull); },
   /** أول آية ظاهرة أعلى الشاشة (لبدء الاستماع من موضع القراءة) */
   topAyah() {
     if (RS.mode === 'page') { const a0 = Q.pStart[RS.p]; for (const sp of $$('.ay')) { const r = sp.getBoundingClientRect(); if (r.bottom > 90) return +sp.dataset.i; } return a0; }
@@ -225,12 +297,14 @@ SCREENS.reader = {
     return Q.S[RS.s - 1].start;
   },
   applyBg() { const r = $('#reader'); if (r) document.body.style.background = getComputedStyle(r).getPropertyValue('--rbg'); },
-  draw(focusI) {
+  /** إعادة رسم النص في موضعه (بعد تغيير الخط مثلًا) */
+  redraw() { if (!Q.ready || !$('#rb')) return; this.draw(this.topAyah(), true); },
+  draw(focusI, quiet) {
     const rb = $('#rb'); if (!rb) return;
     if (RS.mode === 'page') this.drawPage(rb); else this.drawSurah(rb);
     if (focusI != null) {
       const sp = $('.ay[data-i="' + focusI + '"]');
-      if (sp) { setTimeout(() => { window.scrollTo({ top: sp.getBoundingClientRect().top + window.scrollY - 120 }); sp.classList.add('hl'); }, 40); }
+      if (sp) { setTimeout(() => { window.scrollTo({ top: sp.getBoundingClientRect().top + window.scrollY - 120 }); if (!quiet) sp.classList.add('hl'); }, 40); }
     } else window.scrollTo(0, 0);
     setTimeout(() => this.track(), 120);
     ReadTrack.attach(rb);
@@ -280,17 +354,26 @@ SCREENS.reader = {
   },
 };
 function ayahSheet(i, span) {
-  const bm = Bookmarks.has(i);
-  const html = '<div class="sh-t">' + ayahRef(i) + '</div><div class="sh-s">الجزء ' + N(Q.j[i]) + ' · ' + hizbLbl(i) + ' · الصفحة ' + N(Q.p[i]) + '</div>' +
-    '<div style="font-family:var(--font-q);font-size:21px;line-height:2.1;text-align:center;padding:2px 22px 14px">' + esc(qd(Q.t[i])) + ' <span class="an gold">' + arDigits(Q.a[i]) + '</span></div>' +
+  const bm = Bookmarks.has(i), hc = Marks.hl[i], nt = Marks.nt[i];
+  const hlRow = '<div class="hl-row" id="hl-row"><span class="hl-l">' + icon('marker') + 'تظليل</span>' +
+    HL_COLORS.map(([c, n, col]) => '<button class="hl-c' + (hc === c ? ' on' : '') + '" data-hc="' + c + '" style="--c:' + col + '" aria-label="' + n + '"></button>').join('') +
+    '<button class="hl-c none' + (hc ? '' : ' on') + '" data-hc="" aria-label="بلا تظليل">' + icon('x') + '</button></div>';
+  const html = '<div class="sh-t">' + ayahRef(i) + '</div><div class="sh-s">الجزء ' + N(Q.j[i]) + ' · ' + hizbLbl(i) + ' · الصفحة ' + N(Q.p[i]) +
+    (SAJDA.has(i) ? ' · <b class="gold">موضع سجدة تلاوة ۩</b>' : '') + '</div>' +
+    '<div style="font-family:var(--font-q);font-size:21px;line-height:2.1;text-align:center;padding:2px 22px 14px">' + esc(qd(Q.t[i])) + ' <span class="an gold">' + ayNum(Q.a[i]) + '</span></div>' +
     '<div class="acts" style="flex-wrap:wrap;padding:0 16px 6px">' +
     '<button class="act" data-x="copy">' + icon('copy') + 'نسخ</button><button class="act" data-x="share">' + icon('share') + 'مشاركة</button>' +
     '<button class="act" data-x="bm">' + icon(bm ? 'bookmarkf' : 'bookmark') + (bm ? 'إزالة العلامة' : 'حفظ علامة') + '</button>' +
     '<button class="act" data-x="last">' + icon('pin') + 'موضع التوقف</button>' +
     '<button class="act" data-x="play">' + icon('headphones') + 'استماع من هنا</button><button class="act" data-x="tafsir">' + icon('tafsir') + 'التفسير</button>' +
-    '<button class="act" data-x="img">' + icon('image') + 'صورة</button></div>';
+    '<button class="act" data-x="img">' + icon('image') + 'صورة</button>' +
+    '<button class="act" data-x="note">' + icon('edit') + (nt ? 'ملاحظتي' : 'تدبّر') + '</button></div>' + hlRow +
+    (nt ? '<button class="nt-pv mx" data-x="note"><b>' + icon('edit') + 'تدبّري</b><span>' + esc(nt.t) + '</span></button>' : '');
   const txt = () => '﴿' + Q.t[i] + '﴾ [' + surahOf(i).name + ': ' + Q.a[i] + ']';
   Sheet.open(html, el => el.addEventListener('click', e => {
+    const hb = e.target.closest('[data-hc]');
+    if (hb) { const c = hb.dataset.hc; Marks.setHl(i, c); refreshAyah(i); $$('.hl-c', el).forEach(z => z.classList.toggle('on', z === hb)); vibrate(6);
+      toast(c ? 'ظُلّلت الآية باللون ' + HL_COLORS.find(z => z[0] === c)[1] : 'أُزيل التظليل'); return; }
     const b = e.target.closest('[data-x]'); if (!b) return; const x = b.dataset.x;
     if (x === 'copy') { copyText(txt()); Sheet.close(); }
     else if (x === 'share') { Sheet.close(() => shareText(txt() + '\n— عبر تطبيق وسن')); }
@@ -298,6 +381,7 @@ function ayahSheet(i, span) {
     else if (x === 'last') { LastRead.set(i, RS.mode); toast('تم حفظ موضع التوقف'); Sheet.close(); }
     else if (x === 'play') { Sheet.close(() => Player.start(i, { noBasm: Q.a[i] !== 1 })); }
     else if (x === 'tafsir') { Sheet.close(() => tafsirSheet(i)); }
+    else if (x === 'note') { Sheet.close(() => noteSheet(i)); }
     else if (x === 'img') { Sheet.close(() => ShareCard.share({ kind: 'ayah', title: 'سورة ' + surahOf(i).name, text: Q.t[i], ref: '[' + surahOf(i).name + ': ' + arDigits(Q.a[i]) + ']' }, txt())); }
   }));
   const clear = () => { if (span) span.classList.remove('sel'); };
@@ -312,29 +396,147 @@ function setHifz(on) {
   const hb = $('#hzbar'); if (hb) hb.classList.toggle('on', !!on);
   toast(on ? 'وضع الحفظ: المس الآية لإظهارها' : 'أُنهي وضع الحفظ');
 }
+/* ───────── وسن 4.5 · إعدادات القراءة الموسّعة ───────── */
+const READ_BGS = [['night', 'ليلي', '#08120F', '#EEF1EB'], ['black', 'حالك', '#000000', '#E8ECE9'], ['blue', 'كحلي', '#0D1628', '#E3E9F5'],
+  ['paper', 'ورقي', '#F8F1E1', '#2B2215'], ['sand', 'رملي', '#EAD8B3', '#2E2210'], ['white', 'أبيض', '#FFFFFF', '#141414'],
+  ['green', 'عشبي', '#E7F0E4', '#1D2A1D'], ['pink', 'وردي', '#FCEEF3', '#3B1F2B'], ['lavender', 'لافندر', '#F1ECFA', '#261F3D']];
+const READ_BG_NAMES = Object.fromEntries(READ_BGS.map(b => [b[0], b[1]]));
+const READ_DEF = { qfs: 27, qfont: 'hafs', qlh: 2.3, qalign: 'justify', readTheme: 'night', readDim: 0, readFull: false, hifzMode: 'all', asSpeed: 4 };
+const rsSeg = (title, key, opts) => '<b class="rs-h">' + title + '</b><div class="seg" data-k="' + key + '">' +
+  opts.map(([v, t]) => '<button data-v="' + v + '" class="' + (String(Settings[key]) === String(v) ? 'on' : '') + '">' + t + '</button>').join('') + '</div>';
+const rsSwitch = (id, t, s, on) => '<div class="row hz-row"><div class="grow"><b>' + t + '</b><div class="faint" style="font-size:12.5px;margin-top:2px;line-height:1.6">' + s + '</div></div>' +
+  '<button class="switch' + (on ? ' on' : '') + '" id="' + id + '" aria-label="' + t + '"></button></div>';
+function readerSummary() {
+  return (READ_BG_NAMES[Settings.readTheme] || 'ليلي') + ' · ' + (Settings.qfont === 'amiri' ? 'خط أميري' : 'خط مصحف المدينة') + ' · حجم ' + N(Settings.qfs);
+}
 function readerSettings() {
-  const html = '<div class="sh-t">إعدادات القراءة</div><div class="sh-s">تُحفظ تلقائيًا</div>' +
-    '<div class="mx"><div class="row" style="justify-content:space-between"><b>حجم الخط</b><span class="gold num" id="rs-v">' + N(Settings.qfs) + '</span></div>' +
+  const inReader = !!$('#reader');
+  const bgs = READ_BGS.map(([v, n, bg, tx]) => '<button class="rtb' + (Settings.readTheme === v ? ' on' : '') + '" data-bg="' + v + '"><span style="background:' + bg + ';color:' + tx + '">ب</span><small>' + n + '</small></button>').join('');
+  const html = '<div class="sh-t">إعدادات القراءة</div><div class="sh-s">تُحفظ تلقائيًا وتظهر فورًا</div><div class="mx rs">' +
+    '<div class="reader rs-pv" id="rs-pv" data-rt="' + Settings.readTheme + '" data-qa="' + (Settings.qalign || 'justify') + '" style="--qfs:' + Settings.qfs + 'px;--qlh:' + (+Settings.qlh || 2.3) + '">' +
+      '<div class="rtext">' + esc(qd(Q.ready ? Q.t[1] : BASMALA_U)) + ' <span class="an">' + ayNum(2) + '</span></div></div>' +
+    '<div class="row" style="justify-content:space-between;margin-top:12px"><b>حجم الخط</b><span class="gold num" id="rs-v">' + N(Settings.qfs) + '</span></div>' +
     '<input type="range" min="20" max="42" step="1" value="' + Settings.qfs + '" id="rs-fs">' +
-    '<div style="font-family:var(--font-q);font-size:' + Settings.qfs + 'px;text-align:center;line-height:2;margin:4px 0 12px" id="rs-pv">' + qd(BASMALA_U) + '</div>' +
-    '<b style="display:block;margin-bottom:8px">خلفية القراءة</b><div class="seg" id="rs-th"><button data-v="night">ليلي</button><button data-v="paper">ورقي</button><button data-v="white">أبيض</button></div>' +
-    '<b style="display:block;margin:14px 0 8px">طريقة العرض</b><div class="seg" id="rs-md"><button data-v="surah">سورة كاملة</button><button data-v="page">صفحات المصحف</button></div>' +
-    '<div class="row hz-row"><div class="grow"><b>وضع الحفظ</b><div class="faint" style="font-size:12.5px;margin-top:2px">تُخفى الآيات لتختبر حفظك، والمس الآية لإظهارها</div></div>' +
-    '<button class="switch' + (Settings.hifz ? ' on' : '') + '" id="rs-hz" aria-label="وضع الحفظ"></button></div></div>';
+    rsSeg('نوع الخط', 'qfont', [['hafs', 'مصحف المدينة'], ['amiri', 'أميري']]) +
+    rsSeg('تباعد الأسطر', 'qlh', [['2', 'متقارب'], ['2.3', 'عادي'], ['2.7', 'واسع']]) +
+    rsSeg('محاذاة النص', 'qalign', [['justify', 'مضبوط'], ['center', 'في الوسط'], ['right', 'إلى اليمين']]) +
+    '<b class="rs-h">خلفية القراءة</b><div class="rtb-grid" id="rs-bg">' + bgs + '</div>' +
+    '<div class="row" style="justify-content:space-between;margin-top:16px"><b>تخفيف السطوع</b><span class="gold num" id="rs-dv">' + N(Math.round((+Settings.readDim || 0) * 100)) + '٪</span></div>' +
+    '<input type="range" min="0" max="60" step="1" value="' + Math.round((+Settings.readDim || 0) * 100) + '" id="rs-dim">' +
+    rsSeg('طريقة العرض', 'readMode', [['surah', 'سورة كاملة'], ['page', 'صفحات المصحف']]) +
+    rsSwitch('rs-full', 'القراءة الكاملة', 'تختفي الأشرطة لتتفرّغ للقراءة، والمس الصفحة لإظهارها', !!Settings.readFull) +
+    (inReader ? '<button class="btn ghost block" id="rs-as" style="margin-top:14px">' + icon('scroll') + (AutoScroll.on ? 'إيقاف التمرير التلقائي' : 'التمرير التلقائي للصفحة') + '</button>' : '') +
+    rsSwitch('rs-hz', 'وضع الحفظ', 'تُخفى الآيات لتختبر حفظك، والمس الآية لإظهارها', !!Settings.hifz) +
+    '<div id="rs-hzm"' + (Settings.hifz ? '' : ' hidden') + '>' + rsSeg('ما يُخفى', 'hifzMode', [['all', 'الآية كاملة'], ['first', 'ما بعد أول كلمة']]) + '</div>' +
+    (inReader ? '<button class="li rs-amb" id="rs-amb"><div class="ic">' + icon('leaf') + '</div><div class="grow"><div class="t">أصوات الطبيعة</div><div class="s">' + (Ambient.on ? 'يعمل الآن: ' + Ambient.name() : 'أمواج، مطر، عصافير، نسيم…') + '</div></div><div class="end">' + icon('chev') + '</div></button>' : '') +
+    '<button class="btn ghost block" id="rs-reset" style="margin-top:14px">' + icon('reset') + 'استعادة الإعدادات الافتراضية</button></div>';
   Sheet.open(html, el => {
-    const fs = $('#rs-fs', el);
-    const upd = () => { fs.style.setProperty('--p', ((fs.value - 20) / 22 * 100) + '%'); };
-    upd();
-    fs.addEventListener('input', () => { const v = +fs.value; upd(); $('#rs-v', el).textContent = N(v); $('#rs-pv', el).style.fontSize = v + 'px';
-      const r = $('#reader'); if (r) r.style.setProperty('--qfs', v + 'px'); setSetting('qfs', v); });
-    const seg = (id, key, cb) => { const s = $(id, el); const mark = () => $$('button', s).forEach(b => b.classList.toggle('on', b.dataset.v === Settings[key])); mark();
-      s.onclick = e => { const b = e.target.closest('button'); if (!b) return; setSetting(key, b.dataset.v); mark(); cb(b.dataset.v); }; };
-    seg('#rs-th', 'readTheme', v => { const r = $('#reader'); if (r) { r.dataset.rt = v; SCREENS.reader.applyBg(); } });
-    $('#rs-hz', el).onclick = e => { setHifz(!Settings.hifz); e.currentTarget.classList.toggle('on', Settings.hifz); };
-    seg('#rs-md', 'readMode', v => {
-      const cur = LastRead.get(); const i = cur ? cur.i : Q.S[RS.s - 1].start;
-      RS.mode = v; RS.s = Q.s[i]; RS.p = Q.p[i]; Sheet.close(() => SCREENS.reader.draw(v === 'surah' ? i : null));
+    const R = () => $('#reader'), pv = $('#rs-pv', el);
+    const range = (inp, min, max) => { const f = () => inp.style.setProperty('--p', ((inp.value - min) / (max - min) * 100) + '%'); f(); return f; };
+    const fs = $('#rs-fs', el), fsf = range(fs, 20, 42);
+    fs.addEventListener('input', () => { const v = +fs.value; fsf(); $('#rs-v', el).textContent = N(v); pv.style.setProperty('--qfs', v + 'px');
+      const r = R(); if (r) r.style.setProperty('--qfs', v + 'px'); setSetting('qfs', v); });
+    const dm = $('#rs-dim', el), dmf = range(dm, 0, 60);
+    dm.addEventListener('input', () => { dmf(); const v = +dm.value / 100; $('#rs-dv', el).textContent = N(dm.value) + '٪'; const d = $('#rdim'); if (d) d.style.opacity = v; setSetting('readDim', v); });
+    el.addEventListener('click', e => {
+      const sb = e.target.closest('.seg[data-k] button');
+      if (sb) {
+        const k = sb.parentElement.dataset.k, raw = sb.dataset.v, v = k === 'qlh' ? +raw : raw;
+        $$('button', sb.parentElement).forEach(b => b.classList.toggle('on', b === sb));
+        if (k === 'readMode') {
+          const cur = LastRead.get(); const i = cur ? cur.i : Q.S[RS.s - 1].start; setSetting('readMode', v);
+          if (inReader) { RS.mode = v; RS.s = Q.s[i]; RS.p = Q.p[i]; Sheet.close(() => SCREENS.reader.draw(v === 'surah' ? i : null)); }
+          return;
+        }
+        setSetting(k, v); const r = R();
+        if (k === 'qfont') { document.documentElement.dataset.qf = v === 'amiri' ? 'amiri' : 'hafs'; $('.rtext', pv).innerHTML = esc(qd(Q.ready ? Q.t[1] : BASMALA_U)) + ' <span class="an">' + ayNum(2) + '</span>'; if (r) SCREENS.reader.redraw(); }
+        else if (k === 'qlh') { pv.style.setProperty('--qlh', v); if (r) r.style.setProperty('--qlh', v); }
+        else if (k === 'qalign') { pv.dataset.qa = v; if (r) r.dataset.qa = v; }
+        else if (k === 'hifzMode') { if (r) r.classList.toggle('hz-first', v === 'first'); }
+        return;
+      }
+      const bg = e.target.closest('[data-bg]');
+      if (bg) { const v = bg.dataset.bg; setSetting('readTheme', v); $$('.rtb', el).forEach(b => b.classList.toggle('on', b === bg)); pv.dataset.rt = v;
+        const r = R(); if (r) { r.dataset.rt = v; SCREENS.reader.applyBg(); } return; }
+      const t = e.target.closest('button'); if (!t) return;
+      if (t.id === 'rs-full') { const on = !Settings.readFull; setSetting('readFull', on); t.classList.toggle('on', on); if (inReader) SCREENS.reader.fullMode(on); }
+      else if (t.id === 'rs-hz') { setHifz(!Settings.hifz); t.classList.toggle('on', Settings.hifz); $('#rs-hzm', el).hidden = !Settings.hifz; }
+      else if (t.id === 'rs-as') Sheet.close(() => AutoScroll.on ? AutoScroll.stop() : AutoScroll.start());
+      else if (t.id === 'rs-amb') Sheet.close(() => ambientSheet());
+      else if (t.id === 'rs-reset') {
+        Object.keys(READ_DEF).forEach(k => { Settings[k] = READ_DEF[k]; }); Store.set('settings', Settings); Bus.emit('settings', 'reader');
+        document.documentElement.dataset.qf = 'hafs';
+        Sheet.close(() => { if (inReader) { Native.call('setImmersive', false); Router.refresh(); } toast('استُعيدت إعدادات القراءة الافتراضية'); });
+      }
     });
+  }, () => { if (!inReader && Router.cur && Router.cur.r === 'settings') setTimeout(() => Router.refresh(), 30); });
+}
+
+/* ───────── وسن 4.5 · التمرير التلقائي (يتوقّف عند اللمس ويكمل بعدها، ويقلب الصفحة في وضع الصفحات) ───────── */
+const AS_SPEEDS = [0, 7, 10, 14, 18, 23, 29, 36, 45, 56];   // بكسل في الثانية
+const AutoScroll = {
+  on: false, paused: false, raf: 0, last: 0, acc: 0, hold: 0, el: null, turning: false,
+  v() { return clamp(+Settings.asSpeed || 4, 1, 9); },
+  start() {
+    if (this.on || !$('#reader')) return;
+    this.on = true; this.paused = false; this.last = 0; this.acc = 0; this.hold = Date.now() + 600;
+    this.ui();
+    if (Settings.readFull) SCREENS.reader.showBar(false);
+    this._touch = () => { this.hold = Date.now() + 1800; };
+    window.addEventListener('touchstart', this._touch, { passive: true }); window.addEventListener('wheel', this._touch, { passive: true });
+    this.loop(); toast('التمرير التلقائي · المس الشاشة ليتوقّف لحظة');
+  },
+  loop() {
+    cancelAnimationFrame(this.raf);
+    this.raf = requestAnimationFrame(t => {
+      if (!this.on) return;
+      const dt = this.last ? Math.min(0.1, (t - this.last) / 1000) : 0; this.last = t;
+      if (!this.paused && !Sheet.el && Date.now() > this.hold && !this.turning) {
+        this.acc += dt * AS_SPEEDS[this.v()];
+        const d = Math.floor(this.acc); if (d >= 1) { this.acc -= d; window.scrollBy(0, d); }
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) this.atEnd();
+      }
+      this.loop();
+    });
+  },
+  atEnd() {
+    if (RS.mode === 'page' && RS.p < 604) { this.turning = true; setTimeout(() => { this.turning = false; this.hold = Date.now() + 1500; if (this.on) SCREENS.reader.page(1); }, 2200); return; }
+    this.stop(); toast(RS.mode === 'page' ? 'بلغتَ آخر صفحة في المصحف' : 'بلغتَ نهاية السورة');
+  },
+  nudge() { this.hold = Date.now() + 1500; },
+  toggle() { this.paused = !this.paused; this.hold = 0; this.ui(); },
+  speed(d) { setSetting('asSpeed', clamp(this.v() + d, 1, 9)); this.ui(); },
+  stop() {
+    if (!this.on) return; this.on = false; cancelAnimationFrame(this.raf); this.turning = false;
+    window.removeEventListener('touchstart', this._touch); window.removeEventListener('wheel', this._touch);
+    if (this.el) { this.el.remove(); this.el = null; }
+  },
+  ui() {
+    if (!this.el) {
+      const b = this.el = document.createElement('div'); b.className = 'asbar'; b.id = 'asbar'; document.body.appendChild(b);
+      b.addEventListener('click', e => { const x = e.target.closest('[data-as]'); if (!x) return; const k = x.dataset.as; vibrate(5);
+        if (k === 'x') this.stop(); else if (k === 'p') this.toggle(); else this.speed(k === '+' ? 1 : -1); });
+    }
+    this.el.innerHTML = '<button data-as="x" class="as-x" aria-label="إيقاف التمرير">' + icon('x') + '</button>' +
+      '<button data-as="-" aria-label="أبطأ">' + icon('minus') + '</button><span class="as-v"><b class="num">' + N(this.v()) + '</b><small>السرعة</small></span>' +
+      '<button data-as="+" aria-label="أسرع">' + icon('plus') + '</button>' +
+      '<button data-as="p" class="as-p" aria-label="' + (this.paused ? 'متابعة' : 'إيقاف مؤقت') + '">' + icon(this.paused ? 'play' : 'pause') + '</button>';
+  },
+};
+
+/* ───────── وسن 4.5 · ملاحظة التدبّر ───────── */
+function noteSheet(i) {
+  const cur = Marks.nt[i];
+  const html = '<div class="sh-t">تدبّر الآية</div><div class="sh-s">' + ayahRef(i) + '</div>' +
+    '<div class="tf-ay">' + esc(qd(Q.t[i])) + ' <span class="an gold">' + ayNum(Q.a[i]) + '</span></div>' +
+    '<div class="mx"><textarea id="nt-t" class="note-ta" rows="5" maxlength="3000" placeholder="اكتب ما وقع في قلبك من معنى أو عبرة أو دعاء…">' + esc(cur ? cur.t : '') + '</textarea>' +
+    '<div class="row" style="gap:10px;margin-top:12px"><button class="btn gold grow" id="nt-s">' + icon('check') + 'حفظ</button>' +
+    (cur ? '<button class="btn ghost" id="nt-d">' + icon('trash') + 'حذف</button>' : '') + '</div>' +
+    (cur ? '<div class="faint center" style="font-size:11.5px;margin-top:8px">آخر تعديل: ' + fmtG(new Date(cur.ts)) + '</div>' : '') + '</div>';
+  Sheet.open(html, el => {
+    const ta = $('#nt-t', el);
+    $('#nt-s', el).onclick = () => { const had = !!Marks.nt[i]; Marks.setNote(i, ta.value); refreshAyah(i); Sheet.close(); toast(ta.value.trim() ? 'حُفظت ملاحظة التدبّر' : had ? 'حُذفت الملاحظة' : 'لم تُكتب ملاحظة'); };
+    const d = $('#nt-d', el); if (d) d.onclick = () => { Marks.setNote(i, ''); refreshAyah(i); Sheet.close(); toast('حُذفت الملاحظة'); };
   });
 }
 

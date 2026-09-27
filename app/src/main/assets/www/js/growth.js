@@ -227,7 +227,7 @@ SCREENS.stats = {
       tile('beads', 'plum', N(t.tas || 0), 'تسبيحة', '') + tile('mosque', 'indigo', N(t.pr || 0), 'صلاة مسجّلة', '') +
       tile('check', 'slate', N(t.hab || 0), 'عادة أنجزتها', '') + tile('list', 'gold', N(t.todo || 0), 'مهمة أنجزتها', '') + '</div>' +
       sec('نقاط آخر سبعة أيام') + '<div class="hc">' + barsSVG(days.map(d => Growth.day(d).xp || 0), days.map(d => DN[d.getDay()]), 'var(--brand-3)') + '</div>' +
-      sec('أيام النشاط · ١٦ أسبوعًا') + '<div class="hc">' + heatSVG(16) + '<div class="row faint" style="justify-content:flex-end;gap:6px;font-size:11px;margin-top:8px">أقل<span class="hl h1"></span><span class="hl h2"></span><span class="hl h3"></span><span class="hl h4"></span>أكثر</div></div>' +
+      sec('أيام النشاط · ١٦ أسبوعًا') + '<div class="hc">' + heatSVG(16) + '<div class="row faint" style="justify-content:flex-end;gap:6px;font-size:11px;margin-top:8px">أقل<span class="hlg h1"></span><span class="hlg h2"></span><span class="hlg h3"></span><span class="hlg h4"></span>أكثر</div></div>' +
       (cats.length ? sec('جلسات الأذكار المكتملة') + '<div class="list mx">' + cats.map(([n, v]) => '<div class="li"><div class="grow"><div class="t">' + esc(n) + '</div></div><div class="end gold num" style="font-weight:700">' + N(v) + '</div></div>').join('') + '</div>' : '') +
       '<div class="foot-note">«سدّدوا وقاربوا، واعلموا أن لن يُدخِلَ أحدَكم عملُه الجنة، وأنّ أحبّ الأعمال إلى الله أدومها وإن قلّ» — رواه البخاري</div>';
   },

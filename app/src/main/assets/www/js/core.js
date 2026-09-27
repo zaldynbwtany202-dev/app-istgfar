@@ -42,6 +42,9 @@ const DEFAULTS = {
   remAzm: 30, remAze: 30, remSleep: '22:30',
   // وسن 4.4
   remJumua: 45,
+  // وسن 4.5
+  accentHex: '', uiScale: 1, readDim: 0, qlh: 2.3, qalign: 'justify', qfont: 'hafs', readFull: false, hifzMode: 'all',
+  ambVol: 0.55, ambRecite: 'pause', ambLast: '', libReciter: '', qSrc: 'ayah', sleepMin: 0, asSpeed: 4,
 };
 const Settings = Object.assign({}, DEFAULTS, Store.get('settings', {}));
 Settings.adjust = Object.assign({}, DEFAULTS.adjust, Settings.adjust || {});
@@ -316,7 +319,7 @@ const HUES = {
 };
 function hueVars(h) {
   const c = HUES[h] || HUES.emerald;
-  if (uiTheme() !== 'dark') return '--qbg:' + c[3] + '1A;--qfg:' + c[3] + ';--qsh:transparent';
+  if (themeBase() !== 'dark') return '--qbg:' + c[3] + '1A;--qfg:' + c[3] + ';--qsh:transparent';
   return '--qbg:linear-gradient(160deg,' + c[0] + ',' + c[1] + ');--qfg:' + c[2] + ';--qsh:' + c[1] + '66';
 }
 const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -324,23 +327,75 @@ const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color
 function isNightNow() {
   try { const now = new Date(), t = Times.forDay(now); return now < t.sunrise || now >= t.maghrib; } catch (e) { const h = new Date().getHours(); return h < 6 || h >= 19; }
 }
-/* قيمة data-theme في الصفحة (الدافئ يُبنى فوق الفاتح) */
-const domTheme = () => { const t = uiTheme(); return t === 'sepia' ? 'light' : t; };
+/* ═══ وسن 4.5 · السمات: كل سمة = أساس (داكن/فاتح) + نغمة ألوان + لون مقترح ═══ */
+const THEMES = {
+  dark: { n: 'داكن هادئ', base: 'dark', g: 'calm', bar: '#0C1513', sw: ['#0C1513', '#182724', '#0B5D4B', '#D4AF63'] },
+  light: { n: 'فاتح', base: 'light', g: 'calm', bar: '#F4F1EA', sw: ['#F4F1EA', '#FFFFFF', '#0B5D4B', '#B08738'] },
+  sepia: { n: 'دافئ مريح للعين', base: 'light', tone: 'sepia', g: 'calm', bar: '#EFE6D6', sw: ['#EFE6D6', '#F8F1E4', '#2F6B55', '#8A6424'] },
+  blush: { n: 'وردي ناعم', base: 'light', tone: 'blush', g: 'girls', acc: 'pink', bar: '#FBEFF3', sw: ['#FBEFF3', '#FFFFFF', '#C2587A', '#D4879B'] },
+  rosenight: { n: 'ليل وردي', base: 'dark', tone: 'rosenight', g: 'girls', acc: 'pink', bar: '#170D13', sw: ['#170D13', '#2A1822', '#C2587A', '#E8A3B7'] },
+  lavender: { n: 'لافندر', base: 'light', tone: 'lavender', g: 'girls', acc: 'lilac', bar: '#F3EFFA', sw: ['#F3EFFA', '#FFFFFF', '#7E63B8', '#B79BE0'] },
+  peach: { n: 'خوخي', base: 'light', tone: 'peach', g: 'girls', acc: 'coral', bar: '#FFF2EB', sw: ['#FFF2EB', '#FFFFFF', '#D0694E', '#EFA07E'] },
+  rosegold: { n: 'ذهبي وردي', base: 'light', tone: 'rosegold', g: 'girls', acc: 'rosegold', bar: '#F8EEEA', sw: ['#F8EEEA', '#FFFCFA', '#B06A74', '#D3A08E'] },
+  violet: { n: 'بنفسجي حالم', base: 'dark', tone: 'violet', g: 'girls', acc: 'lilac', bar: '#110E1F', sw: ['#110E1F', '#211B38', '#7E63B8', '#C9B3F2'] },
+  amoled: { n: 'ليل حالك', base: 'dark', tone: 'amoled', g: 'more', bar: '#000000', sw: ['#000000', '#111614', '#0B5D4B', '#D4AF63'] },
+  dawn: { n: 'فجر', base: 'dark', tone: 'dawn', g: 'more', acc: 'indigo', bar: '#0A1020', sw: ['#0A1020', '#16213B', '#3A4B8A', '#E4C98A'] },
+  ocean: { n: 'بحري', base: 'dark', tone: 'ocean', g: 'more', acc: 'teal', bar: '#06141A', sw: ['#06141A', '#102832', '#12707E', '#D4AF63'] },
+  olive: { n: 'زيتوني', base: 'dark', tone: 'olive', g: 'more', acc: 'olive', bar: '#0F120B', sw: ['#0F120B', '#1E2517', '#5E6B2E', '#DCC784'] },
+  coffee: { n: 'قهوة', base: 'dark', tone: 'coffee', g: 'more', acc: 'coffee', bar: '#14100C', sw: ['#14100C', '#261E18', '#7A5236', '#E2C18A'] },
+  sand: { n: 'رمال', base: 'light', tone: 'sand', g: 'more', acc: 'amber', bar: '#EFDFC3', sw: ['#EFDFC3', '#FAF0DE', '#8A6224', '#8A5F1C'] },
+  bright: { n: 'ناصع', base: 'light', tone: 'bright', g: 'more', bar: '#FFFFFF', sw: ['#FFFFFF', '#F3F5F4', '#0B5D4B', '#7A5A14'] },
+};
+/* المفتاح الفعلي للسمة الآن (auto/prayer يختاران بين الداكن والفاتح) */
 function uiTheme() {
   const t = Settings.theme;
   if (t === 'auto') return prefersDark() ? 'dark' : 'light';
   if (t === 'prayer') return isNightNow() ? 'dark' : 'light';
-  return t === 'light' || t === 'sepia' ? t : 'dark';
+  return THEMES[t] ? t : 'dark';
 }
-const THEME_BARS = { dark: '#0C1513', light: '#F4F1EA', sepia: '#EFE6D6' };
+const themeBase = () => THEMES[uiTheme()].base;
+const domTheme = () => uiTheme();
+const THEME_BARS = Object.fromEntries(Object.entries(THEMES).map(([k, v]) => [k, v.bar]));
+/* لون حرّ: درجات مشتقة من لون واحد */
+function hexToHsl(hex) {
+  let r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h = 0, s = 0; const l = (mx + mn) / 2;
+  if (mx !== mn) { const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+    h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; }
+  return [h, s * 100, l * 100];
+}
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100; const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))))).toString(16).padStart(2, '0');
+  return '#' + f(0) + f(8) + f(4);
+}
+function customAccentVars(hex, base) {
+  const [h, s, l] = hexToHsl(hex);
+  return { '--brand': hex, '--brand-2': hslToHex(h, s, Math.min(l + 6, 62)), '--brand-3': hslToHex(h, s, Math.min(l + 18, 72)),
+    '--brand-deep': hslToHex(h, s, Math.max(l - 13, 10)), '--brand-tx': base === 'dark' ? hslToHex(h, Math.min(s + 5, 80), 70) : hex,
+    '--soft-2': 'color-mix(in srgb,' + hex + ' 12%,transparent)' };
+}
+const CUSTOM_VARS = ['--brand', '--brand-2', '--brand-3', '--brand-deep', '--brand-tx', '--soft-2'];
 function applyTheme() {
-  const t = uiTheme(), de = document.documentElement;
-  de.setAttribute('data-theme', t === 'sepia' ? 'light' : t);
-  if (t === 'sepia') de.setAttribute('data-tone', 'sepia'); else de.removeAttribute('data-tone');
-  de.setAttribute('data-accent', Settings.accent || 'emerald');
+  const k = uiTheme(), T = THEMES[k], de = document.documentElement;
+  de.setAttribute('data-theme', T.base);
+  if (T.tone) de.setAttribute('data-tone', T.tone); else de.removeAttribute('data-tone');
+  de.setAttribute('data-tkey', k);
+  const acc = Settings.accent || 'emerald';
+  de.setAttribute('data-accent', acc);
+  CUSTOM_VARS.forEach(v => de.style.removeProperty(v));
+  if (acc === 'custom' && /^#[0-9a-f]{6}$/i.test(Settings.accentHex || '')) { const cv = customAccentVars(Settings.accentHex, T.base); Object.keys(cv).forEach(v => de.style.setProperty(v, cv[v])); }
   const warm = Settings.warm === 'on' || (Settings.warm === 'night' && isNightNow());
   de.toggleAttribute('data-warm', !!warm);
-  Native.call('setNavBar', THEME_BARS[t] || THEME_BARS.dark, t !== 'dark');
+  Native.call('setNavBar', T.bar, T.base !== 'dark');
+  de.dataset.qf = Settings.qfont === 'amiri' ? 'amiri' : 'hafs';
+  applyUiScale();
+}
+/* حجم خط التطبيق: في الهاتف عبر تكبير نص الواجهة، وفي المتصفح عبر zoom */
+function applyUiScale() {
+  const s = +Settings.uiScale || 1;
+  if (Native.has('setTextZoom')) Native.call('setTextZoom', Math.round(s * 100));
+  else document.body && (document.body.style.zoom = s === 1 ? '' : String(s));
 }
 /* فتح وجهة من إشعار أو اختصار أو أداة: {r, a} */
 window.openRoute = function (o) {

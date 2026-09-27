@@ -11,7 +11,7 @@ const Backup = {
     const data = {};
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i); if (!k || k.indexOf(Store.P) !== 0) continue;
-      const s = k.slice(Store.P.length); if (this.SKIP.includes(s)) continue;
+      const s = k.slice(Store.P.length); if (this.SKIP.includes(s) || s.indexOf('tm.') === 0 || s === 'dl') continue;   // مخابئ التوقيتات وحالة التنزيلات لا تُنقل
       data[s] = localStorage.getItem(k);
     }
     return { app: 'wasan', kind: 'backup', v: 1, ver: APP_VERSION || '', at: new Date().toISOString(), lvl: Growth.level(), data };

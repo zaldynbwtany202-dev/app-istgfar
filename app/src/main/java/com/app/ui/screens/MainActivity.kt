@@ -2,6 +2,7 @@ package com.noor.app.ui.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ContentResolver
@@ -43,6 +44,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.noor.app.engine.AdhanScheduler
 import com.noor.app.engine.AdhanService
@@ -67,7 +69,7 @@ import java.net.URL
 
 /*
  * ════════════════════════════════════════════════════════════════
- *  وسن 4.4 · الواجهة الموحّدة (WebView SPA) + الجسر الأصلي NoorBridge
+ *  وسن 4.5 · الواجهة الموحّدة (WebView SPA) + الجسر الأصلي NoorBridge
  *  ─ الواجهة كاملة في assets/www (HTML/CSS/JS) وتعمل دون إنترنت.
  *  ─ الجسر يوفّر: الموقع، البوصلة (شمال حقيقي)، تنبيهات الأذان،
  *    المشاركة/النسخ، ألوان أشرطة النظام، إبقاء الشاشة مضاءة…
@@ -80,7 +82,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         /** وجهة داخل الواجهة تُفتح عند التشغيل (من إشعار أو اختصار أو أداة) */
         const val EXTRA_ROUTE = "wasan_route"
         const val EXTRA_ARGS = "wasan_args"
-        private val HTTP_ALLOW = listOf("https://api.alquran.cloud/")
+        private val HTTP_ALLOW = listOf("https://api.alquran.cloud/", "https://www.mp3quran.net/api/", "https://mp3quran.net/api/")
     }
 
     private var pendingRoute: String? = null
@@ -468,6 +470,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     // ────────────────── الجسر ↔ JavaScript ──────────────────
 
+    // ────────────────── تنزيلات التلاوة (وسن 4.5) ──────────────────
+    private val dlPrefs by lazy { getSharedPreferences("wasan_dl", MODE_PRIVATE) }
+    private val REL_OK = Regex("^m\\d{1,6}/\\d{3}\\.mp3$")
+    private fun recitBase(): File? = getExternalFilesDir("recit")
+    private fun recitFile(rel: String): File? = if (REL_OK.matches(rel)) recitBase()?.let { File(it, rel) } else null
+    private fun dlForget(k: String) { dlPrefs.edit().remove(k).remove("$k.rel").apply() }
+    private fun dlFail(k: String) { dlForget(k); js("try{window.onDlDone&&onDlDone(${JSONObject.quote(k)},false)}catch(e){}") }
+
     inner class NoorBridge {
 
         private fun readAsset(path: String): String = try {
@@ -678,6 +688,114 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 }
             } catch (e: Exception) { Log.w("Wasan", "shareImage", e) }
         }
+
+        // ── وسن 4.5 · القراءة الكاملة: إخفاء شريطي الحالة والتنقّل (يظهران مؤقتًا بالسحب من الحافة) ──
+        @JavascriptInterface fun setImmersive(on: Boolean) {
+            runOnUiThread {
+                try {
+                    val c = WindowInsetsControllerCompat(window, window.decorView)
+                    if (on) {
+                        c.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                        c.hide(WindowInsetsCompat.Type.systemBars())
+                    } else c.show(WindowInsetsCompat.Type.systemBars())
+                } catch (e: Exception) { Log.w("Wasan", "immersive", e) }
+            }
+        }
+
+        // ── وسن 4.5 · حجم خط الواجهة ──
+        @JavascriptInterface fun setTextZoom(p: Int) { runOnUiThread { try { web.settings.textZoom = p.coerceIn(70, 160) } catch (_: Exception) { } } }
+
+        // ── وسن 4.5 · تنزيل التلاوات (مدير التنزيلات ← مجلد التطبيق الخاص، بلا أذونات) ──
+        @JavascriptInterface fun dlStart(k: String, url: String, rel: String, title: String) {
+            try {
+                if (!url.startsWith("https://") || !url.contains("mp3quran.net/")) { dlFail(k); return }
+                val f = recitFile(rel) ?: run { dlFail(k); return }
+                f.parentFile?.mkdirs()
+                if (f.exists()) f.delete()
+                val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                val old = dlPrefs.getLong(k, -1L)
+                if (old >= 0) try { dm.remove(old) } catch (_: Exception) { }
+                val req = DownloadManager.Request(Uri.parse(url))
+                    .setTitle(title)
+                    .setDescription("وسن · تنزيل التلاوة للاستماع دون إنترنت")
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                    .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
+                    .setAllowedOverMetered(true)
+                    .setAllowedOverRoaming(true)
+                req.addRequestHeader("User-Agent", "Wasan/4.5 (Android)")
+                val id = dm.enqueue(req)
+                dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
+            } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }
+        }
+
+        /** حالة التنزيلات: {k:{s:'run'|'done'|'fail'|'none', p:0..1, z:bytes}} */
+        @JavascriptInterface fun dlStatus(json: String): String {
+            val out = JSONObject()
+            try {
+                val keys = JSONArray(json)
+                val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                for (i in 0 until keys.length()) {
+                    val k = keys.optString(i)
+                    val id = dlPrefs.getLong(k, -1L)
+                    val rel = dlPrefs.getString("$k.rel", null)
+                    val o = JSONObject()
+                    if (id < 0) {
+                        val f = rel?.let { recitFile(it) }
+                        if (f != null && f.exists() && f.length() > 1024) o.put("s", "done").put("z", f.length()) else o.put("s", "none")
+                        out.put(k, o); continue
+                    }
+                    val c = dm.query(DownloadManager.Query().setFilterById(id))
+                    if (c == null) { o.put("s", "run").put("p", 0); out.put(k, o); continue }
+                    c.use {
+                        if (!it.moveToFirst()) { o.put("s", "none"); dlForget(k) }
+                        else {
+                            val st = it.getInt(it.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                            val got = it.getLong(it.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                            val tot = it.getLong(it.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                            when (st) {
+                                DownloadManager.STATUS_SUCCESSFUL -> {
+                                    // إن غيّر النظام اسم الملف (مثل 001-1.mp3) نعيده إلى الاسم المتوقَّع
+                                    val want = rel?.let { r -> recitFile(r) }
+                                    try {
+                                        val lp = it.getString(it.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))?.let { u -> Uri.parse(u).path }
+                                        if (want != null && lp != null && lp != want.absolutePath) { val lf = File(lp); if (lf.exists()) { want.delete(); lf.renameTo(want) } }
+                                    } catch (_: Exception) { }
+                                    if (want != null && want.exists() && want.length() > 1024) o.put("s", "done").put("z", want.length())
+                                    else o.put("s", "fail")
+                                    dlForget(k)
+                                }
+                                DownloadManager.STATUS_FAILED -> { o.put("s", "fail"); try { dm.remove(id) } catch (_: Exception) { }; dlForget(k) }
+                                else -> o.put("s", "run").put("p", if (tot > 0) (got.toDouble() / tot).coerceIn(0.0, 1.0) else 0.0)
+                            }
+                        }
+                    }
+                    out.put(k, o)
+                }
+            } catch (e: Exception) { Log.w("Wasan", "dlStatus", e) }
+            return out.toString()
+        }
+
+        @JavascriptInterface fun dlCancel(k: String, rel: String) {
+            try {
+                val id = dlPrefs.getLong(k, -1L)
+                if (id >= 0) (getSystemService(DOWNLOAD_SERVICE) as DownloadManager).remove(id)
+            } catch (_: Exception) { }
+            dlForget(k)
+            recitFile(rel)?.let { if (it.exists()) it.delete() }
+        }
+
+        @JavascriptInterface fun dlDelete(rel: String) {
+            recitFile(rel)?.let { f -> if (f.exists()) f.delete(); f.parentFile?.let { d -> if (d.list()?.isEmpty() == true) d.delete() } }
+        }
+
+        /** مسار الملف المنزَّل (file://) أو "" إن لم يوجد */
+        @JavascriptInterface fun dlPath(rel: String): String {
+            val f = recitFile(rel) ?: return ""
+            return if (f.exists() && f.length() > 1024) Uri.fromFile(f).toString() else ""
+        }
+
+        /** مجموع حجم التنزيلات بالبايت */
+        @JavascriptInterface fun dlUsage(): Long = try { recitBase()?.walkTopDown()?.filter { it.isFile }?.sumOf { it.length() } ?: 0L } catch (_: Exception) { 0L }
 
         // ── طلب شبكة محدود (التفسير) — للمضيفات المسموح بها فقط ──
         @JavascriptInterface fun httpGet(id: String, url: String) {

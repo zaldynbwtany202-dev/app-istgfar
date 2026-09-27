@@ -39,7 +39,7 @@
   Bus.on('day', () => { if (Router.cur && Router.cur.r === 'home') Router.refresh(); });
   Bus.on('resume', () => {
     PrayedSync.take(); Habits.syncAuto();
-    if (domTheme() !== document.documentElement.getAttribute('data-theme')) { applyTheme(); Router.refresh(); }
+    if (domTheme() !== document.documentElement.getAttribute('data-tkey')) { applyTheme(); Router.refresh(); }
     if (Router.cur && Router.cur.r === 'home') { SCREENS.home.paintSky(new Date()); SCREENS.home.drawCtx(); }
     // وسن 4.3: بعد العودة من إعدادات النظام تتحدّث حالة الأذونات
     else if (Router.cur && ['prayer', 'settings'].includes(Router.cur.r) && !Sheet.el) Router.refresh();
@@ -47,7 +47,7 @@
   });
   // السمة «حسب المواقيت» والمرشّح الليلي: تحقّق كل دقيقة
   setInterval(() => { const t = domTheme(), warm = Settings.warm === 'on' || (Settings.warm === 'night' && isNightNow());
-    if (t !== document.documentElement.getAttribute('data-theme') || warm !== document.documentElement.hasAttribute('data-warm')) { applyTheme(); if (!Sheet.el) Router.refresh(); } }, 60000);
+    if (t !== document.documentElement.getAttribute('data-tkey') || warm !== document.documentElement.hasAttribute('data-warm')) { applyTheme(); if (!Sheet.el) Router.refresh(); } }, 60000);
   PrayedSync.take();
   Habits.syncAuto();
   Notif.schedule();
