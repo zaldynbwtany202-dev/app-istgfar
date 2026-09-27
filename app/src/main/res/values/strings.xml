@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- وسن 3.0 · النصوص الأصلية (الواجهة نفسها داخل assets/www) -->
+<resources>
+    <string name="app_name">وسن</string>
+    <string name="app_tagline">رفيقك في الصلاة والذكر</string>
+
+    <!-- الأدوات -->
+    <string name="widget_day_desc">مواقيت الصلوات الخمس لليوم مع الصلاة القادمة وعدٍّ تنازلي</string>
+    <string name="widget_next_desc">الصلاة القادمة مع عدٍّ تنازلي حيّ</string>
+    <string name="widget_day_label">مواقيت اليوم</string>
+    <string name="widget_next_label">الصلاة القادمة</string>
+
+    <!-- البلاطة السريعة -->
+    <string name="tile_label">الصلاة القادمة</string>
+
+    <!-- اختصارات الأيقونة -->
+    <string name="sc_quran">القرآن</string>
+    <string name="sc_quran_long">متابعة القراءة</string>
+    <string name="sc_azkar">الأذكار</string>
+    <string name="sc_azkar_long">الأذكار والأدعية</string>
+    <string name="sc_qibla">القبلة</string>
+    <string name="sc_qibla_long">اتجاه القبلة</string>
+    <string name="sc_tasbih">المسبحة</string>
+    <string name="sc_tasbih_long">المسبحة الإلكترونية</string>
+</resources>

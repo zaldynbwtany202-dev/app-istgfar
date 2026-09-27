@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  وسن · مجموعة الخطوط
+  - uthmanic_hafs: نص المصحف (مخطوط عثماني حفص)
+  - scheherazade: العناوين الكبيرة والزخارف
+  - noto_naskh: نص الواجهة العام
+-->
+<font-family xmlns:android="http://schemas.android.com/AndroidManifest/fonts">
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/noto_naskh_arabic_regular" />
+</font-family>

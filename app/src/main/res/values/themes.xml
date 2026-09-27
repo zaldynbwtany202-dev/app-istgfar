@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ════════════════════════════════════════════════════════════
+         THEME.NOOR — Emerald & Gold (Classic Islamic)
+         ════════════════════════════════════════════════════════════ -->
+
+    <style name="Theme.Noor" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Primary brand -->
+        <item name="colorPrimary">@color/noor_emerald</item>
+        <item name="colorOnPrimary">@color/noor_cream</item>
+        <item name="colorPrimaryContainer">@color/noor_emerald_container</item>
+        <item name="colorOnPrimaryContainer">@color/noor_on_emerald_container</item>
+
+        <!-- Secondary (gold) -->
+        <item name="colorSecondary">@color/noor_gold</item>
+        <item name="colorOnSecondary">@color/noor_emerald_deepest</item>
+        <item name="colorSecondaryContainer">@color/noor_gold_container</item>
+        <item name="colorOnSecondaryContainer">@color/noor_gold_dark</item>
+
+        <!-- Backgrounds -->
+        <item name="android:colorBackground">@color/noor_cream</item>
+        <item name="colorSurface">@color/noor_surface</item>
+        <item name="colorSurfaceVariant">@color/noor_surface_variant</item>
+        <item name="colorOnSurface">@color/noor_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/noor_on_surface_variant</item>
+        <item name="colorOutline">@color/noor_outline</item>
+
+        <!-- Errors -->
+        <item name="colorError">@color/noor_error</item>
+        <item name="colorOnError">@android:color/white</item>
+
+        <!-- System bars -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+
+        <!-- Shapes -->
+        <item name="shapeAppearanceSmallComponent">@style/Shape.Noor.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/Shape.Noor.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/Shape.Noor.Large</item>
+
+        <!-- Typography -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Noor.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Noor.HeadlineMedium</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Noor.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Noor.TitleMedium</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Noor.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Noor.BodyMedium</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Noor.LabelLarge</item>
+    </style>
+
+    <!-- Splash -->
+    <style name="Theme.Noor.Splash" parent="Theme.Noor">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/wasan_splash_bottom</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <!-- وسن · نافذة الواجهة الرئيسية: خلفية داكنة موحّدة مع شاشة الافتتاح (لا وميض أبيض عند الإقلاع) -->
+    <style name="Theme.Noor.Main" parent="Theme.Noor">
+        <item name="android:windowBackground">@color/wasan_splash</item>
+        <item name="android:statusBarColor">@color/noor_emerald</item>
+        <item name="android:navigationBarColor">@color/wasan_night</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- (أنماط البطاقات والأزرار الأصلية حُذفت — الواجهة الآن WebView
+         موحّدة، والتنسيق كامل في assets/www) -->
+
+    <!-- Shapes -->
+    <style name="Shape.Noor.Small" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+    <style name="Shape.Noor.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+    <style name="Shape.Noor.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <!-- Typography -->
+    <style name="TextAppearance.Noor.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textSize">32sp</item>
+        <item name="android:lineSpacingExtra">4sp</item>
+        <item name="fontFamily">@font/noor_font</item>
+    </style>
+    <style name="TextAppearance.Noor.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">26sp</item>
+        <item name="android:lineSpacingExtra">3sp</item>
+        <item name="fontFamily">@font/noor_font</item>
+    </style>
+    <style name="TextAppearance.Noor.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">21sp</item>
+        <item name="android:lineSpacingExtra">2sp</item>
+        <item name="fontFamily">@font/noor_font</item>
+    </style>
+    <style name="TextAppearance.Noor.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">17sp</item>
+        <item name="fontFamily">@font/noor_font</item>
+    </style>
+    <style name="TextAppearance.Noor.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineSpacingExtra">3sp</item>
+        <item name="fontFamily">@font/noor_font</item>
+    </style>
+    <style name="TextAppearance.Noor.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingExtra">2sp</item>
+        <item name="fontFamily">@font/noor_font</item>
+    </style>
+    <style name="TextAppearance.Noor.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">15sp</item>
+        <item name="fontFamily">@font/noor_font</item>
+    </style>
+
+</resources>

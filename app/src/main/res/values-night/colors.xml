@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  وسن · الوضع الليلي — "زمردي ليلي"
+  أسود مائل للأخضر العميق + ذهبي دافئ، مريح للعين في الظلام
+-->
+<resources>
+
+    <color name="noor_emerald">#FF4FB79C</color>
+    <color name="noor_emerald_dark">#FF06241C</color>
+    <color name="noor_emerald_deepest">#FF031712</color>
+    <color name="noor_emerald_light">#FF7FD4BC</color>
+    <color name="noor_emerald_container">#FF124234</color>
+    <color name="noor_on_emerald_container">#FFBFE8D9</color>
+
+    <color name="noor_gold">#FFD9B468</color>
+    <color name="noor_gold_light">#FFE8CE93</color>
+    <color name="noor_gold_dark">#FFB08A3C</color>
+    <color name="noor_gold_container">#FF332A16</color>
+
+    <color name="noor_cream">#FF101814</color>
+    <color name="noor_cream_dark">#FF0A100D</color>
+    <color name="noor_cream_container">#FF1E2C24</color>
+    <color name="noor_surface">#FF152019</color>
+    <color name="noor_surface_variant">#FF1E2C24</color>
+    <color name="noor_on_surface">#FFE8EFEA</color>
+    <color name="noor_on_surface_variant">#FFA6B8AE</color>
+    <color name="noor_outline">#FF354940</color>
+    <color name="noor_stroke">#FF24352C</color>
+
+    <color name="noor_error">#FFF2B8B5</color>
+    <color name="noor_success">#FF8BD49A</color>
+    <color name="noor_warning">#FFE7A84B</color>
+
+    <color name="tile_quran">#FF124437</color>
+    <color name="tile_qibla">#FF3A2E12</color>
+    <color name="tile_prayer">#FF122C4A</color>
+    <color name="tile_tasbih">#FF2C1E40</color>
+    <color name="tile_istighfar">#FF1B3A2B</color>
+    <color name="tile_hijri">#FF3E2310</color>
+    <color name="tile_duas">#FF16243B</color>
+    <color name="tile_names">#FF332712</color>
+
+    <color name="ic_launcher_background">#FF06241C</color>
+
+    <color name="quran_ink">#FFEAF3EE</color>
+
+</resources>

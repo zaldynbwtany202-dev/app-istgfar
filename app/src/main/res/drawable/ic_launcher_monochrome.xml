@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- وسن · أيقونة أحادية اللون (Android 13+ Themed icons) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M51.475,27.845 A28.055,28.055 0 1,0 78.754,63.250 A22.359,22.359 0 0,1 51.475,27.845 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M70.401,36.013 L72.039,39.969 L75.994,41.607 L74.356,45.562 L75.994,49.518 L72.039,51.156 L70.401,55.112 L66.445,53.473 L62.490,55.112 L60.852,51.156 L56.896,49.518 L58.535,45.562 L56.896,41.607 L60.852,39.969 L62.490,36.013 L66.445,37.652 Z" />
+</vector>

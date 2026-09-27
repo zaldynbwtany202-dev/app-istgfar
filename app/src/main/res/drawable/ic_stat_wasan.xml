@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- وسن · أيقونة شريط الحالة والبلاطة السريعة (بيضاء أحادية حسب إرشادات أندرويد) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M12.107,1.500 A10.500,10.500 0 1,0 22.317,14.751 A8.369,8.369 0 0,1 12.107,1.500 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M19.190,4.557 L19.804,6.038 L21.284,6.651 L20.671,8.131 L21.284,9.612 L19.804,10.225 L19.190,11.705 L17.710,11.092 L16.230,11.705 L15.616,10.225 L14.136,9.612 L14.749,8.131 L14.136,6.651 L15.616,6.038 L16.230,4.557 L17.710,5.170 Z" />
+</vector>

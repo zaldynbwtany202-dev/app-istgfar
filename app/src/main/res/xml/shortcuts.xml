@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- وسن · اختصارات الأيقونة (ضغطة مطوّلة على أيقونة التطبيق) -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_quran"
+        android:shortcutId="quran"
+        android:shortcutLongLabel="@string/sc_quran_long"
+        android:shortcutShortLabel="@string/sc_quran">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.noor.app.ui.screens.SplashActivity"
+            android:targetPackage="com.noor.app">
+            <extra android:name="wasan_route" android:value="continue" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_azkar"
+        android:shortcutId="azkar"
+        android:shortcutLongLabel="@string/sc_azkar_long"
+        android:shortcutShortLabel="@string/sc_azkar">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.noor.app.ui.screens.SplashActivity"
+            android:targetPackage="com.noor.app">
+            <extra android:name="wasan_route" android:value="azkar" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_qibla"
+        android:shortcutId="qibla"
+        android:shortcutLongLabel="@string/sc_qibla_long"
+        android:shortcutShortLabel="@string/sc_qibla">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.noor.app.ui.screens.SplashActivity"
+            android:targetPackage="com.noor.app">
+            <extra android:name="wasan_route" android:value="qibla" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_tasbih"
+        android:shortcutId="tasbih"
+        android:shortcutLongLabel="@string/sc_tasbih_long"
+        android:shortcutShortLabel="@string/sc_tasbih">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.noor.app.ui.screens.SplashActivity"
+            android:targetPackage="com.noor.app">
+            <extra android:name="wasan_route" android:value="tasbih" />
+        </intent>
+    </shortcut>
+</shortcuts>

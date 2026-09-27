@@ -1,0 +1,794 @@
+package com.noor.app.ui.screens
+
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.ContentResolver
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.hardware.GeomagneticField
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.location.Geocoder
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.PowerManager
+import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.provider.Settings
+import android.util.Base64
+import android.util.Log
+import android.view.View
+import android.view.WindowManager
+import android.webkit.ConsoleMessage
+import android.webkit.GeolocationPermissions
+import android.webkit.JavascriptInterface
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.view.WindowInsetsControllerCompat
+import com.noor.app.engine.AdhanScheduler
+import com.noor.app.engine.AdhanService
+import com.noor.app.engine.CalcMethod
+import com.noor.app.engine.HijriCalendar
+import com.noor.app.engine.NoorLocation
+import com.noor.app.engine.PrayerEngine
+import com.noor.app.engine.PrayerWidgets
+import com.noor.app.engine.RecitationService
+import com.noor.app.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
+import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+
+/*
+ * ════════════════════════════════════════════════════════════════
+ *  وسن 4.4 · الواجهة الموحّدة (WebView SPA) + الجسر الأصلي NoorBridge
+ *  ─ الواجهة كاملة في assets/www (HTML/CSS/JS) وتعمل دون إنترنت.
+ *  ─ الجسر يوفّر: الموقع، البوصلة (شمال حقيقي)، تنبيهات الأذان،
+ *    المشاركة/النسخ، ألوان أشرطة النظام، إبقاء الشاشة مضاءة…
+ *  ─ متوافق مع دوال الإصدار 1.0 (applyPrayers/applyQibla) للاحتياط.
+ * ════════════════════════════════════════════════════════════════
+ */
+class MainActivity : AppCompatActivity(), SensorEventListener {
+
+    companion object {
+        /** وجهة داخل الواجهة تُفتح عند التشغيل (من إشعار أو اختصار أو أداة) */
+        const val EXTRA_ROUTE = "wasan_route"
+        const val EXTRA_ARGS = "wasan_args"
+        private val HTTP_ALLOW = listOf("https://api.alquran.cloud/")
+    }
+
+    private var pendingRoute: String? = null
+    private var pageReady = false
+    @Volatile private var audioActive = false
+    private var chime: MediaPlayer? = null
+
+    private lateinit var web: WebView
+    private var coords: NoorLocation.Coords = NoorLocation.Coords.DEFAULT
+    private var realLocation = false
+    private var geoLabel: String? = null
+    private var method: CalcMethod = CalcMethod.MWL
+
+    // ── البوصلة ──
+    private var sensorMgr: SensorManager? = null
+    private var rotation: Sensor? = null
+    private var accel: Sensor? = null
+    private var magnet: Sensor? = null
+    private val accelValues = FloatArray(3)
+    private val magnetValues = FloatArray(3)
+    private var hasAccel = false
+    private var hasMagnet = false
+    private var compassOn = false      // الواجهة الجديدة: onHeading(azimuth)
+    private var qiblaLegacy = false    // واجهة 1.0: applyQibla(relative, dist)
+    private var lastSent = 0L
+    private var declination = 0f
+
+    private var pendingGeo: Pair<String, GeolocationPermissions.Callback>? = null
+    private var awaitingUserLocation = false
+
+    private val locationPerm = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { res ->
+        val granted = res.values.any { it }
+        pendingGeo?.let { (origin, cb) -> cb.invoke(origin, granted, false) }
+        pendingGeo = null
+        if (granted) refreshLocation() else if (awaitingUserLocation) { awaitingUserLocation = false; notifyLocation(false) }
+    }
+
+    private val notifPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
+    /** اختيار نغمة الأذان من نغمات الهاتف */
+    private val ringtonePicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        val uri: Uri? = try {
+            @Suppress("DEPRECATION")
+            res.data?.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+        } catch (_: Exception) { null }
+        if (res.resultCode == RESULT_OK && uri != null) {
+            AdhanScheduler.setSound(this, "custom", uri.toString())
+            AdhanScheduler.scheduleNext(this)
+        }
+        js("try{window.onAdhanSound&&onAdhanSound(${soundJson()})}catch(e){}")
+    }
+
+    // ── وسن 4.2 · النسخ الاحتياطي: حفظ ملف JSON واستعادته عبر منتقي الملفات في النظام ──
+    private var pendingBackup: String? = null
+
+    private val backupSaver = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
+        val text = pendingBackup
+        pendingBackup = null
+        if (uri == null || text == null) {
+            js("try{window.onBackupSaved&&onBackupSaved(false,true)}catch(e){}")
+            return@registerForActivityResult
+        }
+        Thread {
+            val ok = try {
+                val os = (try { contentResolver.openOutputStream(uri, "wt") } catch (_: Exception) { null }) ?: contentResolver.openOutputStream(uri)
+                if (os == null) false else { os.use { it.write(text.toByteArray(Charsets.UTF_8)) }; true }
+            } catch (_: Exception) { false }
+            js("try{window.onBackupSaved&&onBackupSaved($ok,false)}catch(e){}")
+        }.start()
+    }
+
+    private val backupPicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        if (uri == null) {
+            js("try{window.onBackupPicked&&onBackupPicked(null)}catch(e){}")
+            return@registerForActivityResult
+        }
+        Thread {
+            val text = try {
+                contentResolver.openInputStream(uri)?.use { s -> s.readBytes().takeIf { it.size <= 8 * 1024 * 1024 }?.toString(Charsets.UTF_8) }
+            } catch (_: Exception) { null }
+            val q = if (text == null) "null" else JSONObject.quote(text)
+            js("try{window.onBackupPicked&&onBackupPicked($q)}catch(e){}")
+        }.start()
+    }
+
+    private fun soundJson(): String = JSONObject().apply {
+        put("mode", AdhanScheduler.soundMode(this@MainActivity)); put("title", AdhanScheduler.soundTitle(this@MainActivity))
+        put("voice", AdhanScheduler.voice(this@MainActivity))
+    }.toString()
+
+    private fun captureRoute(i: Intent?) {
+        val r = i?.getStringExtra(EXTRA_ROUTE) ?: return
+        val a = i.getStringExtra(EXTRA_ARGS) ?: "{}"
+        pendingRoute = JSONObject().put("r", r).put("a", try { JSONObject(a) } catch (_: Exception) { JSONObject() }).toString()
+        i.removeExtra(EXTRA_ROUTE)
+    }
+
+    private fun deliverRoute() {
+        val r = pendingRoute ?: return
+        if (!pageReady) return
+        pendingRoute = null
+        js("try{window.openRoute&&openRoute($r)}catch(e){}")
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        captureRoute(intent)
+        deliverRoute()
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        method = CalcMethod.fromKey(prefs().getString("method", null))
+        restoreCoords()
+        captureRoute(intent)
+        RecitationService.listener = { cmd -> js("try{window.Player&&Player.cmd('" + cmd.replace("'", "") + "')}catch(e){}") }
+        // وسن 4.4: حالة «الأذان يُرفع الآن» ← شريط الإيقاف في الواجهة
+        AdhanService.listener = { on, name ->
+            val j = JSONObject().put("playing", on).put("name", name ?: "")
+            js("try{window.onAdhanState&&onAdhanState($j)}catch(e){}")
+        }
+        styleSystemBars(0xFF0B5D4B.toInt(), false, 0xFF07110E.toInt(), false)
+
+        web = WebView(this).also {
+            val s = it.settings
+            s.javaScriptEnabled = true
+            s.domStorageEnabled = true
+            s.allowFileAccess = true
+            s.allowContentAccess = true
+            s.setGeolocationEnabled(true)
+            s.mediaPlaybackRequiresUserGesture = false
+            s.textZoom = 100
+            s.cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
+            it.isVerticalScrollBarEnabled = false
+            it.isHorizontalScrollBarEnabled = false
+            it.overScrollMode = View.OVER_SCROLL_NEVER
+            it.setBackgroundColor(0xFF0A4A3C.toInt())
+            it.webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView, url: String) {
+                    pageReady = true
+                    deliverRoute()
+                }
+                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                    val u = request.url
+                    if (u.scheme == "http" || u.scheme == "https" || u.scheme == "mailto" || u.scheme == "geo") {
+                        openExternal(u); return true
+                    }
+                    return false
+                }
+            }
+            it.webChromeClient = object : WebChromeClient() {
+                override fun onConsoleMessage(cm: ConsoleMessage): Boolean {
+                    Log.println(
+                        when (cm.messageLevel()) {
+                            ConsoleMessage.MessageLevel.ERROR -> Log.ERROR
+                            ConsoleMessage.MessageLevel.WARNING -> Log.WARN
+                            else -> Log.DEBUG
+                        }, "NoorWeb", "[${cm.lineNumber()}] ${cm.message()}"
+                    )
+                    return true
+                }
+
+                override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
+                    if (NoorLocation.hasPermission(this@MainActivity)) callback.invoke(origin, true, false)
+                    else { pendingGeo = origin to callback; askLocationPermission() }
+                }
+            }
+            it.addJavascriptInterface(NoorBridge(), "NoorBridge")
+        }
+        setContentView(web)
+        web.loadUrl("file:///android_asset/www/index.html")
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (web.canGoBack()) web.goBack() else finish()
+            }
+        })
+
+        sensorMgr = getSystemService(SENSOR_SERVICE) as? SensorManager
+        rotation = sensorMgr?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        accel = sensorMgr?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        magnet = sensorMgr?.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+
+        // لا نطلب الإذن عند الإقلاع — تطلبه الواجهة بعد شرح السبب (جولة الترحيب)
+        if (NoorLocation.hasPermission(this)) refreshLocation()
+        AdhanScheduler.ensureChannels(this)
+        AdhanScheduler.scheduleNext(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        web.onResume()
+        if (compassOn || qiblaLegacy) registerSensors()
+    }
+
+    override fun onPause() {
+        unregisterSensors()
+        releasePreview(false)
+        // أثناء التلاوة لا نوقف الواجهة كي يستمر الصوت عند إطفاء الشاشة (خدمة التلاوة تُبقي التطبيق حيًّا)
+        if (!audioActive) web.onPause()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        RecitationService.listener = null
+        AdhanService.listener = null
+        if (audioActive) RecitationService.stop(this)
+        releasePreview(false)
+        try { web.removeJavascriptInterface("NoorBridge"); web.destroy() } catch (_: Exception) { }
+        super.onDestroy()
+    }
+
+    // ────────────────── أشرطة النظام ──────────────────
+
+    private fun styleSystemBars(status: Int, lightStatus: Boolean, nav: Int, lightNav: Boolean) {
+        try {
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = status
+            window.navigationBarColor = nav
+            val ctl = WindowInsetsControllerCompat(window, window.decorView)
+            ctl.isAppearanceLightStatusBars = lightStatus
+            ctl.isAppearanceLightNavigationBars = lightNav
+        } catch (e: Exception) {
+            Log.w("Noor", "system bars", e)
+        }
+    }
+
+    /** إيقاف معاينة الصوت؛ notify = إبلاغ الواجهة بانتهائها */
+    private fun releasePreview(notify: Boolean) {
+        val p = chime; chime = null
+        try { p?.stop() } catch (_: Exception) { }
+        try { p?.release() } catch (_: Exception) { }
+        if (notify) js("try{window.onPreviewEnd&&onPreviewEnd()}catch(e){}")
+    }
+
+    private fun parseColor(c: String?, def: Int): Int = try { Color.parseColor(c) } catch (_: Exception) { def }
+
+    // ────────────────── الموقع ──────────────────
+
+    private fun prefs() = getSharedPreferences("noor_native", MODE_PRIVATE)
+
+    private fun restoreCoords() {
+        val p = prefs()
+        if (p.contains("lat") && p.contains("lng")) {
+            coords = NoorLocation.Coords(
+                java.lang.Double.longBitsToDouble(p.getLong("lat", 0)),
+                java.lang.Double.longBitsToDouble(p.getLong("lng", 0))
+            )
+            geoLabel = p.getString("label", null)
+            realLocation = true
+        }
+    }
+
+    private fun askLocationPermission() {
+        runOnUiThread {
+            try {
+                locationPerm.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
+            } catch (e: Exception) { Log.w("Noor", "perm", e); notifyLocation(false) }
+        }
+    }
+
+    private fun refreshLocation() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val c = try { NoorLocation.getLastKnownLocation(this@MainActivity) } catch (e: Exception) { null }
+            if (c != null) {
+                coords = c
+                realLocation = true
+                geoLabel = reverseGeocode(c.lat, c.lng)
+                prefs().edit()
+                    .putLong("lat", java.lang.Double.doubleToRawLongBits(c.lat))
+                    .putLong("lng", java.lang.Double.doubleToRawLongBits(c.lng))
+                    .putString("label", geoLabel)
+                    .apply()
+                updateDeclination()
+            }
+            awaitingUserLocation = false
+            notifyLocation(c != null)
+            sendPrayers()
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun reverseGeocode(lat: Double, lng: Double): String? = try {
+        if (!Geocoder.isPresent()) null
+        else Geocoder(this, Locale("ar")).getFromLocation(lat, lng, 1)?.firstOrNull()?.let {
+            it.locality ?: it.subAdminArea ?: it.adminArea
+        }
+    } catch (_: Exception) { null }
+
+    private fun locationJson(ok: Boolean = true): String = JSONObject().apply {
+        put("ok", ok)
+        put("lat", coords.lat)
+        put("lng", coords.lng)
+        put("isDefault", !realLocation)
+        if (geoLabel != null) put("label", geoLabel)
+    }.toString()
+
+    private fun notifyLocation(ok: Boolean) {
+        val j = locationJson(ok)
+        js("try{window.onNativeLocation&&onNativeLocation($j)}catch(e){}")
+    }
+
+    private fun js(code: String) {
+        runOnUiThread { try { web.evaluateJavascript(code, null) } catch (_: Exception) { } }
+    }
+
+    /** للتوافق مع واجهة 1.0 */
+    private fun sendPrayers() {
+        val cal = Calendar.getInstance()
+        val tz = TimeZone.getDefault().getOffset(cal.timeInMillis) / 3600000.0
+        val pt = PrayerEngine.compute(
+            cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH),
+            coords.lat, coords.lng, tz, method
+        )
+        val arr = JSONArray()
+        PrayerEngine.OBLIGATORY.forEach { key -> arr.put(PrayerEngine.formatHour(pt.list().first { p -> p.first == key }.second)) }
+        val json = JSONObject().apply {
+            put("list", arr); put("methodName", method.arName)
+            put("city", if (realLocation) (geoLabel ?: "موقعك الحالي") else "المدينة المنورة")
+            put("tzHours", tz); put("lat", coords.lat); put("lng", coords.lng)
+        }
+        js("try{window.applyPrayers&&applyPrayers($json)}catch(e){}")
+    }
+
+    // ────────────────── البوصلة ──────────────────
+
+    private fun updateDeclination() {
+        declination = try {
+            GeomagneticField(coords.lat.toFloat(), coords.lng.toFloat(), 0f, System.currentTimeMillis()).declination
+        } catch (_: Exception) { 0f }
+    }
+
+    private fun registerSensors() {
+        val sm = sensorMgr ?: return
+        updateDeclination()
+        if (rotation != null) sm.registerListener(this, rotation, SensorManager.SENSOR_DELAY_GAME)
+        else {
+            if (accel != null) sm.registerListener(this, accel, SensorManager.SENSOR_DELAY_GAME)
+            if (magnet != null) sm.registerListener(this, magnet, SensorManager.SENSOR_DELAY_GAME)
+        }
+    }
+
+    private fun unregisterSensors() { try { sensorMgr?.unregisterListener(this) } catch (_: Exception) { } }
+
+    override fun onSensorChanged(e: SensorEvent) {
+        val r = FloatArray(9)
+        when (e.sensor.type) {
+            Sensor.TYPE_ROTATION_VECTOR -> {
+                try { SensorManager.getRotationMatrixFromVector(r, e.values) } catch (_: Exception) { return }
+            }
+            Sensor.TYPE_ACCELEROMETER -> {
+                System.arraycopy(e.values, 0, accelValues, 0, 3); hasAccel = true
+                if (!hasMagnet || !SensorManager.getRotationMatrix(r, null, accelValues, magnetValues)) return
+            }
+            Sensor.TYPE_MAGNETIC_FIELD -> {
+                System.arraycopy(e.values, 0, magnetValues, 0, 3); hasMagnet = true; return
+            }
+            else -> return
+        }
+        val now = SystemClock.uptimeMillis()
+        if (now - lastSent < 45) return
+        lastSent = now
+        val o = FloatArray(3)
+        SensorManager.getOrientation(r, o)
+        val magnetic = (Math.toDegrees(o[0].toDouble()) + 360.0) % 360.0
+        val trueHeading = (magnetic + declination + 360.0) % 360.0
+        if (compassOn) js("try{window.onHeading&&onHeading($trueHeading)}catch(e){}")
+        if (qiblaLegacy) {
+            val q = PrayerEngine.qiblaBearing(coords.lat, coords.lng)
+            val rel = ((q - trueHeading) % 360 + 360) % 360
+            val dist = PrayerEngine.distanceToKaaba(coords.lat, coords.lng)
+            js("try{window.applyQibla&&applyQibla($rel,$dist)}catch(e){}")
+        }
+    }
+
+    override fun onAccuracyChanged(s: Sensor?, a: Int) {}
+
+    private fun openExternal(u: Uri) {
+        try { startActivity(Intent(Intent.ACTION_VIEW, u).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { }
+    }
+
+    // ────────────────── الجسر ↔ JavaScript ──────────────────
+
+    inner class NoorBridge {
+
+        private fun readAsset(path: String): String = try {
+            assets.open(path).use { it.readBytes().toString(Charsets.UTF_8) }
+        } catch (e: Exception) { Log.e("NoorWeb", "asset read failed: $path", e); "" }
+
+        @JavascriptInterface fun getSurahs(): String = readAsset("db/Surah.json")
+        @JavascriptInterface fun getAyahs(): String = readAsset("db/Ayah.json")
+        @JavascriptInterface fun getJuz(): String = readAsset("db/Juz.json")
+        @JavascriptInterface fun appVersion(): String = try {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "3.0"
+        } catch (_: Exception) { "3.0" }
+
+        /** وجهة التشغيل (إشعار/اختصار/أداة) — تُقرأ مرة واحدة عند الإقلاع */
+        @JavascriptInterface fun takeLaunchRoute(): String { pageReady = true; val r = pendingRoute ?: ""; pendingRoute = null; return r }
+
+        // ── الموقع ──
+        @JavascriptInterface fun getLocation(): String = locationJson(realLocation)
+
+        @JavascriptInterface fun requestLocation() {
+            awaitingUserLocation = true
+            if (NoorLocation.hasPermission(this@MainActivity)) refreshLocation() else askLocationPermission()
+        }
+
+        @JavascriptInterface fun detectLocation() = requestLocation()
+        @JavascriptInterface fun requestPrayers() = sendPrayers()
+        @JavascriptInterface fun requestHijri() {
+            val h = HijriCalendar.fromCalendar(Calendar.getInstance())
+            val j = JSONObject().apply { put("date", "${h.day} ${h.monthNameFull} ${h.year} هـ") }
+            js("try{window.applyHijri&&applyHijri($j)}catch(e){}")
+        }
+
+        // ── البوصلة ──
+        @JavascriptInterface fun startCompass() { compassOn = true; runOnUiThread { registerSensors() } }
+        @JavascriptInterface fun stopCompass() { compassOn = false; if (!qiblaLegacy) runOnUiThread { unregisterSensors() } }
+
+        @JavascriptInterface fun setQiblaActive(active: Boolean) {
+            qiblaLegacy = active
+            if (active) {
+                val q = PrayerEngine.qiblaBearing(coords.lat, coords.lng)
+                val dist = PrayerEngine.distanceToKaaba(coords.lat, coords.lng)
+                js("try{window.applyQibla&&applyQibla($q,$dist)}catch(e){}")
+                runOnUiThread { registerSensors() }
+            } else if (!compassOn) runOnUiThread { unregisterSensors() }
+        }
+
+        @JavascriptInterface fun updateQibla() = setQiblaActive(true)
+
+        // ── تنبيهات الأذان ──
+        @JavascriptInterface fun scheduleAdhan(json: String) {
+            AdhanScheduler.save(this@MainActivity, json)
+        }
+
+        /** وسن 4.3: إعدادات الحساب كي تمدّد النواة الجدول وحدها */
+        @JavascriptInterface fun setAdhanConfig(json: String) {
+            AdhanScheduler.saveConfig(this@MainActivity, json)
+        }
+
+        @JavascriptInterface fun batteryExempt(): Boolean = try {
+            Build.VERSION.SDK_INT < 23 || (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName)
+        } catch (_: Exception) { true }
+
+        @SuppressLint("BatteryLife")
+        @JavascriptInterface fun requestBatteryExemption() {
+            if (Build.VERSION.SDK_INT < 23) return
+            runOnUiThread {
+                try { startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))) }
+                catch (_: Exception) { try { startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) } catch (_: Exception) { } }
+            }
+        }
+
+        /** أذان تجريبي بعد خمس ثوانٍ عبر المسار الحقيقي */
+        @JavascriptInterface fun testAdhan() {
+            AdhanScheduler.ensureChannels(this@MainActivity)
+            AdhanScheduler.test(this@MainActivity)
+        }
+
+        // ── وسن 4.4 · الأذان كاملًا ──
+        @JavascriptInterface fun adhanPlaying(): Boolean = AdhanService.playing
+        @JavascriptInterface fun stopAdhan() = AdhanService.stop(this@MainActivity)
+        @JavascriptInterface fun setAdhanVoice(v: String) {
+            AdhanScheduler.setVoice(this@MainActivity, v)
+            AdhanScheduler.scheduleNext(this@MainActivity)
+        }
+
+        @JavascriptInterface fun ensureNotifPermission() {
+            AdhanScheduler.ensureChannels(this@MainActivity)
+            if (Build.VERSION.SDK_INT >= 33 &&
+                ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) runOnUiThread { try { notifPerm.launch(Manifest.permission.POST_NOTIFICATIONS) } catch (_: Exception) { } }
+        }
+
+        @JavascriptInterface fun canExactAlarm(): Boolean = AdhanScheduler.canExact(this@MainActivity)
+
+        @JavascriptInterface fun requestExactAlarm() {
+            if (Build.VERSION.SDK_INT >= 31 && !AdhanScheduler.canExact(this@MainActivity)) runOnUiThread {
+                try {
+                    startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName")))
+                } catch (_: Exception) { }
+            }
+        }
+
+        @JavascriptInterface fun notifEnabled(): Boolean = AdhanScheduler.notificationsEnabled(this@MainActivity)
+
+        /** «صلّيت» المسجّلة من إشعارات الأذان منذ آخر فتح */
+        @JavascriptInterface fun takePrayed(): String = AdhanScheduler.takePrayed(this@MainActivity)
+
+        // ── صوت الأذان ──
+        @JavascriptInterface fun soundInfo(): String = soundJson()
+
+        @JavascriptInterface fun setAdhanSound(mode: String) {
+            AdhanScheduler.setSound(this@MainActivity, mode, null)
+            AdhanScheduler.scheduleNext(this@MainActivity)
+        }
+
+        @JavascriptInterface fun pickAdhanSound() {
+            runOnUiThread {
+                try {
+                    val i = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                        .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION or RingtoneManager.TYPE_ALARM or RingtoneManager.TYPE_RINGTONE)
+                        .putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "صوت الأذان")
+                        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                    AdhanScheduler.soundUri(this@MainActivity)?.let { i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Uri.parse(it)) }
+                    ringtonePicker.launch(i)
+                } catch (e: Exception) { Log.w("Wasan", "picker", e) }
+            }
+        }
+
+        /** معاينة الصوت كما سيُسمع فعلًا: الأذان على مجرى المنبّه، والنغمات على مجرى الإشعارات */
+        @JavascriptInterface fun previewSound(mode: String) {
+            runOnUiThread {
+                try {
+                    releasePreview(false)
+                    val ctx = this@MainActivity
+                    val v = AdhanScheduler.voice(ctx)
+                    val uri = when (mode) {
+                        "adhan" -> AdhanScheduler.rawUri(ctx, AdhanScheduler.adhanRes(v))
+                        "takbir" -> AdhanScheduler.rawUri(ctx, AdhanScheduler.takbirRes(v))
+                        "chime" -> AdhanScheduler.chimeUri(ctx)
+                        "custom" -> AdhanScheduler.soundUri(ctx)?.let { Uri.parse(it) }
+                        "system" -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                        else -> null
+                    } ?: return@runOnUiThread
+                    val usage = if (mode == "adhan") AudioAttributes.USAGE_ALARM else AudioAttributes.USAGE_NOTIFICATION
+                    val p = MediaPlayer()
+                    p.setAudioAttributes(AudioAttributes.Builder().setUsage(usage).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
+                    p.setDataSource(ctx, uri)
+                    p.setOnCompletionListener { if (chime === it) releasePreview(true) else it.release() }
+                    p.setOnErrorListener { mp, _, _ -> if (chime === mp) releasePreview(true); true }
+                    p.setOnPreparedListener { it.start() }
+                    chime = p
+                    p.prepareAsync()
+                } catch (e: Exception) { Log.w("Wasan", "preview", e); releasePreview(true) }
+            }
+        }
+
+        @JavascriptInterface fun stopPreview() { runOnUiThread { releasePreview(false) } }
+
+        @JavascriptInterface fun openChannelSettings(kind: String) {
+            runOnUiThread {
+                try {
+                    val i = if (Build.VERSION.SDK_INT >= 26) {
+                        AdhanScheduler.ensureChannels(this@MainActivity)
+                        val ch = if (kind == "daily") "wasan_daily" else AdhanScheduler.adhanChannelId(this@MainActivity)
+                        Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName).putExtra(Settings.EXTRA_CHANNEL_ID, ch)
+                    } else Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
+                    startActivity(i)
+                } catch (_: Exception) { }
+            }
+        }
+
+        // ── أدوات الشاشة الرئيسية ──
+        @JavascriptInterface fun setWidgetData(json: String) = PrayerWidgets.save(this@MainActivity, json)
+        @JavascriptInterface fun canPinWidget(): Boolean = PrayerWidgets.canPin(this@MainActivity)
+        @JavascriptInterface fun pinWidget(kind: String): Boolean = PrayerWidgets.requestPin(this@MainActivity, kind)
+
+        // ── التلاوة (حالة المشغّل في الواجهة) ──
+        @JavascriptInterface fun audioState(json: String) {
+            try {
+                val o = JSONObject(json)
+                val active = o.optBoolean("active", false)
+                audioActive = active
+                if (active) RecitationService.update(this@MainActivity, o.optString("title", "تلاوة"), o.optString("sub", ""), o.optBoolean("playing", true))
+                else RecitationService.stop(this@MainActivity)
+            } catch (e: Exception) { Log.w("Wasan", "audioState", e) }
+        }
+
+        // ── مشاركة صورة (بطاقة آية/ذكر) ──
+        @JavascriptInterface fun shareImage(b64: String, text: String) {
+            try {
+                val data = Base64.decode(b64.substringAfter(","), Base64.DEFAULT)
+                val dir = File(cacheDir, "share").apply { mkdirs() }
+                dir.listFiles()?.forEach { if (System.currentTimeMillis() - it.lastModified() > 3600_000) it.delete() }
+                val f = File(dir, "wasan_" + System.currentTimeMillis() + ".png")
+                f.writeBytes(data)
+                val uri = FileProvider.getUriForFile(this@MainActivity, "$packageName.fileprovider", f)
+                runOnUiThread {
+                    try {
+                        val send = Intent(Intent.ACTION_SEND).apply {
+                            type = "image/png"; putExtra(Intent.EXTRA_STREAM, uri)
+                            if (text.isNotBlank()) putExtra(Intent.EXTRA_TEXT, text)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        startActivity(Intent.createChooser(send, "مشاركة الصورة"))
+                    } catch (_: Exception) { }
+                }
+            } catch (e: Exception) { Log.w("Wasan", "shareImage", e) }
+        }
+
+        // ── طلب شبكة محدود (التفسير) — للمضيفات المسموح بها فقط ──
+        @JavascriptInterface fun httpGet(id: String, url: String) {
+            if (HTTP_ALLOW.none { url.startsWith(it) }) { js("try{window.onNativeHttp&&onNativeHttp(${JSONObject.quote(id)},0,'')}catch(e){}"); return }
+            Thread {
+                var code = 0; var body = ""
+                try {
+                    val c = URL(url).openConnection() as HttpURLConnection
+                    c.connectTimeout = 10_000; c.readTimeout = 15_000
+                    c.setRequestProperty("Accept", "application/json")
+                    code = c.responseCode
+                    body = (if (code in 200..299) c.inputStream else c.errorStream)?.use { it.readBytes().toString(Charsets.UTF_8) } ?: ""
+                    c.disconnect()
+                } catch (_: Exception) { code = 0 }
+                js("try{window.onNativeHttp&&onNativeHttp(${JSONObject.quote(id)},$code,${JSONObject.quote(body)})}catch(e){}")
+            }.start()
+        }
+
+        // ── أدوات ──
+        @JavascriptInterface fun vibrate(ms: Long) {
+            try {
+                val v = getSystemService(VIBRATOR_SERVICE) as? Vibrator ?: return
+                if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createOneShot(ms.coerceIn(1, 1000), VibrationEffect.DEFAULT_AMPLITUDE))
+                else @Suppress("DEPRECATION") v.vibrate(ms)
+            } catch (_: Exception) { }
+        }
+
+        @JavascriptInterface fun shareText(text: String) {
+            runOnUiThread {
+                try {
+                    val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, text) }
+                    startActivity(Intent.createChooser(send, "مشاركة عبر"))
+                } catch (_: Exception) { }
+            }
+        }
+
+        @JavascriptInterface fun shareApp() = shareText("تطبيق «وسن» — رفيقك في الصلاة والذكر: القرآن الكريم مع التلاوة، مواقيت الصلاة، القبلة، الأذكار، العادات والمهام.")
+
+        @JavascriptInterface fun copyText(text: String) {
+            runOnUiThread {
+                try {
+                    val cm = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                    cm.setPrimaryClip(ClipData.newPlainText("وسن", text))
+                } catch (_: Exception) { }
+            }
+        }
+
+        // ── وسن 4.2 · النسخ الاحتياطي ──
+        @JavascriptInterface fun saveBackup(name: String, text: String) {
+            runOnUiThread {
+                pendingBackup = text
+                try { backupSaver.launch(name) } catch (_: Exception) {
+                    pendingBackup = null
+                    js("try{window.onBackupSaved&&onBackupSaved(false,false)}catch(e){}")
+                }
+            }
+        }
+
+        @JavascriptInterface fun pickBackup() {
+            runOnUiThread {
+                try { backupPicker.launch(arrayOf("application/json", "text/plain", "application/octet-stream", "*/*")) } catch (_: Exception) {
+                    js("try{window.onBackupPicked&&onBackupPicked(null)}catch(e){}")
+                }
+            }
+        }
+
+        @JavascriptInterface fun toast(text: String) {
+            runOnUiThread { Toast.makeText(this@MainActivity, text, Toast.LENGTH_SHORT).show() }
+        }
+
+        @JavascriptInterface fun setStatusBar(color: String, lightIcons: Boolean) {
+            runOnUiThread {
+                try {
+                    window.statusBarColor = parseColor(color, 0xFF0B5D4B.toInt())
+                    WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = lightIcons
+                } catch (_: Exception) { }
+            }
+        }
+
+        @JavascriptInterface fun setNavBar(color: String, lightIcons: Boolean) {
+            runOnUiThread {
+                try {
+                    val c = parseColor(color, 0xFF07110E.toInt())
+                    window.navigationBarColor = c
+                    WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = lightIcons
+                    web.setBackgroundColor(c)
+                } catch (_: Exception) { }
+            }
+        }
+
+        @JavascriptInterface fun keepScreenOn(on: Boolean) {
+            runOnUiThread {
+                if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+
+        @JavascriptInterface fun openUrl(url: String) { runOnUiThread { openExternal(Uri.parse(url)) } }
+
+        /** للتوافق مع 1.0: اختيار طريقة الحساب للمحرك الأصلي (تُحفظ الآن) */
+        @JavascriptInterface fun pickMethod() {
+            val items = CalcMethod.entries.map { it.arName }.toTypedArray()
+            runOnUiThread {
+                AlertDialog.Builder(this@MainActivity)
+                    .setTitle("طريقة الحساب")
+                    .setItems(items) { _, which ->
+                        method = CalcMethod.entries[which]
+                        prefs().edit().putString("method", method.key).apply()
+                        sendPrayers()
+                    }.show()
+            }
+        }
+    }
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- وسن · خلفية شاشة الافتتاح (أندرويد 6–11): تدرّج زمردي ليلي + الشعار الذهبي في المنتصف -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:type="linear"
+                android:startColor="@color/wasan_splash_top"
+                android:centerColor="@color/wasan_splash"
+                android:endColor="@color/wasan_splash_bottom" />
+        </shape>
+    </item>
+    <item android:gravity="center" android:width="128dp" android:height="128dp"
+        android:drawable="@drawable/splash_mark" />
+</layer-list>

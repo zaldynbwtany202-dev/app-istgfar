@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- وسن · أيقونة شاشة الافتتاح لأندرويد 12+ (SplashScreen API) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="288dp" android:height="288dp" android:viewportWidth="288" android:viewportHeight="288">
+    <path android:pathData="M144.763,68.999 A75.001,75.001 0 1,0 217.693,163.652 A59.776,59.776 0 0,1 144.763,68.999 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="linear" android:startX="92.4" android:startY="76.5" android:endX="195.6" android:endY="211.5">
+                    <item android:offset="0" android:color="#FFFBEBB9" />
+                    <item android:offset="0.38" android:color="#FFE4C271" />
+                    <item android:offset="0.72" android:color="#FFC2953C" />
+                    <item android:offset="1" android:color="#FF8E6A24" />
+                </gradient>
+            </aapt:attr>
+    </path>
+    <path android:pathData="M195.361,90.838 L199.741,101.412 L210.315,105.792 L205.935,116.366 L210.315,126.941 L199.741,131.321 L195.361,141.895 L184.786,137.515 L174.212,141.895 L169.832,131.321 L159.258,126.941 L163.638,116.366 L159.258,105.792 L169.832,101.412 L174.212,90.838 L184.786,95.218 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="linear" android:startX="157.2" android:startY="88.7" android:endX="212.4" android:endY="144.0">
+                    <item android:offset="0" android:color="#FFFFF4CF" />
+                    <item android:offset="0.55" android:color="#FFE8C878" />
+                    <item android:offset="1" android:color="#FFB98A34" />
+                </gradient>
+            </aapt:attr>
+    </path>
+</vector>

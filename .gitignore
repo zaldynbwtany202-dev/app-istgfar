@@ -1,0 +1,9 @@
+# مخرجات البناء والمكتبات المنزّلة
+build/
+.deps/
+__pycache__/
+*.pyc
+wasan-*-release.apk
+# مفاتيح التوقيع لا تُرفع إلى مستودع عام
+signing/*.jks
+*.keystore

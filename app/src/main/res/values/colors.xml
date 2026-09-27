@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ════════════════════════════════════════════════════════════════
+  وسن · لوحة الألوان — "زمردي ذهبي كلاسيكي"
+  مستوحاة من زخارف المساجد الكلاسيكية:
+  زمردي عميق + ذهبي + كريمي عاجي دافئ
+  ════════════════════════════════════════════════════════════════
+-->
+<resources>
+
+    <!-- الزمردي — لون الهوية الرئيسي -->
+    <color name="noor_emerald">#FF0B5D4B</color>
+    <color name="noor_emerald_dark">#FF073A2E</color>
+    <color name="noor_emerald_deepest">#FF04241C</color>
+    <color name="noor_emerald_light">#FF14856C</color>
+    <color name="noor_emerald_container">#FFD3E9E1</color>
+    <color name="noor_on_emerald_container">#FF04241C</color>
+
+    <!-- الذهبي — اللمسات الفاخرة -->
+    <color name="noor_gold">#FFC8A24B</color>
+    <color name="noor_gold_light">#FFE3C883</color>
+    <color name="noor_gold_dark">#FF9C7A2A</color>
+    <color name="noor_gold_container">#FFFBF1DC</color>
+
+    <!-- العاجي — الخلفيات الدافئة -->
+    <color name="noor_cream">#FFFAF6EF</color>
+    <color name="noor_cream_dark">#FFF1E9DB</color>
+    <color name="noor_cream_container">#FFF1E9DB</color>
+    <color name="noor_surface">#FFFFFFFF</color>
+    <color name="noor_surface_variant">#FFEEE7DA</color>
+    <color name="noor_on_surface">#FF1A2B25</color>
+    <color name="noor_on_surface_variant">#FF54655C</color>
+    <color name="noor_outline">#FFC9BFAE</color>
+    <color name="noor_stroke">#FFE4DBC9</color>
+
+    <!-- ألوان الحالة -->
+    <color name="noor_error">#FFB3261E</color>
+    <color name="noor_success">#FF2E7D32</color>
+    <color name="noor_warning">#FFB26A00</color>
+
+    <!-- ألوان بطاقات الميزات -->
+    <color name="tile_quran">#FF0B5D4B</color>
+    <color name="tile_qibla">#FF8A6D1F</color>
+    <color name="tile_prayer">#FF1565C0</color>
+    <color name="tile_tasbih">#FF6A1B9A</color>
+    <color name="tile_istighfar">#FF2E6B4F</color>
+    <color name="tile_hijri">#FF8D3E16</color>
+    <color name="tile_duas">#FF315A8E</color>
+    <color name="tile_names">#FF7A5A1E</color>
+
+    <!-- أيقونة التشغيل -->
+    <color name="ic_launcher_background">#FF0B5D4B</color>
+
+    <!-- التدرجات -->
+    <color name="splash_bg_top">#FF0B5D4B</color>
+    <color name="splash_bg_bottom">#FF04241C</color>
+    <color name="quran_ink">#FF14261F</color>
+
+    <!-- وسن · ألوان الافتتاح والخلفية الليلية (مطابقة لشاشة الافتتاح داخل الواجهة) -->
+    <color name="wasan_splash_top">#FF0E6B56</color>
+    <color name="wasan_splash">#FF0A4A3C</color>
+    <color name="wasan_splash_bottom">#FF062E26</color>
+    <color name="wasan_night">#FF07110E</color>
+
+</resources>
