@@ -1,0 +1,84 @@
+/* ═════════ وسن 5 · تصميم هادئ فاخر: صور عالية الدقة، حركة أقل، سلاسة أعلى ═════════ */
+
+/* ── الصفحة الرئيسية بصورة (صورة الثيم أو صورتك) ── */
+.scene.photo{height:548px;background:#0B0B0B;
+  --ink:#fff;--ink-2:rgba(255,255,255,.86);--arc:rgba(255,255,255,.34);--arc-on:rgba(255,255,255,.95);--gl:rgba(12,12,12,.30);--gl-b:rgba(255,255,255,.22)}
+.scene.photo.ink-d{--ink:#1B1712;--ink-2:rgba(27,23,18,.76);--arc:rgba(27,23,18,.26);--arc-on:#1B1712;--gl:rgba(255,255,255,.55);--gl-b:rgba(255,255,255,.75)}
+.scene.photo .ph-w{position:absolute;left:0;right:0;top:-40px;bottom:0;z-index:-3;overflow:hidden;will-change:transform}
+.scene.photo .ph{width:100%;height:100%;object-fit:cover;display:block;transform-origin:50% 45%;-webkit-user-drag:none}
+.scene.photo .ph-dim{position:absolute;inset:0;z-index:-2;background:#000;opacity:0;pointer-events:none}
+.scene.photo.ink-d .ph-dim{background:#fff}
+.scene.photo .ph-sh{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.52) 0%,rgba(0,0,0,.24) 24%,rgba(0,0,0,.06) 44%,rgba(0,0,0,0) 58%,rgba(0,0,0,.14) 82%,rgba(0,0,0,.40) 100%)}
+.scene.photo.ink-d .ph-sh{background:linear-gradient(180deg,rgba(255,255,255,.68) 0%,rgba(255,255,255,.36) 26%,rgba(255,255,255,.1) 46%,rgba(255,255,255,0) 60%,rgba(0,0,0,.08) 84%,rgba(0,0,0,.28) 100%)}
+.scene.photo .np .name{text-shadow:0 2px 24px rgba(0,0,0,.38)}
+.scene.photo.ink-d .np .name{text-shadow:0 1px 18px rgba(255,255,255,.55)}
+.scene.photo .np .lbl,.scene.photo .np .at,.scene.photo .dates,.scene.photo .loc,.scene.photo .arc-lbl{text-shadow:0 1px 12px rgba(0,0,0,.45)}
+.scene.photo.ink-d .np .lbl,.scene.photo.ink-d .np .at,.scene.photo.ink-d .dates,.scene.photo.ink-d .loc,.scene.photo.ink-d .arc-lbl{text-shadow:0 1px 12px rgba(255,255,255,.6)}
+
+/* ── اختيار الثيم: بطاقات صور ── */
+.thm.thm-ph{padding:0 0 4px;background:transparent;border:0;gap:7px;box-shadow:none}
+.thm-ph .thm-img{position:relative;display:block;width:100%;aspect-ratio:.72;border-radius:16px;overflow:hidden;background:var(--card-3);box-shadow:0 6px 16px rgba(0,0,0,.14);transition:box-shadow .2s,transform .2s var(--ease)}
+.thm-ph .thm-img img{width:100%;height:100%;object-fit:cover;display:block}
+.thm-ph .thm-img i{position:absolute;left:9px;bottom:9px;width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.92)}
+.thm-ph:active .thm-img{transform:scale(.97)}
+.thm-ph.on .thm-img{box-shadow:0 0 0 2.5px var(--gold),0 8px 22px rgba(0,0,0,.22)}
+.thm-ph.on .thm-img::after{content:'';position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/15px no-repeat;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.thm-ph.on{border:0;box-shadow:none}
+.thm-grid{gap:12px 10px}
+
+/* ── خلفية الصفحة الرئيسية ── */
+.hm-seg{margin:0 16px 10px}
+.hm-mine{display:flex;align-items:center;gap:10px;margin:0 16px 4px;padding:8px 10px 8px 8px;border-radius:16px;background:var(--card-2);border:1px solid var(--line)}
+.hm-mine.on{border-color:var(--gold)}
+.hm-mine img{width:44px;height:60px;border-radius:10px;object-fit:cover;flex:none}
+.hm-mine .t{font-size:13.5px;font-weight:600}.hm-mine .s{font-size:11.8px;color:var(--tx-3);line-height:1.5}
+.hm-hint{font-size:12.3px;padding:0 20px 2px}
+.scene.ha-prev{height:340px;margin:4px 16px 14px;border-radius:22px;touch-action:none;cursor:grab}
+.scene.ha-prev .ph-w{top:0}
+.scene .ha-demo{position:absolute;left:0;right:0;top:64px;text-align:center;color:var(--ink);pointer-events:none}
+.ha-demo .lbl{font-size:12.5px;color:var(--ink-2);font-weight:600}.ha-demo .name{font-family:var(--font-x);font-size:44px;font-weight:700;line-height:1.2}.ha-demo .at{font-size:15px}
+
+/* ── سلاسة: لا ضبابية حيّة خلف العناصر الثابتة (مكلفة جدًّا على أندرويد) ── */
+#tabbar,.pbar,.cd,.gchip,.gwater,.lvlup,.ibtn.glassy,.lvchip,.hzbar,.asbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#tabbar{background:var(--card);background:color-mix(in srgb,var(--card) 97%,transparent)}
+.pbar{background:var(--card)}
+.hzbar,.asbar{background:var(--card-2)}
+.scene .ibtn.glassy,.scene .lvchip{background:var(--gl);border-color:var(--gl-b)}
+
+/* ── هدوء: لا حركة دائمة في الخلفيات ── */
+.scene .sky-stars i,.scene .sky-stars .shoot,.scene .clouds i{animation:none!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ── ألوان الثيم بدل الأخضر الثابت (المسبحة والعدّاد واليوم الحالي) ── */
+.counter{background:radial-gradient(circle at 50% 38%,var(--brand-3) 0%,var(--brand) 55%,var(--brand-deep) 100%);box-shadow:0 22px 50px rgba(0,0,0,.30),inset 0 2px 0 rgba(255,255,255,.14),inset 0 -12px 30px rgba(0,0,0,.26)}
+.counter::before{opacity:.05}
+.zk .cnt,.cd2.today,.rmd-b.on{background:linear-gradient(180deg,var(--brand-2),var(--brand))}
+.zk .cnt{box-shadow:0 6px 16px rgba(0,0,0,.18)}
+[data-tkey] .beads .bd{fill:var(--card-3)}
+[data-tkey] .beads .bd.on{fill:url(#bdG)}
+
+/* ── «مسبحة حقيقية» ── */
+.tb-real .tbr{position:relative;width:min(92vw,380px);height:440px;margin:6px auto 0;border-radius:30px;overflow:hidden;touch-action:none;
+  background:radial-gradient(120% 80% at 60% 0%,var(--card-2),var(--card) 72%);box-shadow:inset 0 0 0 1px var(--line),var(--shadow-sm)}
+.tbr canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.tbr-c{position:absolute;left:0;top:0;bottom:0;width:44%;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.tbr-c .cn{font-size:62px;font-weight:700;line-height:1;color:var(--tx);font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.tbr-c .ct{font-size:13px;color:var(--tx-3);margin-top:8px}
+.tbr-c .lp{font-size:12px;color:var(--gold-tx);margin-top:4px;min-height:16px}
+.tbr-hint{position:absolute;right:12px;bottom:14px;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--tx-3);pointer-events:none}
+.tbr-hint .i{width:16px;height:16px}
+.tbr-mats{margin-top:12px}
+.tbr-mats .chip{gap:6px}
+.mdot{width:14px;height:14px;border-radius:50%;display:inline-block;flex:none;box-shadow:inset -1px -2px 3px rgba(0,0,0,.25)}
+.mdot-gold{background:radial-gradient(circle at 35% 30%,var(--gold-2),var(--gold) 58%,var(--gold-3))}
+.mdot-wood{background:radial-gradient(circle at 35% 30%,#E4B07A,#A8683B 58%,#55301A)}.mdot-amber{background:radial-gradient(circle at 35% 30%,#FFDB8E,#E8962A 58%,#8C480B)}.mdot-pearl{background:radial-gradient(circle at 35% 30%,#FFFFFF,#F3EAE4 58%,#C2AFA2)}.mdot-turq{background:radial-gradient(circle at 35% 30%,#A9F0E5,#3BB5A8 58%,#106C66)}.mdot-agate{background:radial-gradient(circle at 35% 30%,#FFAC8A,#CF452E 58%,#6A160D)}.mdot-onyx{background:radial-gradient(circle at 35% 30%,#6E6E74,#202026 58%,#050506)}
+
+/* ── الشعار الجديد: «وسن» بالنستعليق ونجمة النون ── */
+#splash{background:radial-gradient(120% 80% at 34% 22%,#155E52 0%,#0B2E36 55%,#060F1E 100%)}
+#splash::before{opacity:.05}
+#splash .wm-splash{height:124px;margin:0 0 6px;filter:drop-shadow(0 10px 28px rgba(0,0,0,.38));animation:wmin .8s var(--ease) both}
+.wm{overflow:visible}
+.wm-hero{height:40px}
+.wm-onb{height:92px}
+.wm-about{height:76px}
