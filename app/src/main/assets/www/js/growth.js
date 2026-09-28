@@ -132,6 +132,7 @@ const ReadTrack = {
 };
 
 function gardenPhase(now) {
+  if (typeof skyLock === 'function' && skyLock()) return 'day';   // وسن 6.1: «مشرقة دائمًا»
   try {
     const t = Times.forDay(Times.locDay(now));
     if (now < t.fajr || now >= t.isha) return 'night';

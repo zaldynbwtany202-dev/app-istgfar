@@ -1,3 +1,10 @@
+وسن · Wasan 6.1 — «ثيماتك المشرقة»
+=====================================================
+  - THEME_GROUPS بترتيب 4.6 أولًا (kawaii · scene · girls) ثم live (جديد) ثم anim · islamic · calm · more. kmorpho → g:'islamic'.
+  - skyLock() في core.js: Settings.skyMode ('bright' افتراضي | 'live') — LivingSky.at يثبّت طور 'day' و gardenPhase يعيد 'day' للثيمات الفاتحة؛ زرّ «سماء المشهد» في ورقة الثيمات.
+  - ٦ ثيمات g:'live' (lbfly · lbubble · lrainbow · lsakura · lballoon · lbeach) في anim.js (bgarden · bubble · rainbow · sakura · balloon · beach) + anim.css (.scene.anim.ink-d) + themes.css + img/th/<k>-t.webp، و rt لكل منها (يطبَّق عند الاختيار لكل ثيم له rt).
+  - whatsNewSheet() مرة واحدة (Store 'wnSeen') من main.js. الإصدار 6.1 (versionCode 16).
+
 وسن · Wasan 6.0 — الإصدار النهائي
 =====================================================
 ما الجديد في 6.0 (فوق كل ما في 5.1)

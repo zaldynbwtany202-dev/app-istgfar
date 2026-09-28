@@ -41,8 +41,10 @@ const LivingSky = (() => {
   function at(now) {
     now = now || new Date();
     let a, b, fr;
-    try { fr = frames(now); } catch (e) { fr = null; }
-    if (!fr || fr.length < 2) { const h = now.getHours(); const k = h < 5 || h >= 20 ? 'night' : h < 7 ? 'dawn' : h < 16 ? 'day' : h < 18 ? 'golden' : 'sunset'; a = b = [now, k]; }
+    const lock = typeof skyLock === 'function' && skyLock();   // وسن 6.1: «مشرقة دائمًا»
+    try { fr = lock ? null : frames(now); } catch (e) { fr = null; }
+    if (lock) { a = b = [now, 'day']; }
+    else if (!fr || fr.length < 2) { const h = now.getHours(); const k = h < 5 || h >= 20 ? 'night' : h < 7 ? 'dawn' : h < 16 ? 'day' : h < 18 ? 'golden' : 'sunset'; a = b = [now, k]; }
     else { for (let i = 0; i < fr.length - 1; i++) if (now >= fr[i][0] && now < fr[i + 1][0]) { a = fr[i]; b = fr[i + 1]; break; } if (!a) { a = b = fr[fr.length - 1]; } }
     const u = a === b ? 0 : (now - a[0]) / (b[0] - a[0]), s = u * u * (3 - 2 * u);   // انتقال ناعم
     const SP = skyP(), A = SP[a[1]] || P[a[1]], B = SP[b[1]] || P[b[1]];

@@ -57,5 +57,6 @@
 
   const sp = $('#splash');
   setTimeout(() => { sp.classList.add('out'); setTimeout(() => sp.remove(), 600); }, 850);
-  if (!Store.get('onboarded', 0)) setTimeout(() => Onboarding.show(), 900);
+  if (!Store.get('onboarded', 0)) { Store.set('wnSeen', '6.1'); setTimeout(() => Onboarding.show(), 900); }
+  else if (Store.get('wnSeen', '') !== '6.1') setTimeout(() => { try { whatsNewSheet(); } catch (e) { console.error(e); } }, 2400);   // وسن 6.1
 })();

@@ -130,6 +130,74 @@
 .ap-br1{right:-26px;top:-18px;width:44%;transform-origin:100% 0;animation-duration:7.5s;opacity:.92}
 .ap-br2{left:-14px;transform-origin:0 0;animation-duration:9.5s;animation-delay:-3s}.ap-br2 svg{transform:scaleX(-1)}
 .ap-f i{height:calc(var(--s) * 1.4)}
+/* ═════════ وسن 6.1 · ثيمات حيّة مشرقة — كتابة داكنة فوق سماء نهارية ═════════ */
+.scene.anim.ink-d{--ink:#1C2A44;--ink-2:rgba(28,42,68,.8);--arc:rgba(28,42,68,.24);--arc-on:#1C2A44;--gl:rgba(255,255,255,.55);--gl-b:rgba(255,255,255,.85)}
+.scene.anim.ink-d .ph-sh{background:linear-gradient(180deg,rgba(255,255,255,.42) 0%,rgba(255,255,255,.14) 24%,rgba(255,255,255,0) 44%,rgba(255,255,255,0) 84%,rgba(0,0,0,.06) 100%)}
+.scene.anim.ink-d .np .name{text-shadow:0 1px 18px rgba(255,255,255,.75)}
+.scene.anim.ink-d .np .lbl,.scene.anim.ink-d .np .at,.scene.anim.ink-d .dates,.scene.anim.ink-d .loc,.scene.anim.ink-d .arc-lbl{text-shadow:0 1px 10px rgba(255,255,255,.8)}
+/* حديقة الفراشات */
+.an-bgarden .lg-sky{inset:0;background:linear-gradient(180deg,#8CCBF3 0%,#B7E0F9 38%,#E2F3FC 64%,#F4FAF0 100%)}
+.an-bgarden .lg-sun{left:82%;top:12%;width:230px;height:230px;margin:-115px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,251,226,.98),rgba(255,242,196,.45) 42%,rgba(255,242,196,0))}
+.lg-c1{top:9%;width:230px;opacity:.95;animation-duration:100s;animation-delay:-35s}.lg-c2{top:24%;width:160px;opacity:.8;animation-duration:140s;animation-delay:-80s}
+.lg-land{left:0;right:0;bottom:12%;height:38%}.lg-land svg{width:100%;height:100%;display:block}.lg-land::after{content:'';position:absolute;left:0;right:0;top:99%;height:40%;background:#6AB453}
+.lg-bf{inset:0}
+.bf{position:absolute;display:block;will-change:transform;animation:bfa 12s ease-in-out infinite}
+.bf svg{width:100%;height:auto;display:block;overflow:visible}
+.bf .wl,.bf .wr{animation:bfflap .3s ease-in-out infinite alternate;animation-delay:var(--fd,0s)}
+@keyframes bfflap{from{transform:scaleX(1)}to{transform:scaleX(.25)}}
+.bf-a{animation-name:bfa}.bf-b{animation-name:bfb}.bf-c{animation-name:bfc}
+@keyframes bfa{0%{transform:translate3d(0,0,0) rotate(-8deg)}25%{transform:translate3d(70px,-46px,0) rotate(10deg)}50%{transform:translate3d(130px,6px,0) rotate(-4deg)}75%{transform:translate3d(58px,44px,0) rotate(8deg)}100%{transform:translate3d(0,0,0) rotate(-8deg)}}
+@keyframes bfb{0%{transform:translate3d(0,0,0) rotate(6deg)}30%{transform:translate3d(-80px,-30px,0) rotate(-10deg)}55%{transform:translate3d(-120px,34px,0) rotate(6deg)}80%{transform:translate3d(-36px,52px,0) rotate(-6deg)}100%{transform:translate3d(0,0,0) rotate(6deg)}}
+@keyframes bfc{0%{transform:translate3d(0,0,0) rotate(0)}20%{transform:translate3d(40px,-60px,0) rotate(12deg)}45%{transform:translate3d(-30px,-90px,0) rotate(-8deg)}70%{transform:translate3d(-60px,-20px,0) rotate(6deg)}100%{transform:translate3d(0,0,0) rotate(0)}}
+/* فقاعات */
+.an-bubble .lu-sky{inset:0;background:linear-gradient(180deg,#F8D2E4 0%,#EAD6F6 40%,#D4E4FB 72%,#EAF5FC 100%)}
+.lu-bk{inset:0}.lu-bk i{position:absolute;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.55),rgba(255,255,255,0))}
+.lu-bk i:nth-child(1){left:6%;top:14%;width:140px;height:140px}.lu-bk i:nth-child(2){left:64%;top:8%;width:180px;height:180px}.lu-bk i:nth-child(3){left:36%;top:38%;width:120px;height:120px}.lu-bk i:nth-child(4){left:76%;top:46%;width:100px;height:100px}
+.lu-sea{left:0;bottom:8%;width:200%;height:24%;display:flex;opacity:.92;will-change:transform;animation:awx 120s linear infinite}.lu-sea img{width:50%;height:100%;object-fit:cover}
+.lu-b{inset:0}
+.lu-b i{position:absolute;bottom:-70px;display:block;border-radius:50%;will-change:transform,opacity;animation:luup 14s linear infinite}
+.lu-b i span{position:absolute;inset:0;border-radius:50%;will-change:transform;animation:lusw 4s ease-in-out infinite alternate;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95) 0 5%,rgba(255,255,255,.45) 11%,rgba(255,255,255,0) 26%),radial-gradient(circle at 68% 74%,rgba(255,215,245,.45),rgba(255,255,255,0) 40%),radial-gradient(circle,rgba(255,255,255,.08) 50%,rgba(120,170,255,.42) 68%,rgba(236,120,200,.62) 82%,rgba(255,255,255,.95) 93%,rgba(150,120,210,.35) 97%,rgba(255,255,255,0) 100%)}
+@keyframes luup{0%{transform:translate3d(0,0,0) scale(.9);opacity:0}6%{opacity:1}88%{opacity:.95}100%{transform:translate3d(0,-700px,0) scale(1.05);opacity:0}}
+@keyframes lusw{from{transform:translateX(-12px)}to{transform:translateX(14px)}}
+.lu-sp{inset:0}.lu-sp i{position:absolute;display:block;will-change:transform,opacity;animation:lusp 3.2s ease-in-out infinite}.lu-sp svg{width:100%;height:auto;display:block}
+@keyframes lusp{0%,100%{transform:scale(.3) rotate(0);opacity:0}50%{transform:scale(1) rotate(45deg);opacity:1}}
+/* قوس قزح */
+.an-rainbow .lr-sky{inset:0;background:linear-gradient(180deg,#7EC4F1 0%,#A9D9F7 40%,#D8EFFB 70%,#F1F9FD 100%)}
+.an-rainbow .lr-sun{left:16%;top:13%;width:200px;height:200px;margin:-100px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,252,230,.95),rgba(255,244,200,.4) 42%,rgba(255,244,200,0))}
+.lr-rb{left:-6%;right:-6%;top:24%;height:42%;will-change:opacity;animation:lrrb 6s ease-in-out infinite alternate;-webkit-mask:linear-gradient(180deg,#000 50%,transparent 88%);mask:linear-gradient(180deg,#000 50%,transparent 88%)}.lr-rb svg{width:100%;height:100%;display:block}
+@keyframes lrrb{from{opacity:.7}to{opacity:.95}}
+.lr-c1{top:8%;width:190px;opacity:.9;animation-duration:110s;animation-delay:-20s}.lr-c2{top:31%;width:140px;opacity:.7;animation-duration:150s;animation-delay:-100s}
+.lr-cb{width:54%;will-change:transform;animation:lrcb 7s ease-in-out infinite alternate}.lr-cb1{left:-14%;top:52%}.lr-cb2{right:-14%;top:54%;animation-delay:-3s}
+@keyframes lrcb{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-7px,0)}}
+.lr-bd,.lh-gu{inset:0}.lr-bd i,.lh-gu i{position:absolute;left:0;display:block;will-change:transform;animation:lrbd 110s linear infinite}
+.lr-bd svg,.lh-gu svg{width:100%;height:auto;display:block;animation:lrfl .55s ease-in-out infinite alternate}
+@keyframes lrbd{from{transform:translate3d(-60px,0,0)}to{transform:translate3d(480px,-46px,0)}}
+@keyframes lrfl{from{transform:scaleY(1)}to{transform:scaleY(.45)}}
+.lr-land,.lb2-land{left:0;right:0;bottom:10%;height:24%}.lr-land svg,.lb2-land svg{width:100%;height:100%;display:block}
+.lr-land::after,.lb2-land::after{content:'';position:absolute;left:0;right:0;top:99%;height:50%;background:#94D07C}
+/* ربيع الكرز */
+.an-sakura .lk-sky{inset:0;background:linear-gradient(180deg,#9FD3F3 0%,#C8E7F8 40%,#EEF4F8 68%,#FCE8F0 100%)}
+.an-sakura .lk-sun{left:34%;top:20%;width:230px;height:230px;margin:-115px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,253,236,.95),rgba(255,246,214,.4) 42%,rgba(255,246,214,0))}
+.an-sakura .ap-br1{top:14px;right:-18px;width:48%}.an-sakura .ap-br2{top:26px}
+.lk-c1{top:12%;width:210px;opacity:.9;animation-duration:120s;animation-delay:-60s}
+.lk-hills{left:0;right:0;bottom:10%;height:34%}.lk-hills svg{width:100%;height:100%;display:block}.lk-hills::after{content:'';position:absolute;left:0;right:0;top:99%;height:40%;background:#B0DB9C}
+/* بالونات */
+.an-balloon .lb2-sky{inset:0;background:linear-gradient(180deg,#9AD4F5 0%,#C4E6F9 45%,#EAF4FB 74%,#FFF1F4 100%)}
+.an-balloon .lb2-sun{left:78%;top:14%;width:210px;height:210px;margin:-105px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,252,230,.95),rgba(255,244,200,.4) 42%,rgba(255,244,200,0))}
+.lb2-c1{top:10%;width:200px;opacity:.95;animation-duration:105s;animation-delay:-25s}.lb2-c2{top:28%;width:150px;opacity:.75;animation-duration:140s;animation-delay:-90s}.lb2-c3{top:42%;width:170px;opacity:.6;animation-duration:170s;animation-delay:-130s}
+.lb2-b{inset:0}.lb2-b i{position:absolute;bottom:-16%;display:block;will-change:transform,opacity;animation:lb2up 22s linear infinite}
+.lb2-b span{display:block;will-change:transform;animation:lb2sw 5s ease-in-out infinite alternate;transform-origin:50% 100%}.lb2-b svg{width:100%;height:auto;display:block;overflow:visible}
+@keyframes lb2up{0%{transform:translate3d(0,0,0);opacity:0}5%{opacity:1}92%{opacity:1}100%{transform:translate3d(0,-720px,0);opacity:0}}
+@keyframes lb2sw{from{transform:translateX(-8px) rotate(-5deg)}to{transform:translateX(10px) rotate(5deg)}}
+/* بحر مشمس */
+.an-beach .lh-sky{inset:0;background:linear-gradient(180deg,#5FBBEF 0%,#92D2F6 34%,#C6EAFB 54%,#E8F7FC 62%)}
+.an-beach .lh-sun{left:74%;top:19%;width:190px;height:190px;margin:-95px;border-radius:50%;background:radial-gradient(closest-side,#FFFDF2 0 20%,rgba(255,246,204,.8) 34%,rgba(255,240,180,0))}
+.lh-c1{top:9%;width:220px;opacity:.95;animation-duration:100s;animation-delay:-40s}.lh-c2{top:27%;width:150px;opacity:.8;animation-duration:135s;animation-delay:-70s}
+.lh-sea{left:0;right:0;top:58%;bottom:0;overflow:hidden;background:linear-gradient(180deg,#9AE6EE,#1B97BA)}
+.lh-sea .aw-sp{transform:translateX(12%)}
+.lh-gl{position:absolute;left:74%;top:-2%;width:150px;height:70%;margin-left:-75px;border-radius:50%;background:radial-gradient(50% 60% at 50% 0,rgba(255,255,240,.7),rgba(255,255,240,.16) 55%,rgba(255,255,240,0) 100%);will-change:transform,opacity;animation:awgl 3.2s ease-in-out infinite alternate}
+.lh-gu i{animation-name:lhgu}@keyframes lhgu{from{transform:translate3d(470px,20px,0)}to{transform:translate3d(-80px,-30px,0)}}
 /* بطاقة «حيّ» في اختيار الثيم */
 .thm-live{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:3px;padding:2px 8px 2px 7px;border-radius:99px;background:rgba(0,0,0,.46);color:#fff;font-size:10.5px;font-weight:700}
 .thm-live .i{width:11px;height:11px}

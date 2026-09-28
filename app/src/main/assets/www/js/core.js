@@ -330,6 +330,8 @@ const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color
 function isNightNow() {
   try { const now = new Date(), t = Times.forDay(Times.locDay(now)); return now < t.sunrise || now >= t.maghrib; } catch (e) { const h = new Date().getHours(); return h < 6 || h >= 19; }
 }
+/* وسن 6.1 · «مشرقة دائمًا»: مشاهد الثيمات الفاتحة تبقى نهارية مشرقة (الافتراضي)، أو تتبع الوقت ليلًا ونهارًا كما في 4.6 */
+function skyLock() { try { return Settings.skyMode !== 'live' && THEMES[uiTheme()].base === 'light'; } catch (e) { return false; } }
 /* ═══ وسن 4.5 · السمات: كل سمة = أساس (داكن/فاتح) + نغمة ألوان + لون مقترح ═══ */
 const THEMES = {
   dark: { n: 'داكن هادئ', base: 'dark', g: 'calm', bar: '#0C1513', sw: ['#0C1513', '#182724', '#0B5D4B', '#D4AF63'] },
@@ -343,7 +345,7 @@ const THEMES = {
   violet: { n: 'بنفسجي حالم', base: 'dark', tone: 'violet', g: 'girls', acc: 'lilac', bar: '#110E1F', sw: ['#110E1F', '#211B38', '#7E63B8', '#C9B3F2'] },
   // وسن 4.6 · «ثيمات كاملة» برسوم «ريشة وسن» (art.js): لكل ثيم مشهده المرسوم وألوانه وزينة بطاقاته ومسبحته — skins.js
   kbfly: { n: 'الفراشات الزرقاء', base: 'light', tone: 'bfly', g: 'kawaii', acc: 'morpho', skin: 'kbfly', rt: 'sky', bar: '#EEF5FF', sw: ['#EEF5FF', '#A9D2FF', '#2D6FE0', '#7FC6FF'] },
-  kmorpho: { n: 'فراشة المورفو', base: 'dark', g: 'kawaii', acc: 'kmorpho', bar: '#08110F', sw: ['#08110F', '#172120', '#3D82D6', '#A0D4F7'], ph: 1, ink: 'w', top: '#141906', hb: '#202D21' },   // وسن 6: فراشة 5.0 بصورتها الحقيقية
+  kmorpho: { n: 'فراشة المورفو', base: 'dark', g: 'islamic', acc: 'kmorpho', bar: '#08110F', sw: ['#08110F', '#172120', '#3D82D6', '#A0D4F7'], ph: 1, ink: 'w', top: '#141906', hb: '#202D21' },   // وسن 6: فراشة 5.0 بصورتها الحقيقية
   krose: { n: 'الورد', base: 'light', tone: 'rosy', g: 'kawaii', acc: 'rosered', skin: 'krose', rt: 'pink', bar: '#FFF0F3', sw: ['#FFF0F3', '#F8CFDC', '#D6336C', '#8FC89A'] },
   kstar: { n: 'النجمة', base: 'dark', tone: 'starry', g: 'kawaii', acc: 'starry', skin: 'kstar', rt: 'blue', bar: '#0E1130', sw: ['#0E1130', '#1F2454', '#5B4FC4', '#F5C94E'] },
   kberry: { n: 'الفراولة', base: 'light', tone: 'berry', g: 'kawaii', acc: 'berry', skin: 'kberry', rt: 'pink', bar: '#FFF6F1', sw: ['#FFF6F1', '#FFD2DB', '#E5485F', '#6CC070'] },
@@ -380,7 +382,14 @@ const THEMES = {
   astar: { n: 'ليلة النجوم', base: 'dark', g: 'anim', anim: 'star', acc: 'astar', bar: '#070B18', sw: ['#070B18', '#0D1838', '#4F63C9', '#E8C66A'], ink: 'w', top: '#0D1838' },
   alant: { n: 'فوانيس', base: 'dark', g: 'anim', anim: 'lant', acc: 'alant', bar: '#120A10', sw: ['#120A10', '#2A1340', '#B8472F', '#F2B45A'], ink: 'w', top: '#2A1340' },
   asnow: { n: 'ثلج', base: 'light', g: 'anim', anim: 'snow', acc: 'asnow', bar: '#EEF3F8', sw: ['#EEF3F8', '#26405F', '#3E6E9E', '#D9A45E'], ink: 'w', top: '#26405F' },
-  apetal: { n: 'بتلات الورد', base: 'light', g: 'anim', anim: 'petal', acc: 'apetal', bar: '#FBF1F4', sw: ['#FBF1F4', '#4B2150', '#B84C78', '#D79A6B'], ink: 'w', top: '#4B2150' }
+  apetal: { n: 'بتلات الورد', base: 'light', g: 'anim', anim: 'petal', acc: 'apetal', bar: '#FBF1F4', sw: ['#FBF1F4', '#4B2150', '#B84C78', '#D79A6B'], ink: 'w', top: '#4B2150' },
+  // وسن 6.1 · ثيمات حيّة مشرقة (نهارية، بكتابة داكنة)
+  lbfly: { n: 'حديقة الفراشات', base: 'light', g: 'live', anim: 'bgarden', acc: 'lbfly', bar: '#EFF7FD', sw: ['#EFF7FD', '#8CCBF3', '#2F78D8', '#F2AE35'], rt: 'sky', ink: 'd', top: '#8CCBF3' },
+  lbubble: { n: 'فقاعات', base: 'light', g: 'live', anim: 'bubble', acc: 'lbubble', bar: '#FAF5FB', sw: ['#FAF5FB', '#F8D2E4', '#A652B8', '#E88FB4'], rt: 'lavender', ink: 'd', top: '#F8D2E4' },
+  lrainbow: { n: 'قوس قزح', base: 'light', g: 'live', anim: 'rainbow', acc: 'lrainbow', bar: '#F2F8FD', sw: ['#F2F8FD', '#7EC4F1', '#6D56D0', '#F2B33D'], rt: 'sky', ink: 'd', top: '#7EC4F1' },
+  lsakura: { n: 'ربيع الكرز', base: 'light', g: 'live', anim: 'sakura', acc: 'lsakura', bar: '#FDF5F8', sw: ['#FDF5F8', '#9FD3F3', '#C84A7C', '#E4A15A'], rt: 'pink', ink: 'd', top: '#9FD3F3' },
+  lballoon: { n: 'بالونات', base: 'light', g: 'live', anim: 'balloon', acc: 'lballoon', bar: '#FEF5F3', sw: ['#FEF5F3', '#9AD4F5', '#E2574C', '#F2B33D'], rt: 'cream', ink: 'd', top: '#9AD4F5' },
+  lbeach: { n: 'بحر مشمس', base: 'light', g: 'live', anim: 'beach', acc: 'lbeach', bar: '#EDF9FB', sw: ['#EDF9FB', '#5FBBEF', '#0E8FAA', '#F0AE3C'], rt: 'sky', ink: 'd', top: '#5FBBEF' }
 };
 /* المفتاح الفعلي للسمة الآن (auto/prayer يختاران بين الداكن والفاتح) */
 function uiTheme() {

@@ -799,7 +799,8 @@ function segRow(title, sub, key, opts) {
     '<div class="seg" data-seg="' + key + '" style="flex:1 1 170px">' + opts.map(([v, t]) => '<button data-v="' + v + '" class="' + (String(Settings[key]) === String(v) ? 'on' : '') + '">' + t + '</button>').join('') + '</div></div>';
 }
 const THEME_NAMES = Object.assign({ auto: 'حسب النظام', prayer: 'تلقائي حسب المواقيت' }, Object.fromEntries(Object.entries(THEMES).map(([k, v]) => [k, v.n])));
-const THEME_GROUPS = [['anim', 'حيّة متحركة (جديد)'], ['islamic', 'فخامة إسلامية بالصور'], ['kawaii', 'ثيمات كاملة للبنات'], ['scene', 'مشاهد'], ['girls', 'ناعمة وردية'], ['calm', 'هادئة'], ['more', 'مختلفة']];
+// وسن 6.1: ثيمات 4.6 أولًا وبترتيبها نفسه، ثم الحيّة المشرقة، ثم البقية
+const THEME_GROUPS = [['kawaii', 'ثيمات كاملة للبنات'], ['scene', 'مشاهد'], ['girls', 'ناعمة وردية'], ['live', 'حيّة مشرقة (جديد)'], ['anim', 'حيّة متحركة'], ['islamic', 'بالصور الحقيقية'], ['calm', 'هادئة'], ['more', 'مختلفة']];
 /* وسن 5.1 · الثيمات: القديمة كما كانت (المشاهد والرسوم) + فخامة إسلامية بالصور + ثيمات حيّة متحركة، وخلفية الرئيسية: مشهد الثيم أو صورتك */
 const HERO_MODES = [['theme', 'مشهد الثيم'], ['mine', 'صورتي']];
 function themeSheet() {
@@ -820,6 +821,8 @@ function themeSheet() {
   const draw = () => { const hm = heroMode();
     return '<div class="sh-t">الثيمات</div><div class="sh-s">اختاري ما يريح عينيك ويناسب ذوقك</div>' +
       '<div class="thm-g">خلفية الصفحة الرئيسية</div><div class="seg hm-seg" id="hm-seg">' + HERO_MODES.map(([v, t]) => '<button data-hm="' + v + '" class="' + (hm === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
+      '<div class="thm-g">سماء المشهد</div><div class="seg hm-seg" id="sky-seg">' + [['bright', 'مشرقة دائمًا'], ['live', 'تتبع الوقت: ليل ونهار']].map(([v, t]) => '<button data-sky="' + v + '" class="' + ((Settings.skyMode === 'live' ? 'live' : 'bright') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
+      '<div class="hm-hint faint">' + (Settings.skyMode === 'live' ? 'تُظلم السماء بعد المغرب وتُشرق مع الفجر كما في 4.6' : 'مشاهد الثيمات الفاتحة تبقى نهارية مشرقة في كل وقت') + '</div>' +
       (Settings.heroImg ? '<div class="hm-mine' + (hm === 'mine' ? ' on' : '') + '"><img src="' + esc(Settings.heroImg) + '" alt=""><div class="grow"><div class="t">صورتك من الهاتف</div><div class="s">حرّكيها واضبطي تعتيمها لتبقى الكتابة واضحة</div></div>' +
         '<button class="btn sm" data-hm-act="adjust">ضبط</button><button class="btn sm ghost" data-hm-act="pick">تغيير</button></div>' : '<div class="hm-hint faint">اختاري «صورتي» لتضعي صورة من معرض هاتفك</div>') +
       THEME_GROUPS.map(([g, t]) => '<div class="thm-g">' + t + '</div><div class="thm-grid">' + Object.keys(THEMES).filter(k => THEMES[k].g === g).map(card).join('') + '</div>').join('') +
@@ -828,6 +831,7 @@ function themeSheet() {
   Sheet.open(draw(), el => {
     const redraw = () => { const sy = el.scrollTop; el.innerHTML = '<div class="grab"></div>' + draw(); el.scrollTop = sy; };
     el.addEventListener('click', e => {
+      const sk = e.target.closest('[data-sky]'); if (sk) { setSetting('skyMode', sk.dataset.sky); redraw(); vibrate(8); return; }
       const h = e.target.closest('[data-hm]');
       if (h) { const v = h.dataset.hm; if (v === 'mine' && !Settings.heroImg) { pickHeroImage(() => redraw()); return; } setSetting('heroMode', v); redraw(); vibrate(8); return; }
       const a = e.target.closest('[data-hm-act]');
@@ -838,7 +842,7 @@ function themeSheet() {
         if (T && T.acc) { setSetting('accent', T.acc); setSetting('accentAuto', true); }
         else if (Settings.accentAuto) { setSetting('accent', 'emerald'); setSetting('accentAuto', false); }
       }
-      if (T && T.skin && T.rt) setSetting('readTheme', T.rt);
+      if (T && T.rt) setSetting('readTheme', T.rt);   // وسن 6.1: والثيمات الحيّة المشرقة أيضًا تفتح المصحف بلون مشرق
       if (Settings.heroMode === 'mine') setSetting('heroMode', 'theme');   // اختيار ثيم = عرض مشهده (وتبقى صورتك محفوظة لتعودي إليها)
       applyTheme(); $$('[data-th]', el).forEach(x => x.classList.toggle('on', x === b)); vibrate(8);
       try { if (T && T.skin) kwCelebrate(T.skin); } catch (er) {}
@@ -1070,8 +1074,11 @@ function soundSheet() {
 window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.textContent = j.title || SOUND_NAMES[j.mode] || ''; toast('صوت الأذان: ' + (j.title || '')); } catch (e) {} };
 
 /* ═══════════════ عن التطبيق ═══════════════ */
-const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '6.0';
+const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '6.1';
 const WHATS_NEW = [
+  ['6.1', [['palette', 'ثيمات 4.6 المشرقة في المقدمة', 'الفراشات الزرقاء، والورد، والنجمة، والفراولة، والأزهار، ثم المشاهد (أزهار الكرز، حديقة الورود، حقل الخزامى) والناعمة الوردية — برسومها وألوانها وترتيبها كما كانت في 4.6 تمامًا، في أول قائمة الثيمات'],
+    ['sun', 'مشرقة دائمًا', 'مشاهد الثيمات الفاتحة تبقى نهارية مشرقة حتى في الليل — ومن «الثيمات ← سماء المشهد» اختاري «تتبع الوقت» إن أحببتِ أن تُظلم السماء بعد المغرب كما في 4.6'],
+    ['sparkle', 'ستة ثيمات حيّة مشرقة', 'حديقة الفراشات (فراشات ملوّنة ترفرف وتطير)، وفقاعات، وقوس قزح، وربيع الكرز، وبالونات، وبحر مشمس — نهارية بكتابة داكنة واضحة، وتتوقف حركتها حين لا تظهر لتبقى البطارية بخير']]],
   ['6.0', [['headphones', 'سور أكثر بأصوات قرّائك — مع متابعة الآيات', 'أحمد خضر ٦٩ سورة، ومحمود الشحات أنور ٦٤، وعبدالرحمن مسعد ١٧، وعبدالله شعبان ٣٠ — تُسمَع من أرشيف الإنترنت أو تُنزَّل لتعمل دون إنترنت، وتوقيت كل آية محسوب من التسجيل نفسه فيتابعها المصحف. وإن لم تتوفّر سورة بصوت قارئك اقترحنا لها وحدها صوتًا بديلًا ثم نعود إلى قارئك'],
     ['palette', 'الفراشات كما كانت — وثيمات حيّة جديدة', 'عاد ثيم الفراشات الزرقاء بحركته وألوانه الأصلية تمامًا، ومعه «فراشة المورفو» بصورتها الحقيقية، وأربعة ثيمات حيّة جديدة: ليلة النجوم بشهبها، والفوانيس، والثلج، وبتلات الورد'],
     ['vol', 'مؤثرات صوتية تعمل فعلًا', 'صوت الحبّات والنقر صار بمحرّك الصوت الأصلي في الهاتف، فيعمل دائمًا وبلا تأخير — مع تنبيه إن كان صوت الوسائط صامتًا'],
@@ -1215,3 +1222,15 @@ const Onboarding = {
     }
   },
 };
+
+/* ── وسن 6.1: «ما الجديد» مرة واحدة بعد التحديث، مع زرّ مباشر إلى الثيمات ── */
+function whatsNewSheet() {
+  if (document.querySelector('.onb') || document.getElementById('splash') || Sheet.el) { setTimeout(whatsNewSheet, 2500); return; }
+  if (!Router.cur || Router.cur.r !== 'home') { setTimeout(whatsNewSheet, 4000); return; }
+  Store.set('wnSeen', '6.1');
+  const items = WHATS_NEW[0][1];
+  const html = '<div class="sh-t">الجديد في وسن ' + N('6.1') + '</div><div class="sh-s">عادت ثيماتك المشرقة إلى أول القائمة</div>' +
+    '<div class="list mx">' + items.map(([ic, t, s]) => '<div class="li"><div class="ic g">' + icon(ic) + '</div><div class="grow"><div class="t">' + t + '</div><div class="s">' + s + '</div></div></div>').join('') + '</div>' +
+    '<div class="mx" style="margin-top:14px"><button class="btn primary block" id="wn-th">' + icon('palette') + 'اختاري ثيمًا مشرقًا</button><button class="btn ghost block" id="wn-x" style="margin-top:8px">لاحقًا</button></div>';
+  Sheet.open(html, el => { $('#wn-th', el).onclick = () => Sheet.close(() => themeSheet()); $('#wn-x', el).onclick = () => Sheet.close(); });
+}
