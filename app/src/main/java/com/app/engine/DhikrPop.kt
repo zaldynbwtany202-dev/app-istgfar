@@ -48,7 +48,7 @@ object DhikrPop {
     const val CH_SOFT = "wasan_pop_soft"
     const val CH_QUIET = "wasan_pop_quiet"
 
-    data class Item(val t: String, val n: Int, val f: String, val v: String)
+    data class Item(val t: String, val n: Int, val f: String, val v: String, val a: String = "")
 
     private fun prefs(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -72,7 +72,7 @@ object DhikrPop {
         for (i in 0 until a.length()) {
             val o = a.optJSONObject(i) ?: continue
             val t = o.optString("t"); if (t.isBlank()) continue
-            out.add(Item(t, o.optInt("n", c.optInt("count", 3)).coerceIn(1, 1000), o.optString("f"), o.optString("v").ifBlank { t }))
+            out.add(Item(t, o.optInt("n", c.optInt("count", 3)).coerceIn(1, 1000), o.optString("f"), o.optString("v").ifBlank { t }, o.optString("a")))
         }
         return out
     }
@@ -170,11 +170,16 @@ object DhikrPop {
         val style = c.optString("style", "notif")
         val sound = c.optString("sound", "soft")
         val overlay = style == "overlay" && PopOverlay.can(ctx)
+        // وسن 4.8: صوت بشري حقيقي للذكر الذي اختارته المستخدمة (تسجيل مدمج في التطبيق)، وبقية الأذكار بنغمتها المعتادة
+        val vres = if (item.a.isNotBlank()) voiceRes(ctx, item.a) else 0
+        val tts = sound == "voice" || sound == "tts"
+        val chime = if (vres != 0 || tts) "quiet" else sound
         if (overlay) PopOverlay.show(ctx, item, c.optInt("secs", 15).coerceIn(6, 120))
-        if (!overlay || c.optBoolean("alsoNotif", false)) post(ctx, item, c, sound)
-        else if (sound == "soft") playSoft(ctx)
+        if (!overlay || c.optBoolean("alsoNotif", false)) post(ctx, item, c, chime)
+        else if (chime == "soft") playSoft(ctx)
         if (c.optBoolean("vib", true)) buzz(ctx)
-        if (sound == "voice" && AdhanScheduler.canPlayAloud(ctx)) {
+        if (vres != 0 && AdhanScheduler.canPlayAloud(ctx)) { playVoice(ctx, vres) { done() }; return true }
+        if (vres == 0 && tts && AdhanScheduler.canPlayAloud(ctx)) {
             WasanVoice.speak(ctx.applicationContext, item.v, c.optDouble("rate", 0.85).toFloat()) { done() }
             return true
         }
@@ -190,6 +195,25 @@ object DhikrPop {
     }
 
     fun softUri(ctx: Context): Uri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + ctx.packageName + "/" + R.raw.wasan_pop)
+
+    /** وسن 4.8: ملف الصوت البشري للذكر (res/raw/wasan_v_<key>.ogg) */
+    fun voiceRes(ctx: Context, key: String): Int = if (!Regex("^[a-z0-9]{1,8}$").matches(key)) 0 else try { ctx.resources.getIdentifier("wasan_v_" + key, "raw", ctx.packageName) } catch (_: Exception) { 0 }
+
+    /** يُشغّل التسجيل البشري للذكر مرة واحدة ثم يستدعي done (مع حدّ أقصى 40 ثانية) */
+    fun playVoice(ctx: Context, res: Int, done: () -> Unit) {
+        val once = java.util.concurrent.atomic.AtomicBoolean(false)
+        val fin = { if (once.compareAndSet(false, true)) try { done() } catch (_: Exception) { } }
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ fin() }, 40_000L)
+        try {
+            val p = android.media.MediaPlayer()
+            p.setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
+            p.setDataSource(ctx, Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + ctx.packageName + "/" + res))
+            p.setOnCompletionListener { it.release(); fin() }
+            p.setOnErrorListener { mp, _, _ -> mp.release(); fin(); true }
+            p.setOnPreparedListener { it.start() }
+            p.prepareAsync()
+        } catch (e: Exception) { Log.w(TAG, "voice", e); fin() }
+    }
 
     /** النغمة الهادئة وحدها (مع النافذة العائمة دون إشعار) */
     private fun playSoft(ctx: Context) {

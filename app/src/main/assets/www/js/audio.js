@@ -17,7 +17,21 @@ const pad3 = n => String(n).padStart(3, '0');
 const pSur = n => n === 1 ? 'سورة واحدة' : plural(n, 'سورة', 'سورتان', 'سور', 'سورة');
 /* ── وسن 4.5 · مكتبة القرّاء (mp3quran.net): سورة كاملة، مع متابعة الآيات لمن تتوفّر توقيتاته، وتنزيل دون إنترنت ── */
 const LIB = () => window.WASAN_RECITERS || [];
-const libOf = id => { const m = /^m:(\d+)$/.exec(id || ''); return m ? LIB().find(x => x.id === +m[1]) || null : null; };
+/* ── وسن 4.8 · قرّاء مدمجون داخل التطبيق: تعمل دون إنترنت ولا تحتاج تنزيلًا ──
+   [رقم السورة، الملف، (من آية، إلى آية) للمقاطع، المدة بالثواني] — المصدر: أرشيف الإنترنت archive.org */
+const OFFLINE = [
+  { id: 'khedr', n: 'أحمد خضر', f: [[1,'001',43],[18,'018',1911],[36,'036',1038],[55,'055',670],[56,'056',741],[67,'067',448],[78,'078',308],[89,'089',255],[90,'090',131],[91,'091',96],[97,'097',45],[110,'110',88]] },
+  { id: 'shaaban', n: 'عبدالله شعبان', f: [[18,'018',1986],[36,'036',1015],[55,'055',579],[56,'056',577],[67,'067',471],[78,'078',261],[87,'087',98],[88,'088',124],[93,'093',55],[94,'094',36],[95,'095',56],[96,'096',84],[97,'097',41],[98,'098',123],[99,'099',52],[100,'100',56],[101,'101',51],[102,'102',47],[103,'103',25],[104,'104',46],[105,'105',35],[106,'106',31],[107,'107',42],[108,'108',20],[109,'109',41],[110,'110',29],[111,'111',32],[112,'112',17],[113,'113',27],[114,'114',32]] },
+  { id: 'mosad', n: 'عبدالرحمن مسعد', f: [[1,'001',49],[3,'003_1-14',1,14,331],[10,'010_3-25',3,25,868],[12,'012_102-111',102,111,252],[14,'014_42-47',42,47,143],[16,'016_90-99',90,99,289],[19,'019_65-98',65,98,399],[32,'032',608],[49,'049',653],[73,'073',343],[78,'078',333],[87,'087',110],[88,'088',155],[100,'100',88],[107,'107',49]] },
+  { id: 'shahat', n: 'محمود الشحات أنور', f: [[1,'001',293],[36,'036',2081],[55,'055',1225],[67,'067',1054],[93,'093',120],[102,'102',97],[103,'103',48],[105,'105',70],[106,'106',60],[107,'107',83],[108,'108',43],[109,'109',89],[110,'110',57],[111,'111',60],[112,'112',31],[113,'113',56],[114,'114',58]] },
+];
+const offOf = id => { const m = /^o:(\w+)$/.exec(id || ''); if (!m) return null; const o = OFFLINE.find(x => x.id === m[1]); if (!o) return null;
+  if (!o.lib) { const by = {}; o.f.forEach(e => { if (!by[e[0]]) by[e[0]] = e; });
+    o.lib = { id: 'o:' + o.id, off: true, n: o.n, k: 'مدمج', s: 'recit/' + o.id + '/', t: false, c: Object.keys(by).length, l: Object.keys(by).join(','), by,
+      min: Math.round(o.f.reduce((a, e) => a + e[e.length - 1], 0) / 60) }; }
+  return o.lib; };
+const offPart = (m, sn) => { const e = m && m.by && m.by[sn]; return e && e.length > 4 ? [e[2], e[3]] : null; };
+const libOf = id => { const o = offOf(id); if (o) return o; const m = /^m:(\d+)$/.exec(id || ''); return m ? LIB().find(x => x.id === +m[1]) || null : null; };
 const libHas = (m, sn) => !m.l || m.l.split(',').includes(String(sn));
 const YT_RECITERS = ['أحمد خضر', 'عبدالله شعبان', 'عبدالرحمن مسعد', 'محمود الشحات أنور'];
 function reciterName(id) { const m = libOf(id); if (m) return m.n + (m.k ? ' · ' + m.k : ''); return (RECITERS.find(r => r[0] === id) || RECITERS[0])[1]; }
@@ -96,7 +110,7 @@ const Player = {
   /* ── سورة كاملة من المكتبة ── */
   startLib(i) {
     const m = this.lib(), sn = Q.s[i], s = surahOf(i);
-    if (!libHas(m, sn)) { toast('سورة ' + s.name + ' غير متوفرة بصوت ' + m.n); return; }
+    if (!libHas(m, sn)) { toast('سورة ' + s.name + ' غير متوفرة بصوت ' + m.n + (m.off ? ' — اختر من السور المدمجة' : '')); if (m.off) setTimeout(() => offlineSheet(m.id.slice(2)), 400); return; }
     this.on = true; this.sm = true; this.left = this.reps(); this.ensureUI();
     this.end = Settings.qCont ? Q.t.length - 1 : s.start + s.n - 1;
     this.loadSurah(sn, Q.a[i]);
@@ -105,12 +119,13 @@ const Player = {
   loadSurah(sn, ayah) {
     const m = this.lib(); if (!m) return;
     this.cs = sn; this.tm = null; this.cur = -1; this.basm = false;
-    const a = this.audio(), want = ayah || 1, local = Downloads.path(m.id, sn);
-    this.remote = m.s + pad3(sn) + '.mp3'; this.local = !!local;
+    const pr = m.off ? offPart(m, sn) : null, a = this.audio(); let want = ayah || 1; const local = m.off ? '' : Downloads.path(m.id, sn);
+    if (pr) want = pr[0];
+    this.remote = m.off ? m.s + m.by[sn][1] + '.ogg' : m.s + pad3(sn) + '.mp3'; this.local = !!local; this.part = pr;
     this.loading = true; a.src = local || this.remote; a.playbackRate = Settings.qRate || 1;
     const seek = () => { const e = this.tm && this.tm.find(x => x.ayah === want); if (e && want > 1) try { a.currentTime = e.st / 1000; } catch (er) {} };
     if (m.t) Timings.get(m.id, sn).then(tm => { if (this.cs !== sn || !this.on) return; this.tm = tm; if (a.readyState >= 1) seek(); else a.addEventListener('loadedmetadata', seek, { once: true }); }).catch(() => {});
-    else if (want > 1) toast('هذا القارئ يُسمَع من أول السورة');
+    else if (want > 1 && !pr) toast('هذا القارئ يُسمَع من أول السورة');
     const p = a.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== 'AbortError') this.fail(); });
     this.i = Q.S[sn - 1].start + (want - 1); this.highlight(); this.sync();
   },
@@ -129,7 +144,7 @@ const Player = {
     }
   },
   libEnded() {
-    if (!this.tm) Growth.add('ql', Q.S[this.cs - 1].n); else if (this.cur > 0) Growth.add('ql', 1);
+    if (!this.tm) Growth.add('ql', this.part ? this.part[1] - this.part[0] + 1 : Q.S[this.cs - 1].n); else if (this.cur > 0) Growth.add('ql', 1);
     if (this.sleepEnd) { this.sleepDone(); return; }
     if (Settings.qCont && this.cs < 114) { const m = this.lib(); let n = this.cs + 1; while (n <= 114 && !libHas(m, n)) n++; if (n <= 114) { this.loadSurah(n, 1); return; } }
     this.stop(); toast('انتهت التلاوة — تقبّل الله');
@@ -207,7 +222,7 @@ const Player = {
     Native.call('keepScreenOn', !!(Router.cur && Router.cur.s && Router.cur.s.keepOn));
   },
   fail() {
-    const off = navigator.onLine === false;
+    const off = navigator.onLine === false && !(this.lib() && this.lib().off);
     this.stop();
     toast(off ? 'التلاوة تحتاج اتصالًا بالإنترنت' : 'تعذّر تشغيل التلاوة — حاول مجددًا', 3200);
   },
@@ -223,7 +238,7 @@ const Player = {
       if (r.top < 90 || r.bottom > window.innerHeight - 150) window.scrollTo({ top: r.top + window.scrollY - window.innerHeight * 0.33, behavior: 'smooth' });
     }
   },
-  label() { const s = surahOf(this.i); if (this.sm && !this.tm) return 'سورة ' + s.name; return 'سورة ' + s.name + ' · ' + (this.basm ? 'البسملة' : 'الآية ' + N(Q.a[this.i])); },
+  label() { const s = surahOf(this.i); if (this.sm && this.part) return 'سورة ' + s.name + ' · الآيات ' + N(this.part[0]) + '–' + N(this.part[1]); if (this.sm && !this.tm) return 'سورة ' + s.name; return 'سورة ' + s.name + ' · ' + (this.basm ? 'البسملة' : 'الآية ' + N(Q.a[this.i])); },
   ensureUI() {
     if (this.el) return;
     const el = this.el = document.createElement('div'); el.className = 'pbar';
@@ -253,6 +268,9 @@ function playerSheet(startI) {
   const m = libOf(Settings.reciter), si = startI != null ? startI : (Player.on ? Player.i : (typeof RS !== 'undefined' && Q.ready ? Q.S[RS.s - 1].start : 0)), sn = Q.ready ? Q.s[si] : 1;
   const dlRow = () => {
     if (!m) return '<div class="ps-note">' + icon('info') + '<span>للاستماع دون إنترنت اختر قارئًا من «مكتبة القرّاء» ثم نزّل السور.</span></div>';
+    if (m.off) { const pr = offPart(m, sn), nm = Q.ready ? Q.S[sn - 1].name : '';
+      return '<div class="ps-dl"><div class="grow"><b>' + (libHas(m, sn) ? 'سورة ' + esc(nm) + (pr ? ' · الآيات ' + N(pr[0]) + '–' + N(pr[1]) : '') : 'السور المدمجة بصوت ' + esc(m.n)) + '</b><span>' + (libHas(m, sn) ? 'مدمجة في التطبيق — تعمل دون إنترنت' : 'سورة ' + esc(nm) + ' غير مدمجة بصوته') + '</span></div><span class="ok">' + icon('check') + '</span></div>' +
+        '<button class="btn ghost block" id="ps-off" style="margin-top:8px">' + icon('layers') + 'كل السور المدمجة (' + N(m.c) + ')</button>'; }
     const st = Downloads.state(m.id, sn), nm = Q.ready ? Q.S[sn - 1].name : '';
     return '<div class="ps-dl" id="ps-dl"><div class="grow"><b>سورة ' + esc(nm) + '</b><span>' + (st === 'done' ? 'منزّلة — تعمل دون إنترنت' : st === 'run' ? 'جارٍ التنزيل…' : libHas(m, sn) ? 'تُسمَع عبر الإنترنت' : 'غير متوفرة بصوت هذا القارئ') + '</span></div>' +
       (st === 'done' ? '<span class="ok">' + icon('check') + '</span>' : st === 'run' ? '<span class="spin"></span>' : libHas(m, sn) ? '<button class="act" id="ps-dlb">' + icon('save') + 'نزّلها</button>' : '') +
@@ -260,7 +278,7 @@ function playerSheet(startI) {
   };
   const html = '<div class="sh-t">التلاوة</div><div class="sh-s">' + (Q.ready ? esc(ayahRef(si)) : '') + '</div>' +
     '<div class="mx"><b class="lbl2">القارئ</b><button class="li ps-rec" id="ps-rec"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(reciterName(Settings.reciter)) + '</div>' +
-    '<div class="s">' + (m ? (m.t ? 'سورة كاملة مع متابعة الآيات' : 'سورة كاملة') + ' · ' + (m.c < 114 ? pSur(m.c) : 'المصحف كاملًا') : 'آية بآية · متابعة دقيقة') + '</div></div><span class="link">تغيير</span></button>' +
+    '<div class="s">' + (m ? (m.off ? 'مدمج في التطبيق · ' + pSur(m.c) + ' · بلا إنترنت' : (m.t ? 'سورة كاملة مع متابعة الآيات' : 'سورة كاملة') + ' · ' + (m.c < 114 ? pSur(m.c) : 'المصحف كاملًا')) : 'آية بآية · متابعة دقيقة') + '</div></div><span class="link">تغيير</span></button>' +
     dlRow() +
     '<b class="lbl2">تكرار كل آية</b><div class="seg" id="ps-rep">' + reps.map(([v, t]) => '<button data-v="' + v + '" class="' + (Player.reps() === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
     (m && !m.t ? '<div class="faint" style="font-size:11.5px;margin-top:4px">التكرار يعمل مع القرّاء الذين تتوفّر لهم متابعة الآيات</div>' : '') +
@@ -268,7 +286,7 @@ function playerSheet(startI) {
     '<b class="lbl2">عند نهاية السورة</b><div class="seg" id="ps-cont"><button data-v="0" class="' + (!Settings.qCont ? 'on' : '') + '">توقف</button><button data-v="1" class="' + (Settings.qCont ? 'on' : '') + '">تابع للسورة التالية</button></div>' +
     '<b class="lbl2">مؤقّت النوم</b><div class="seg" id="ps-sl">' + sleeps.map(([v, t]) => '<button data-v="' + v + '" class="' + ((+Settings.sleepMin || 0) === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
     (startI != null || !Player.on ? '<button class="btn gold block" id="ps-go" style="margin-top:16px">' + icon('play') + 'ابدأ الاستماع</button>' : '') +
-    '<div class="faint" style="font-size:12px;margin-top:10px;text-align:center">' + (m ? 'التسجيلات من mp3quran.net' : 'التسجيلات من everyayah.com') + '</div></div>';
+    '<div class="faint" style="font-size:12px;margin-top:10px;text-align:center">' + (m ? (m.off ? 'تلاوات مدمجة داخل التطبيق · المصدر: أرشيف الإنترنت archive.org' : 'التسجيلات من mp3quran.net') : 'التسجيلات من everyayah.com') + '</div></div>';
   Sheet.open(html, el => {
     const seg = (id, key, conv, after) => { const s = $(id, el); s.onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; setSetting(key, conv(b.dataset.v)); $$('button', s).forEach(x => x.classList.toggle('on', x === b)); Player.sync(); if (after) after(); }; };
     seg('#ps-rep', 'qRepeat', Number, () => { Player.left = Player.reps(); }); seg('#ps-rate', 'qRate', Number, () => { if (Player.a) Player.a.playbackRate = Settings.qRate; });
@@ -276,6 +294,7 @@ function playerSheet(startI) {
     $('#ps-rec', el).onclick = () => Sheet.close(() => reciterSheet(() => playerSheet(startI)));
     const dlb = $('#ps-dlb', el); if (dlb) dlb.onclick = () => { Downloads.start(m, sn); toast('بدأ تنزيل السورة — تجده في الإشعارات'); Sheet.close(); };
     const go = $('#ps-go', el); if (go) go.onclick = () => Sheet.close(() => Player.start(si));
+    const po = $('#ps-off', el); if (po) po.onclick = () => Sheet.close(() => offlineSheet(m.id.slice(2)));
   });
 }
 
@@ -286,8 +305,11 @@ function reciterSheet(done) {
   const rowL = x => { const id = 'm:' + x.id, dn = Downloads.count(x.id);
     return '<button class="li opt ' + (id === cur ? 'on' : '') + '" data-r="' + id + '" data-q="' + esc(x.n + ' ' + x.k) + '"><div class="grow"><div class="t">' + esc(x.n) + (x.k ? ' <span class="rk">' + esc(x.k) + '</span>' : '') + '</div>' +
       '<div class="s">' + (x.t ? 'متابعة الآيات' : 'سورة كاملة') + ' · ' + (x.c < 114 ? pSur(x.c) : 'المصحف كاملًا') + (dn ? ' · ' + N(dn) + ' منزّلة' : '') + '</div></div><span class="rad"></span></button>'; };
-  const html = '<div class="sh-t">القارئ</div><div class="sh-s">' + N(RECITERS.length + LIB().length) + ' تلاوة · ابحث بالاسم</div>' +
+  const html = '<div class="sh-t">القارئ</div><div class="sh-s">' + N(RECITERS.length + LIB().length + OFFLINE.length) + ' تلاوة · ابحث بالاسم</div>' +
     '<div class="mx"><div class="search rs-q">' + icon('search') + '<input id="rq" placeholder="ابحث عن قارئ…" autocomplete="off"></div></div>' +
+    '<div class="rs-g" data-g="o">مدمجة في التطبيق · تعمل دون إنترنت</div><div class="rs-list">' + OFFLINE.map(o => { const m = offOf('o:' + o.id);
+      return '<div class="li-wrap"><button class="li opt ' + (m.id === cur ? 'on' : '') + '" data-r="' + m.id + '" data-q="' + esc(o.n) + '"><div class="ic ic-off">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(o.n) + ' <span class="rk">مدمج</span></div>' +
+        '<div class="s">' + pSur(m.c) + ' · ' + pM(m.min) + ' · بلا إنترنت</div></div><span class="rad"></span></button><button class="act rs-ls" data-ol="' + o.id + '">السور</button></div>'; }).join('') + '</div>' +
     '<div class="rs-g" data-g="a">تلاوة آية بآية</div><div class="rs-list">' + RECITERS.map(rowA).join('') + '</div>' +
     '<div class="rs-g" data-g="l">مكتبة القرّاء · سورة كاملة وتنزيل دون إنترنت</div><div class="rs-list" id="rs-l">' + LIB().map(rowL).join('') + '</div>' +
     '<div class="rs-g" data-g="y">على يوتيوب</div><div class="rs-list">' + YT_RECITERS.map(n => '<button class="li" data-yt="' + esc(n) + '" data-q="' + esc(n) + '"><div class="ic">' + icon('play') + '</div><div class="grow"><div class="t">' + esc(n) + '</div><div class="s">يفتح تلاواته في يوتيوب</div></div>' + icon('chev', 'faint') + '</button>').join('') + '</div>';
@@ -297,6 +319,7 @@ function reciterSheet(done) {
       $$('[data-r],[data-yt]', el).forEach(b => { const t = normAr(b.dataset.q || b.textContent); b.style.display = !v || t.includes(v) ? '' : 'none'; });
       $$('.rs-g', el).forEach(g => { g.style.display = v ? 'none' : ''; }); }, 180));
     el.addEventListener('click', e => {
+      const ol = e.target.closest('[data-ol]'); if (ol) { Sheet.close(() => offlineSheet(ol.dataset.ol)); return; }
       const y = e.target.closest('[data-yt]');
       if (y) { const s = (Router.cur && Router.cur.r === 'reader' && Q.ready) ? 'سورة ' + Q.S[RS.s - 1].name + ' ' : '';
         const u = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(s + y.dataset.yt); if (Native.has('openUrl')) Native.call('openUrl', u); else window.open(u, '_blank'); return; }
@@ -307,6 +330,23 @@ function reciterSheet(done) {
     });
     const on = $('.opt.on', el); if (on) setTimeout(() => on.scrollIntoView({ block: 'center' }), 60);
   });
+}
+
+/* ── وسن 4.8 · سور القارئ المدمجة: قائمة تُشغَّل مباشرة دون إنترنت ── */
+function offlineSheet(rid) {
+  const m = offOf('o:' + rid); if (!m) return;
+  const go = () => {
+    const o = OFFLINE.find(x => x.id === rid), fm = t => { const mm = Math.floor(t / 60), ss = t % 60; return N(mm) + ':' + String(ss).padStart(2, '0').replace(/\d/g, d => N(+d)); };
+    const rows = o.f.map(e => { const sn = e[0], S = Q.S[sn - 1], part = e.length > 4, dur = e[e.length - 1];
+      return '<button class="li" data-os="' + sn + '"><div class="ic">' + surahBadge(sn) + '</div><div class="grow"><div class="t">سورة ' + esc(S.name) + '</div><div class="s">' + (part ? 'الآيات ' + N(e[2]) + '–' + N(e[3]) : 'السورة كاملة') + ' · ' + fm(dur) + '</div></div>' + icon('play', '', 'width:20px;height:20px;color:var(--gold)') + '</button>'; }).join('');
+    Sheet.open('<div class="sh-t">' + esc(m.n) + '</div><div class="sh-s">' + pSur(m.c) + ' مدمجة في التطبيق · ' + pM(m.min) + ' من التلاوة · تعمل دون إنترنت</div>' +
+      '<div class="list mx" id="os-l">' + rows + '</div><div class="faint" style="font-size:12px;margin:12px 16px;text-align:center">المصدر: أرشيف الإنترنت archive.org — ضُغطت داخل التطبيق بجودة صوتية واضحة</div>', el => {
+      $('#os-l', el).onclick = e => { const b = e.target.closest('[data-os]'); if (!b) return; const sn = +b.dataset.os;
+        setSetting('reciter', m.id); vibrate(8); const wasOn = Player.on; if (wasOn) Player.stop();
+        Sheet.close(() => Player.start(Q.S[sn - 1].start)); };
+    });
+  };
+  if (Q.ready) go(); else loadQuran().then(go).catch(() => toast('تعذّر تحميل المصحف'));
 }
 
 /* ── شبكة: الجسر الأصلي أولًا ثم fetch ── */
@@ -415,10 +455,13 @@ const fmtMB = b => N((b / 1048576).toFixed(b > 104857600 ? 0 : 1)) + ' م.ب';
 SCREENS.downloads = {
   parent: 'quran',
   render() {
-    const m = libOf(Settings.reciter), ok = Downloads.ok();
+    const m0 = libOf(Settings.reciter), m = m0 && !m0.off ? m0 : null, ok = Downloads.ok();
     const others = [...new Set(Object.keys(Downloads.st).filter(k => Downloads.st[k].s === 'done').map(k => +k.slice(1).split('_')[0]))].filter(id => !m || id !== m.id).map(id => LIB().find(x => x.id === id)).filter(Boolean);
     const used = ok ? +(Native.call('dlUsage') || 0) : 0;
     let h = hdr('تنزيلات التلاوة', 'استمع دون إنترنت', { back: true, compact: true });
+    // وسن 4.8: قرّاء مدمجون لا يحتاجون تنزيلًا
+    h += sec('مدمجة في التطبيق · بلا إنترنت') + '<div class="list mx" id="dl-off">' + OFFLINE.map(o => { const x = offOf('o:' + o.id);
+      return '<button class="li" data-ol="' + o.id + '"><div class="ic ic-off">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(o.n) + '</div><div class="s">' + pSur(x.c) + ' · ' + pM(x.min) + '</div></div>' + icon('chev', 'faint') + '</button>'; }).join('') + '</div>';
     if (!ok) h += '<div class="ps-note mx mt">' + icon('info') + '<span>التنزيل يعمل في التطبيق على الهاتف؛ هنا معاينة فقط.</span></div>';
     h += '<div class="hc mt dl-hero"><div class="row" style="gap:12px"><div class="dua-ic">' + icon('headphones') + '</div><div class="grow"><div class="t">' + (m ? esc(reciterName(Settings.reciter)) : 'اختر قارئًا من المكتبة') + '</div>' +
       '<div class="s">' + (m ? dlCountTxt(Downloads.count(m.id)) + (used ? ' · المساحة ' + fmtMB(used) : '') : 'قرّاء «آية بآية» يُسمَعون عبر الإنترنت فقط') + '</div></div>' +
@@ -435,6 +478,7 @@ SCREENS.downloads = {
     return h + '<div class="foot-note">التسجيلات من mp3quran.net · تُحفظ داخل مساحة التطبيق وتُحذف بحذفه</div>';
   },
   mount(el) {
+    const dof = $('#dl-off', el); if (dof) dof.onclick = e => { const b = e.target.closest('[data-ol]'); if (b) offlineSheet(b.dataset.ol); };
     if (!Q.ready) loadQuran().then(() => { if (Router.cur.r === 'downloads') Router.refresh(); });
     const m = libOf(Settings.reciter);
     $('#dl-rec', el).onclick = () => reciterSheet(() => Router.refresh());

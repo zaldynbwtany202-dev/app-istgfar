@@ -340,12 +340,31 @@ function zkCard(A, it, i) {
 }
 
 /* ═══════════════ المسبحة ═══════════════ */
-const TAS_SND = { off: 'بلا صوت', bead: 'حبّة خشبية', drop: 'قطرة ماء', soft: 'نقرة ناعمة' };
+const TAS_SND = { off: 'بلا صوت', harp: 'نغمة هادئة', bell: 'جرس بلّوري', wood: 'خشب العود', clack: 'حبّتان', bead: 'حبّة خشبية', drop: 'قطرة ماء', soft: 'نقرة ناعمة' };
+// وسن 4.8: ثلاثة أشكال للمسبحة
+const TAS_STY = { ring: ['دائرة الحبّات', 'اضغطي على الدائرة'], string: ['مسبحة حبّات', 'اسحبي الحبّة للأسفل أو اضغطي'], press: ['عدّاد كبير', 'اضغطي في أي مكان من البطاقة'] };
+const tasSty = () => TAS_STY[Settings.tasStyle] ? Settings.tasStyle : 'ring';
 const TB = Object.assign({ sel: 0, count: 0, cycles: 0, total: 0, today: 0, day: '', custom: [], targets: {} }, Store.get('tasbih', {}));
 (function migrateOld() { try { const o = localStorage.getItem('noor_tasbih'); if (o && !Store.get('tasbih', null)) { const v = JSON.parse(o); TB.total = v.total || 0; TB.cycles = v.cycles || 0; } } catch (e) {} })();
 const tbSave = () => Store.set('tasbih', TB);
 const tbList = () => NOOR_DATA.TASBIH.concat(TB.custom || []);
 const tbTarget = () => { const d = tbList()[TB.sel] || tbList()[0]; const t = TB.targets[TB.sel]; return t != null ? t : d.n; };
+/* ── مسبحة الحبّات: خيط عمودي، حبّات تنزلق من الأعلى إلى الأسفل، وفواصل ذهبية بعد ١١ و٢٢ ── */
+const STR = { n: 22, r: 14, sp: 1.5, gt: 132, gb: 238, cx: 150 };
+function tbsCols() {
+  const sk = curSkin(), b = sk && (sk.strand || sk.beads), dark = themeBase() === 'dark';
+  return b || (dark ? ['#FFE7B8', '#D9A04A', '#8A5A1E'] : ['#F6E2C8', '#B8834E', '#6E4526']);
+}
+function strandSVG() {
+  const c = tbsCols(), S = STR; let s = '<svg class="tbs-svg" viewBox="0 0 300 370" id="t-str" aria-hidden="true"><defs>' +
+    '<radialGradient id="sbG" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="' + c[0] + '"/><stop offset=".55" stop-color="' + c[1] + '"/><stop offset="1" stop-color="' + c[2] + '"/></radialGradient>' +
+    '<radialGradient id="sbS" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#FFF8DA"/><stop offset=".5" stop-color="#E8C067"/><stop offset="1" stop-color="#8A6220"/></radialGradient>' +
+    '<linearGradient id="sbM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".12" stop-color="#fff"/><stop offset=".88" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+    '<mask id="sbK"><rect width="300" height="370" fill="url(#sbM)"/></mask></defs><g mask="url(#sbK)">' +
+    '<path class="tbs-cord" d="M150 -10C146 120 154 250 150 380"/>';
+  for (let k = 0; k < S.n; k++) s += '<g class="sb" data-k="' + k + '"><circle class="sbb" r="' + S.r + '" fill="url(#sbG)"/><ellipse cx="-4.6" cy="-5.4" rx="4.4" ry="3.2" fill="#fff" opacity=".5"/><circle r="' + S.r + '" fill="none" stroke="rgba(0,0,0,.18)" stroke-width=".8"/></g>';
+  return s + '</g><path class="tbs-gap" d="M122 ' + (S.gt + 8) + 'Q150 ' + ((S.gt + S.gb) / 2) + ' 178 ' + (S.gb - 8) + '" /></svg>';
+}
 SCREENS.tasbih = {
   parent: 'more',
   render(a) {
@@ -355,26 +374,32 @@ SCREENS.tasbih = {
       if (i < 0) { TB.custom = (TB.custom || []).concat([{ t: a.t, n: +a.n || 0 }]); i = tbList().length - 1; }
       TB.sel = i; if (+a.n) TB.targets[i] = +a.n; TB.count = 0; tbSave(); }
     const L = tbList(); if (TB.sel >= L.length) TB.sel = 0;
-    const d = L[TB.sel], tg = tbTarget();
-    return hdr('المسبحة', 'اضغط على الدائرة للتسبيح', { back: true, compact: true, actions: [{ id: 't-reset', icon: 'refresh', label: 'تصفير' }] }) +
+    const d = L[TB.sel], tg = tbTarget(), st = tasSty(), cnt = '<span class="cn" id="t-n">' + N(TB.count) + '</span><span class="ct" id="t-t">' + (tg ? 'من ' + N(tg) : 'بلا حدّ') + '</span><span class="lp" id="t-loop"></span>';
+    let main;
+    if (st === 'string') main = '<div class="tbs" id="t-btn" role="button" tabindex="0" aria-label="تسبيح">' + strandSVG() + '<span class="ripple" id="t-rip"></span><div class="tbs-c">' + cnt + '</div></div>';
+    else if (st === 'press') main = '<button class="tbp" id="t-btn" aria-label="تسبيح"><span class="ripple" id="t-rip"></span>' + cnt + '<span class="tbp-h">' + icon('beads') + 'اضغطي للتسبيح</span></button>';
+    else main = '<button class="counter" id="t-btn" aria-label="تسبيح">' + (artKey() ? '<img class="kw-tb" src="' + Art.tbURI(artKey()) + '" alt="" aria-hidden="true" draggable="false">' : '') + beadsSVG(tbBeads(tg)) + '<span class="ripple" id="t-rip"></span>' + cnt + '</button>';
+    return hdr('المسبحة', TAS_STY[st][1], { back: true, compact: true, actions: [{ id: 't-reset', icon: 'refresh', label: 'تصفير' }] }) +
       '<div class="chips" id="t-chips" style="margin-top:14px">' + L.map((x, i) => '<button class="chip ' + (i === TB.sel ? 'on' : '') + '" data-i="' + i + '">' + esc(x.t) + '</button>').join('') +
       '<button class="chip" id="t-add">' + icon('plus', '', 'width:16px;height:16px') + 'ذكر خاص</button></div>' +
-      '<div class="tb-wrap"><div class="tb-dhikr" id="t-d">' + esc(d.t) + '</div>' +
-      '<button class="counter" id="t-btn" aria-label="تسبيح">' + (artKey() ? '<img class="kw-tb" src="' + Art.tbURI(artKey()) + '" alt="" aria-hidden="true" draggable="false">' : '') + beadsSVG(tbBeads(tg)) +
-      '<span class="ripple" id="t-rip"></span><span class="cn" id="t-n">' + N(TB.count) + '</span><span class="ct" id="t-t">' + (tg ? 'من ' + N(tg) : 'بلا حدّ') + '</span><span class="lp" id="t-loop"></span></button></div>' +
-      '<div class="stat3 mx" style="margin-top:26px"><div class="stat"><b class="num" id="t-cy">' + N(TB.cycles) + '</b><span>الدورات</span></div>' +
+      '<div class="seg tb-sty mx" id="t-sty">' + Object.keys(TAS_STY).map(k => '<button data-v="' + k + '" class="' + (k === st ? 'on' : '') + '">' + TAS_STY[k][0] + '</button>').join('') + '</div>' +
+      '<div class="tb-wrap tb-' + st + '"><div class="tb-dhikr" id="t-d">' + esc(d.t) + '</div>' + main + '</div>' +
+      '<div class="stat3 mx" style="margin-top:22px"><div class="stat"><b class="num" id="t-cy">' + N(TB.cycles) + '</b><span>الدورات</span></div>' +
       '<div class="stat"><b class="num" id="t-td">' + fmtInt(TB.today) + '</b><span>اليوم</span></div><div class="stat"><b class="num" id="t-tt">' + fmtInt(TB.total) + '</b><span>الإجمالي</span></div></div>' +
-      '<div class="tb-tools"><button class="act" id="t-tg">' + icon('target') + 'الهدف</button><button class="act" id="t-sd">' + icon('vol') + (TAS_SND[Settings.tasSnd || 'off'] || TAS_SND.off) + '</button><button class="act" id="t-vb">' + icon('vib') + (Settings.vibrate ? 'الاهتزاز مفعّل' : 'الاهتزاز متوقف') + '</button></div>';
+      '<div class="tb-tools"><button class="act" id="t-tg">' + icon('target') + 'الهدف</button><button class="act" id="t-sd">' + icon('vol') + (TAS_SND[tasSnd()] || TAS_SND.off) + '</button><button class="act" id="t-vb">' + icon('vib') + (Settings.vibrate ? 'الاهتزاز مفعّل' : 'الاهتزاز متوقف') + '</button></div>';
   },
   mount(el) {
+    const st = tasSty(), btn = $('#t-btn', el);
+    this._o = 0;
+    if (st === 'string') { this.layout(false); this.bindStrand(btn); }
+    else btn.addEventListener('pointerdown', e => { e.preventDefault(); this.inc(); });
     this.paint();
-    const btn = $('#t-btn', el);
-    btn.addEventListener('pointerdown', e => { e.preventDefault(); this.inc(); });
     $('#t-chips', el).onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; TB.sel = +b.dataset.i; TB.count = 0; tbSave(); Router.refresh(); };
+    $('#t-sty', el).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; setSetting('tasStyle', b.dataset.v); vibrate(8); Router.refresh(); };
     $('#t-reset', el).onclick = () => { TB.count = 0; tbSave(); this.paint(); toast('تم تصفير العدّاد'); };
     $('#t-vb', el).onclick = () => { setSetting('vibrate', !Settings.vibrate); Router.refresh(); };
-    $('#t-sd', el).onclick = () => pickSheet('صوت المسبحة', 'صوت خفيف هادئ مع كل تسبيحة — ونغمة لطيفة عند إتمام الدورة', [['off', 'بلا صوت'], ['bead', 'حبّة خشبية'], ['drop', 'قطرة ماء'], ['soft', 'نقرة ناعمة']].map(([v, t]) => ({ v, t })),
-      Settings.tasSnd || 'off', v => { setSetting('tasSnd', v); TasSound.play(v); Router.refresh(); });
+    $('#t-sd', el).onclick = () => pickSheet('صوت المسبحة', 'صوت هادئ مريح مع كل تسبيحة — ونغمة لطيفة عند إتمام الدورة', Object.keys(TAS_SND).map(v => ({ v, t: TAS_SND[v] })),
+      tasSnd(), v => { setSetting('tasSnd', v); TasSound.play(v); Router.refresh(); });
     $('#t-tg', el).onclick = () => pickSheet('الهدف', 'عدد التسبيحات في الدورة الواحدة', [33, 34, 99, 100, 500, 1000, 0].map(v => ({ v, t: v ? N(v) + ' تسبيحة' : 'بلا حدّ (عدّ مفتوح)' })), tbTarget(),
       v => { TB.targets[TB.sel] = v; TB.count = 0; tbSave(); Router.refresh(); });
     $('#t-add', el).onclick = () => {
@@ -385,14 +410,42 @@ SCREENS.tasbih = {
       });
     };
   },
+  /* سحب الحبّة: ضغطة قصيرة = تسبيحة، والسحب للأسفل = تسبيحة لكل مسافة حبّة */
+  bindStrand(btn) {
+    let y0 = null, acc = 0, moved = false;
+    btn.addEventListener('pointerdown', e => { e.preventDefault(); y0 = e.clientY; acc = 0; moved = false; try { btn.setPointerCapture(e.pointerId); } catch (er) {} });
+    btn.addEventListener('pointermove', e => { if (y0 == null) return; const dy = e.clientY - y0; if (Math.abs(dy) > 8) moved = true;
+      if (dy > 0) { const step = STR.r * 2.4; while (dy - acc >= step) { acc += step; this.inc(); } } });
+    const up = () => { if (y0 != null && !moved) this.inc(); y0 = null; };
+    btn.addEventListener('pointerup', up); btn.addEventListener('pointercancel', () => { y0 = null; });
+    btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.inc(); } });
+  },
+  /* مواضع الحبّات: p < 0 فوق الفجوة، p ≥ 0 تحتها. كل تسبيحة تنقل الحبّة الأولى عبر الفجوة */
+  layout(anim) {
+    const S = STR, gs = $$('#t-str .sb'); if (!gs.length) return;
+    const half = S.n / 2, o = this._o || 0, c0 = TB.total;
+    gs.forEach((g, k) => {
+      let p = ((k + o) % S.n + S.n) % S.n - half;               // −half … half−1
+      const y = p < 0 ? S.gt - S.r - (-p - 1) * (2 * S.r + S.sp) : S.gb + S.r + p * (2 * S.r + S.sp);
+      const num = p < 0 ? c0 + (-p - 1) : c0 - 1 - p, sep = ((num % 33) + 33) % 33 === 10 || ((num % 33) + 33) % 33 === 21;
+      const prev = g.dataset.p != null ? +g.dataset.p : null, wrap = prev != null && prev > p;   // حبّة عادت إلى الأعلى (إعادة تدوير بلا حركة)
+      g.classList.toggle('x', !!anim && p === 0 && prev === -1); g.classList.toggle('nt', !anim || wrap);
+      g.classList.toggle('sep', sep); g.dataset.p = p;
+      g.style.transform = 'translate(' + S.cx + 'px,' + y.toFixed(1) + 'px)' + (sep ? ' scale(1.08)' : '');
+      const b = g.querySelector('.sbb'); if (b) b.setAttribute('fill', sep ? 'url(#sbS)' : 'url(#sbG)');
+    });
+  },
   inc() {
     const tg = tbTarget(); TB.count++; TB.today++; TB.total++; Growth.add('tas', 1);
     let done = false; if (tg && TB.count >= tg) { TB.cycles++; done = true; TB.count = 0; }
-    tbSave(); clearTimeout(this._hold); this.paint(done, done ? tg : null);
+    tbSave(); clearTimeout(this._hold);
+    if (tasSty() === 'string') { this._o = (this._o || 0) + 1; this.layout(true); }
+    this.paint(done, done ? tg : null);
     try { TasSound.play(null, done); } catch (e) {}
-    try { kwPop(artKey(), done); } catch (e) {}   // وسن 4.7: رمز الثيم يطير من المسبحة
+    try { kwPop(artKey(), done); } catch (e) {}   // وسن 4.8: زينة الثيم تطير مع كل تسبيحة في كل الثيمات
     const rp = $('#t-rip'); if (rp) { rp.classList.remove('go'); void rp.offsetWidth; rp.classList.add('go'); }
-    if (done) { vibrate(220); const b = $('#t-btn'); b.classList.remove('done'); void b.offsetWidth; b.classList.add('done'); toast('أتممت ' + N(tg) + ' — بارك الله فيك'); this._hold = setTimeout(() => this.paint(), 650); }
+    const b = $('#t-btn'); if (b) { b.classList.remove('tap'); void b.offsetWidth; b.classList.add('tap'); }
+    if (done) { vibrate(220); if (b) { b.classList.remove('done'); void b.offsetWidth; b.classList.add('done'); } toast('أتممت ' + N(tg) + ' — بارك الله فيك'); this._hold = setTimeout(() => this.paint(), 650); }
     else vibrate(14);
   },
   paint(done, show) {
@@ -401,7 +454,7 @@ SCREENS.tasbih = {
     n.textContent = N(c);
     const nb = tbBeads(tg), lit = c === 0 ? 0 : (c % nb === 0 ? nb : c % nb);
     $$('#t-btn .bd').forEach((b, i) => { b.classList.toggle('on', i < lit); b.classList.toggle('cur', i === lit - 1); });
-    const lp = $('#t-loop'); if (lp) lp.textContent = tg && tg > nb ? 'الجولة ' + N(Math.min(Math.ceil(c / nb) || 1, Math.ceil(tg / nb))) + ' من ' + N(Math.ceil(tg / nb)) : '';
+    const lp = $('#t-loop'); if (lp) lp.textContent = tg && tg > nb && tasSty() === 'ring' ? 'الجولة ' + N(Math.min(Math.ceil(c / nb) || 1, Math.ceil(tg / nb))) + ' من ' + N(Math.ceil(tg / nb)) : (tg && tasSty() !== 'ring' ? N(Math.round(c / tg * 100)) + '٪' : '');
     if (done) { const s = $('#t-btn'); if (s) { s.classList.remove('bloom'); void s.offsetWidth; s.classList.add('bloom'); const r = s.getBoundingClientRect(); FX.burst(r.left + r.width / 2, r.top + r.height / 2); } }
     $('#t-cy').textContent = N(TB.cycles); $('#t-td').textContent = fmtInt(TB.today); $('#t-tt').textContent = fmtInt(TB.total);
   },
@@ -643,26 +696,7 @@ SCREENS.tracker = {
   },
 };
 
-/* ═══════════════ ورد الاستغفار ═══════════════ */
-SCREENS.istighfar = {
-  parent: 'azkar',
-  render() {
-    const s = this.st(); const n = s.n;
-    return hdr('وِرد الاستغفار', '«إني لأستغفر الله في اليوم مئة مرة» — رواه مسلم', { back: true, compact: true, actions: [{ id: 'ig-r', icon: 'refresh', label: 'إعادة' }] }) +
-      '<div class="center" style="padding:22px 16px 0"><div style="font-family:var(--font-d);font-size:24px;line-height:1.8" class="gold">أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ</div></div>' +
-      '<div class="center mt"><div class="ring" style="display:inline-block">' + ringSVG(140, 9, n / 100, 'var(--gold)') + '<div class="ctr"><b class="num" style="font-size:38px" id="ig-n">' + N(n) + '</b><span class="faint" style="font-size:12px">من ' + N(100) + '</span></div></div></div>' +
-      '<div class="ig-grid" id="ig-g">' + Array.from({ length: 100 }, (_, i) => '<button class="ig ' + (i < n ? 'on' : '') + '" aria-label="' + (i + 1) + '"></button>').join('') + '</div>' +
-      '<div class="mx mt"><button class="btn primary block" id="ig-b" style="height:56px;font-size:17px">' + icon('plus') + 'أستغفر الله</button></div>';
-  },
-  st() { const s = Store.get('ig', { d: '', n: 0 }); if (s.d !== dayKey(new Date())) { s.d = dayKey(new Date()); s.n = 0; } return s; },
-  mount(el) {
-    const add = () => { const s = this.st(); if (s.n >= 100) { toast('أتممت المئة — تقبّل الله'); return; } s.n++; Store.set('ig', s); Growth.add('ist', 1); if (s.n === 100) Habits.syncAuto();
-      $('#ig-n').textContent = N(s.n); setRing($('.ring svg', el), s.n / 100); const c = $$('.ig', el)[s.n - 1]; if (c) c.classList.add('on');
-      vibrate(s.n === 100 ? 200 : 12); if (s.n === 100) toast('أتممت وِرد الاستغفار — غفر الله لك'); };
-    $('#ig-b', el).onclick = add; $('#ig-g', el).onclick = e => { if (e.target.closest('.ig')) add(); };
-    $('#ig-r', el).onclick = () => { Store.set('ig', { d: dayKey(new Date()), n: 0 }); Router.refresh(); };
-  },
-};
+/* وسن 4.8: «لوحة الاستغفار» انتقلت إلى boards.js */
 
 /* ═══════════════ المزيد ═══════════════ */
 SCREENS.more = {
@@ -672,7 +706,8 @@ SCREENS.more = {
       ['ختمة القرآن', 'target', 'emerald', 'khatma', 'وِرد يومي منظّم'], ['سجل الصلوات', 'chart', 'teal', 'tracker', 'تابع محافظتك'],
       ['قضاء الفوائت', 'history', 'plum', 'qada', 'الصلوات وأيام الصيام'], ['التقويم الهجري', 'calendar', 'slate', 'calendar', 'المناسبات والأيام البيض'],
       ['الأسماء الحسنى', 'star8', 'amber', 'names', N(99) + ' اسمًا ومعانيها'], ['حاسبة الزكاة', 'calc', 'indigo', 'zakat', 'احسب زكاة مالك'],
-      ['وِرد الاستغفار', 'heart', 'rose', 'istighfar', 'مئة استغفار يوميًا'], ['النسخ الاحتياطي', 'save', 'emerald', 'backup', 'احفظ بستانك في ملف']];
+      ['المنبّه', 'alarm', 'amber', 'alarms', 'قبل الفجر · قيام الليل · منبّهاتك'], ['لوحة الاستغفار', 'heart', 'rose', 'istighfar', 'لوحة تكتمل مع كل استغفار'],
+      ['لوحة الهدية', 'sparkle', 'plum', 'gift', 'أهدي ثواب ذكرك بلوحة جميلة'], ['النسخ الاحتياطي', 'save', 'emerald', 'backup', 'احفظ بستانك في ملف']];
     Habits.syncAuto();
     const d = new Date(), hs = Habits.today(d).slice(0, 6), tds = Todo.sorted(Todo.fToday).slice(0, 5), g = Growth.day(d);
     const chip = (ic, v, l) => '<div class="tchip">' + icon(ic) + '<b class="num">' + v + '</b><span>' + l + '</span></div>';
@@ -711,7 +746,7 @@ function segRow(title, sub, key, opts) {
     '<div class="seg" data-seg="' + key + '" style="flex:1 1 170px">' + opts.map(([v, t]) => '<button data-v="' + v + '" class="' + (String(Settings[key]) === String(v) ? 'on' : '') + '">' + t + '</button>').join('') + '</div></div>';
 }
 const THEME_NAMES = Object.assign({ auto: 'حسب النظام', prayer: 'تلقائي حسب المواقيت' }, Object.fromEntries(Object.entries(THEMES).map(([k, v]) => [k, v.n])));
-const THEME_GROUPS = [['kawaii', 'ثيمات كاملة للبنات'], ['scene', 'مشاهد'], ['girls', 'ناعمة وردية'], ['calm', 'هادئة'], ['more', 'مختلفة']];
+const THEME_GROUPS = [['islamic', 'فخمة إسلامية (جديد)'], ['kawaii', 'ثيمات كاملة للبنات'], ['scene', 'مشاهد'], ['girls', 'ناعمة وردية'], ['calm', 'هادئة'], ['more', 'مختلفة']];
 /* وسن 4.5 · اختيار السمة بمعاينة ألوانها */
 function themeSheet() {
   const card = k => { const T = THEMES[k], sw = T.sw;
@@ -865,14 +900,14 @@ function soundTitle() {
   return SOUND_NAMES.adhan;
 }
 /* وسن 4.4 · صوت الأذان: الأذان كاملًا بصوت مؤذّن حقيقي، أو التكبير فقط، أو نغمة */
-const ADHAN_VOICES = [['v1', 'أذان هادئ', 'صوت رخيم بإيقاع متأنٍّ'], ['v2', 'من المسجد النبوي', 'تسجيل بصدى المسجد']];
+const ADHAN_VOICES = [['v1', 'أذان هادئ', 'صوت رخيم بإيقاع متأنٍّ'], ['v2', 'من المسجد النبوي', 'تسجيل بصدى المسجد'], ['v3', 'صباح فخري', 'أذان بمقام شامي أصيل'], ['v4', 'أذان صافٍ', 'تسجيل نقيّ واضح · أقصر'], ['v5', 'أذان خاشع', 'صوت دافئ متأنٍّ']];
 function soundSheet() {
   let info = { mode: 'adhan', voice: 'v1' };
   try { info = Object.assign(info, JSON.parse(Native.call('soundInfo') || '{}')); } catch (e) {}
   const pv = v => v === 'custom' || v === 'silent' ? '' : '<button class="act pv" data-pv="' + v + '" aria-label="استماع">' + icon('play') + '</button>';
   const opt = (v, t, s) => '<div class="li opt ' + (v === info.mode ? 'on' : '') + '" data-v="' + v + '"><div class="grow"><div class="t">' + t + '</div><div class="s">' + s + '</div></div>' + pv(v) + '<span class="rad"></span></div>';
-  const voices = '<div class="snd-voice" id="sd-vo"' + (['adhan', 'takbir'].includes(info.mode) ? '' : ' hidden') + '><div class="snd-vl">' + icon('wave') + 'المؤذّن</div><div class="seg">' +
-    ADHAN_VOICES.map(([v, t]) => '<button data-vo="' + v + '" class="' + (v === info.voice ? 'on' : '') + '">' + t + '</button>').join('') + '</div></div>';
+  const voices = '<div class="snd-voice" id="sd-vo"' + (['adhan', 'takbir'].includes(info.mode) ? '' : ' hidden') + '><div class="snd-vl">' + icon('wave') + 'المؤذّن · اضغطي للاستماع</div><div class="snd-vg">' +
+    ADHAN_VOICES.map(([v, t, sb]) => '<button data-vo="' + v + '" class="' + (v === info.voice ? 'on' : '') + '"><b>' + t + '</b><small>' + sb + '</small></button>').join('') + '</div></div>';
   const html = '<div class="sh-t">صوت الأذان</div><div class="sh-s">يُرفع عند دخول وقت كل صلاة فعّلت تنبيهها</div>' +
     '<div class="snd-g">الأذان</div>' + opt('adhan', 'الأذان كاملًا', 'بصوت المؤذّن حتى نهايته، مع زر «إيقاف» في الإشعار') + opt('takbir', 'التكبير فقط', '«الله أكبر» الأولى ثم يسكت — تنبيه قصير') + voices +
     '<div class="snd-g">نغمات</div>' + opt('chime', 'نغمة وسن', 'نغمة هادئة خاصة بالتطبيق') + opt('system', 'نغمة الإشعارات الافتراضية', 'نغمة هاتفك المعتادة') +
@@ -904,8 +939,17 @@ function soundSheet() {
 window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.textContent = j.title || SOUND_NAMES[j.mode] || ''; toast('صوت الأذان: ' + (j.title || '')); } catch (e) {} };
 
 /* ═══════════════ عن التطبيق ═══════════════ */
-const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '4.7';
+const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '4.8';
 const WHATS_NEW = [
+  ['4.8', [['palette', 'تسعة ثيمات فخمة إسلامية', 'ليل مكة، المدينة المنوّرة، قبّة الصخرة، قصر الحمراء، إزنيك العثماني، ذهب المماليك، لازورد أصفهان، فوانيس رمضان، والتذهيب — لكل ثيم مشهده المرسوم ونقشته وحبّاته'],
+    ['headphones', 'قرّاء مدمجون داخل التطبيق', 'أحمد خضر، عبدالله شعبان، عبدالرحمن مسعد، ومحمود الشحات أنور — أكثر من ست ساعات من التلاوة تعمل دون إنترنت ودون تنزيل'],
+    ['vol', 'صوت بشري حقيقي للأذكار', 'اختاري الأذكار التي تُقرأ بصوت الشيخ فارس عبّاد حين تظهر («اللهم صلّ وسلّم على نبينا محمد»، «أستغفر الله وأتوب إليه»، «سبحان الله وبحمده»…) وتبقى البقية بنغمتها الهادئة'],
+    ['beads', 'مسبحة بثلاثة أشكال', 'دائرة الحبّات، ومسبحة حبّات حقيقية تنزلقين حبّاتها بإصبعك، وعدّاد كبير — مع نغمة هادئة مريحة وزينة الثيم مع كل تسبيحة'],
+    ['alarm', 'المنبّه', 'منبّه قبل الفجر يتغيّر مع المواقيت كل يوم، ومنبّه قيام الليل، ومنبّهاتك بأيام التكرار — بشاشة كاملة فوق القفل وصوت يعلو بلطف وغفوة'],
+    ['minaret', 'ثلاثة أصوات جديدة للأذان', 'صباح فخري، وأذان صافٍ، وأذان خاشع — مع التكبير القصير لكل صوت'],
+    ['heart', 'لوحة الاستغفار', 'فسيفساء إسلامية من مئة قطعة تُضاء مع كل استغفار وتكتمل بنجمة ذهبية — لكل يوم تصميم، ومعرضٌ للوحاتك المكتملة'],
+    ['sparkle', 'لوحة الهدية', 'بطاقة دعاء وإهداء بمشهد من ثيمات وسن وأدعية مأثورة لمن تحبّين — شاركيها صورةً جميلة'],
+    ['target', 'العادات والمهام أذكى', 'عادات الصباح والمساء، وبطاقة لكل عادة بأطول سلسلة ونسبة الالتزام وخريطة ١٢ أسبوعًا — ومهام بخطوات وتكرار وبحث وقسم للمتأخرة']]],
   ['4.7', [['bell', 'الأذكار المنبثقة', 'ذكرٌ لطيف يظهر لك كل مدة تختارها (من… إلى…) وفي الأيام التي تحدّدها، مع عدد التكرار — إشعارًا منبثقًا أو نافذة عائمة فيها زرّ للعدّ'],
     ['vol', 'التذكير الصوتي', 'يُقرأ الذكر أو عنوان التذكير بصوت هادئ (أذكار الصباح والمساء، الكهف، العادات…) — بصوت النطق العربي في هاتفك'],
     ['leaf', 'أصوات مريحة أثناء القراءة', 'تسجيلات جديدة هادئة نُقّيت من الحدّة، بمستوى أخفض وبدء أنعم، وصوت جديد «هدوء عميق»'],
@@ -941,7 +985,9 @@ SCREENS.about = {
       '<div class="li"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">بيانات المدن</div><div class="s">إحداثيات من GeoNames.org برخصة CC BY 4.0</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('hands') + '</div><div class="grow"><div class="t">الأذكار والأدعية</div><div class="s">من كتاب «حصن المسلم» وكتب السنة مع ذكر المصدر لكل ذكر</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('clock') + '</div><div class="grow"><div class="t">المواقيت والتقويم</div><div class="s">حساب فلكي محلي، والتاريخ الهجري وفق تقويم أم القرى مع إمكانية التعديل</div></div></div>' +
-      '<div class="li"><div class="ic">' + icon('minaret') + '</div><div class="grow"><div class="t">تسجيلات الأذان</div><div class="s">«أذان هادئ»: Adam-synagda — ملك عام CC0 · «من المسجد النبوي»: ejaz215 (Freesound) — CC BY 3.0 · عبر ويكيميديا كومنز</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('minaret') + '</div><div class="grow"><div class="t">تسجيلات الأذان</div><div class="s">«أذان هادئ»: Adam-synagda — ملك عام CC0 · «من المسجد النبوي»: ejaz215 (Freesound) — CC BY 3.0 · «صباح فخري»: ملك عام · «أذان صافٍ»: Aaqib Azeez عبر Atcovi — CC BY-SA 4.0 · «أذان خاشع»: Andrewler — CC BY-SA 4.0 · كلها عبر ويكيميديا كومنز</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('vol') + '</div><div class="grow"><div class="t">الصوت البشري للأذكار (4.8)</div><div class="s">مقاطع قصيرة من تسجيل «أذكار الصباح والمساء» بصوت الشيخ فارس عبّاد، ومن دعائه «الله أكبر الله أكبر مما نخاف ونحذر» — من أرشيف الإنترنت archive.org (موسومة بعلامة الملكية العامة من رافعها)</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">التلاوات المدمجة (4.8)</div><div class="s">أحمد خضر · عبدالله شعبان · عبدالرحمن مسعد · محمود الشحات أنور — من مجموعات منشورة للاستماع العام في أرشيف الإنترنت archive.org، ضُغطت داخل وسن. الحقوق لأصحابها، وسنحذف أي تلاوة إن طلب صاحبها ذلك.</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">التلاوات</div><div class="s">«آية بآية» من EveryAyah.com، والسور الكاملة وتوقيتات الآيات من mp3quran.net</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('leaf') + '</div><div class="grow"><div class="t">أصوات الطبيعة (4.7)</div><div class="s">من Freesound وSoundBible عبر مشروع Blanket، ونقّاها وسن من الحدّة: العصافير: kvgarlic (CC0) · الجدول: gluckose (CC0) · النسيم: felix.blume (CC0) · المطر: alex36917 (CC BY) · الأمواج: Luftrum (CC BY) · صراصير الليل: Lisa Redfern (ملك عام) · «هدوء عميق» ونغمة الأذكار المنبثقة وأصوات المسبحة: مولّدة داخل وسن</div></div></div></div>' +
       '<div class="foot-note">صُنع بحبّ لخدمة المسلمين · اللهم اجعله خالصًا لوجهك الكريم</div>';

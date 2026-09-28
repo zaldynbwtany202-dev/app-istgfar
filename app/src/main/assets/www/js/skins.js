@@ -367,6 +367,7 @@ function applySkinDeco() {
     c += '.pstrip::after{content:"";position:absolute;top:-27px;left:-9px;width:76px;height:58px;z-index:3;pointer-events:none;background:' + cn + ' center/contain no-repeat}';
     c += '#h-ctx>.hc:first-child,#h-ctx>.sec:first-child+.hc{overflow:visible}#h-ctx>.hc:first-child::after,#h-ctx>.sec:first-child+.hc::after{content:"";position:absolute;top:-21px;left:2px;width:62px;height:47px;pointer-events:none;background:' + cn + ' center/contain no-repeat}';
     c += '.hdr>.bar{position:relative}.hdr>.bar::after{content:"";position:absolute;bottom:-20px;left:46px;width:78px;height:42px;z-index:2;pointer-events:none;background:' + U(Art.hdrURI(ak)) + ' center/contain no-repeat}';
+    c += '.hdr>.bar .sub{margin-left:66px;text-wrap:balance}.hdr>.bar:not(:has(.ttl~.ibtn)) .sub{margin-left:112px}';   // وسن 4.8: لا يغطي الزخرف نهاية العنوان الفرعي
     c += '.azc .ic.ic-emo,.list .li .ic:has(img.kwi){background:var(--card-2)}';
     c += '.tab.on::after{width:17px;height:17px;top:-9px;background:' + U(Art.iconURI(ak)) + ' center/contain no-repeat;-webkit-mask:none;mask:none;animation:kwbob 3.2s ease-in-out infinite}';   // وسن 4.7
     st.textContent = c; return;
@@ -416,15 +417,27 @@ function kwHero(sk) {
 /* وسن 4.7 · حركة لطيفة برمز الثيم: رمز يطير من المسبحة مع كل تسبيحة (وباقة عند إتمام الدورة)،
    ورموز تتساقط احتفالًا حين تختار ثيمًا جديدًا — وتهدأ مع «تقليل الحركة» */
 const reduceMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+/* وسن 4.8: زينة التسبيح لكل الثيمات — نجمة ذهبية، بتلة، قلب، أو لمعة حسب الثيم */
+function tasParticleSVG() {
+  const T = THEMES[uiTheme()] || {}, A = Art._, d = A.doc('tp'), R = Math.random(); let b;
+  if (T.skin === 'sakura') b = A.sakura(d, { x: 0, y: 0, r: 10, pal: R < .5 ? 'pink' : 'white' });
+  else if (T.skin === 'roses') b = R < .5 ? A.heart(d, { x: 0, y: 0, s: 10, pal: 'pink' }) : A.rose(d, { x: 0, y: 0, r: 10, pal: 'pink' });
+  else if (T.skin === 'lavender') b = R < .5 ? A.sparkle(d, { x: 0, y: 0, s: 9, c: '#E6DAFF' }) : A.star(d, { x: 0, y: 0, s: 9, pal: 'pink' });
+  else if (T.g === 'girls') b = R < .55 ? A.heart(d, { x: 0, y: 0, s: 10, pal: 'pink' }) : A.sparkle(d, { x: 0, y: 0, s: 9, c: '#FFD6E4' });
+  else if (Art._i && R < .5) b = Art._i.gstar(d, { x: 0, y: 0, s: 9 });
+  else b = R < .6 ? A.star(d, { x: 0, y: 0, s: 9 }) : A.sparkle(d, { x: 0, y: 0, s: 9, c: '#FFF3C4' });
+  return d.svg('-11 -11 22 22', b);
+}
 function kwPop(th, burst) {
-  if (!th || typeof Art === 'undefined' || !Art.particle || reduceMotion()) return;
+  if (typeof Art === 'undefined' || reduceMotion()) return;
+  const mk = th && Art.particle ? () => Art.particle(th) : tasParticleSVG;
   const b = document.getElementById('t-btn'); if (!b) return;
   const rc = b.getBoundingClientRect(), cx = rc.left + rc.width / 2, cy = rc.top + rc.height * 0.42, n = burst ? 16 : 1;
   for (let i = 0; i < n; i++) {
     const el = document.createElement('i'); el.className = 'kwpt'; el.setAttribute('aria-hidden', 'true');
     const a = burst ? (i / n) * Math.PI * 2 : (-Math.PI / 2 + (Math.random() - 0.5) * 1.3), dist = burst ? 90 + Math.random() * 70 : 70 + Math.random() * 50, z = burst ? 18 + Math.random() * 12 : 16 + Math.random() * 8;
     el.style.cssText = 'left:' + (cx - z / 2) + 'px;top:' + (cy - z / 2) + 'px;width:' + z + 'px;height:' + z + 'px;--dx:' + Math.round(Math.cos(a) * dist) + 'px;--dy:' + Math.round(Math.sin(a) * dist - (burst ? 20 : 30)) + 'px;--r:' + Math.round((Math.random() - 0.5) * 120) + 'deg;animation-duration:' + (burst ? 1.4 : 1.05 + Math.random() * 0.3).toFixed(2) + 's';
-    el.innerHTML = Art.particle(th); document.body.appendChild(el); setTimeout(() => el.remove(), 1600);
+    el.innerHTML = mk(); document.body.appendChild(el); setTimeout(() => el.remove(), 1600);
   }
 }
 function kwCelebrate(th) {

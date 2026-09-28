@@ -20,6 +20,8 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- وسن 4.7: النافذة العائمة للأذكار المنبثقة (اختيارية — يمنحها المستخدم من الإعدادات) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- وسن 4.8: المنبّه — شاشة كاملة فوق قفل الشاشة -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
@@ -120,6 +122,23 @@
             android:name=".engine.AdhanService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+
+        <!-- وسن 4.8: المنبّه (رنين بخدمة أمامية + شاشة تظهر فوق القفل) -->
+        <service
+            android:name=".engine.AlarmService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+        <activity
+            android:name=".engine.AlarmActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Noor.Main"
+            tools:ignore="LockedOrientationActivity" />
 
         <service
             android:name=".engine.NextPrayerTile"

@@ -16,7 +16,7 @@ KOTLIN_LIB = os.environ.get('WASAN_KOTLIN_LIB', r'D:\app modif\tools\kotlinc\lib
 JAVA = os.environ.get('WASAN_JAVA', r'C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot\bin\java.exe')
 
 # الإصدار
-VERSION_CODE, VERSION_NAME = '11', '4.7'
+VERSION_CODE, VERSION_NAME = '12', '4.8'
 
 # التوقيع: افتراضياً مفتاح «وسن» المرفق في signing/ (نفس مفتاح النسخ الجاهزة 2.0 و3.0 و4.0 و4.1 و4.2،
 # فيُثبَّت التحديث فوقهما مباشرة). لاستعمال مفتاحك الأصلي بدلاً منه:
@@ -25,7 +25,7 @@ VERSION_CODE, VERSION_NAME = '11', '4.7'
 KEYSTORE = os.environ.get('WASAN_KEYSTORE', os.path.join(PROJ, 'signing', 'noor2-release.jks'))
 KS_ALIAS = os.environ.get('WASAN_KS_ALIAS', 'noor')
 KS_PASS = os.environ.get('WASAN_KS_PASS', 'Noor2026!sign')
-OUT_APK = os.path.join(PROJ, 'wasan-4.7-release.apk')
+OUT_APK = os.path.join(PROJ, 'wasan-4.8-release.apk')
 
 # أدوات build-tools: aapt2/zipalign تنفيذيان؛ d8 وapksigner نستدعيهما عبر java مباشرة
 # (أوثق من ملفات .bat، ولا مشكلة مع الرموز الخاصة في كلمة المرور).

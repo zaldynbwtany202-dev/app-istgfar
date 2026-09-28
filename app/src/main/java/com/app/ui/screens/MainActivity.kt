@@ -51,6 +51,8 @@ import com.noor.app.engine.AdhanScheduler
 import com.noor.app.engine.AdhanService
 import com.noor.app.engine.CalcMethod
 import com.noor.app.engine.DhikrPop
+import com.noor.app.engine.WasanAlarm
+import com.noor.app.engine.AlarmService
 import com.noor.app.engine.PopOverlay
 import com.noor.app.engine.WasanVoice
 import com.noor.app.engine.HijriCalendar
@@ -588,6 +590,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface fun notifEnabled(): Boolean = AdhanScheduler.notificationsEnabled(this@MainActivity)
 
         // ── وسن 4.7 · الأذكار المنبثقة ──
+        // ── وسن 4.8 · المنبّه ──
+        @JavascriptInterface fun setAlarms(json: String) = WasanAlarm.save(this@MainActivity, json)
+        @JavascriptInterface fun alarmState(): String = WasanAlarm.state(this@MainActivity)
+        @JavascriptInterface fun testAlarm(json: String) { WasanAlarm.ensureChannel(this@MainActivity); try { WasanAlarm.ring(this@MainActivity, org.json.JSONObject(json).put("id", "test")) } catch (_: Exception) { } }
+        @JavascriptInterface fun stopAlarm() { try { startService(Intent(this@MainActivity, AlarmService::class.java).setAction(WasanAlarm.ACTION_STOP)) } catch (_: Exception) { } }
+        @JavascriptInterface fun canFullScreen(): Boolean = WasanAlarm.canFullScreen(this@MainActivity)
+        @JavascriptInterface fun requestFullScreen() {
+            if (Build.VERSION.SDK_INT < 34) return
+            runOnUiThread { try { startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:$packageName"))) } catch (_: Exception) { } }
+        }
         @JavascriptInterface fun setDhikrPop(json: String) = DhikrPop.save(this@MainActivity, json)
         @JavascriptInterface fun testDhikrPop() { DhikrPop.ensureChannels(this@MainActivity); DhikrPop.test(this@MainActivity) }
         @JavascriptInterface fun dhikrNext(): Double = DhikrPop.nextInfo(this@MainActivity).toDouble()
@@ -758,7 +770,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/4.7 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/4.8 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }

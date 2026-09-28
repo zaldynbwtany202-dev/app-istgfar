@@ -29,10 +29,13 @@ class BootReceiver : BroadcastReceiver() {
             DhikrPop.ACTION_POP -> { val pr = goAsync(); DhikrPop.fire(context, intent) { try { pr.finish() } catch (_: Exception) { } } }
             DhikrPop.ACTION_DONE -> DhikrPop.markDone(context, intent)
             DhikrPop.ACTION_MUTE -> DhikrPop.mute(context, intent)
+            // وسن 4.8 · المنبّه
+            WasanAlarm.ACTION_FIRE -> WasanAlarm.fire(context, intent)
             Intent.ACTION_TIMEZONE_CHANGED -> {
                 AdhanScheduler.rebuild(context)
                 AdhanScheduler.scheduleNext(context)
                 DhikrPop.scheduleNext(context)
+                WasanAlarm.scheduleAll(context)
                 PrayerWidgets.updateAll(context)
             }
             Intent.ACTION_BOOT_COMPLETED,
@@ -44,6 +47,8 @@ class BootReceiver : BroadcastReceiver() {
                 AdhanScheduler.scheduleNext(context)
                 DhikrPop.ensureChannels(context)
                 DhikrPop.scheduleNext(context)
+                WasanAlarm.ensureChannel(context)
+                WasanAlarm.scheduleAll(context)
                 PrayerWidgets.updateAll(context)
             }
         }

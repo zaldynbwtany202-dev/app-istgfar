@@ -21,7 +21,7 @@ object AdhanPlan {
     val FIVE = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
     private val NAMES = mapOf("fajr" to "الفجر", "dhuhr" to "الظهر", "asr" to "العصر", "maghrib" to "المغرب", "isha" to "العشاء")
 
-    private fun params(c: JSONObject): WasanTimes.Params {
+    fun params(c: JSONObject): WasanTimes.Params {
         val adj = HashMap<String, Double>()
         c.optJSONObject("adjust")?.let { o -> o.keys().forEach { k -> adj[k] = o.optDouble(k, 0.0) } }
         return WasanTimes.Params(

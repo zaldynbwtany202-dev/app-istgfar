@@ -61,7 +61,8 @@ object AdhanScheduler {
     private const val NID_PRE = 7302
     val FIVE = AdhanPlan.FIVE
     const val DUA = "اللهمّ ربَّ هذه الدعوة التامّة، والصلاة القائمة، آتِ محمدًا الوسيلة والفضيلة، وابعثه مقامًا محمودًا الذي وعدته"
-    val VOICES = mapOf("v1" to "أذان هادئ", "v2" to "من المسجد النبوي")
+    // وسن 4.8: ثلاثة أصوات جديدة (صباح فخري · عاقب عزيز · أذان خاشع) — تسجيلات مرخّصة من ويكيميديا كومنز
+    val VOICES = linkedMapOf("v1" to "أذان هادئ", "v2" to "من المسجد النبوي", "v3" to "صباح فخري", "v4" to "أذان صافٍ", "v5" to "أذان خاشع")
 
 
     private fun prefs(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -89,7 +90,7 @@ object AdhanScheduler {
         prefs(ctx).edit().putString("cfg", json).apply()
     }
 
-    private fun config(ctx: Context): JSONObject? =
+    fun config(ctx: Context): JSONObject? =
         try { prefs(ctx).getString("cfg", null)?.let { JSONObject(it) } } catch (_: Exception) { null }
 
     fun entries(ctx: Context): List<AdhanEntry> {
@@ -282,8 +283,8 @@ object AdhanScheduler {
 
     fun rawUri(ctx: Context, res: Int): Uri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + ctx.packageName + "/" + res)
     fun chimeUri(ctx: Context): Uri = rawUri(ctx, R.raw.wasan_chime)
-    fun adhanRes(v: String): Int = if (v == "v2") R.raw.wasan_adhan_2 else R.raw.wasan_adhan_1
-    fun takbirRes(v: String): Int = if (v == "v2") R.raw.wasan_takbir_2 else R.raw.wasan_takbir_1
+    fun adhanRes(v: String): Int = when (v) { "v2" -> R.raw.wasan_adhan_2; "v3" -> R.raw.wasan_adhan_3; "v4" -> R.raw.wasan_adhan_4; "v5" -> R.raw.wasan_adhan_5; else -> R.raw.wasan_adhan_1 }
+    fun takbirRes(v: String): Int = when (v) { "v2" -> R.raw.wasan_takbir_2; "v3" -> R.raw.wasan_takbir_3; "v4" -> R.raw.wasan_takbir_4; "v5" -> R.raw.wasan_takbir_5; else -> R.raw.wasan_takbir_1 }
 
     private fun channelFor(ctx: Context, m: String): String = when (m) {
         "adhan" -> CH_ADHAN_PREFIX + "full"

@@ -8,33 +8,43 @@
    ════════════════════════════════════════════════════════════════ */
 'use strict';
 const POP_ADHKAR = [
-  { id: 'sh', t: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ', f: 'من قالها مئة مرة حُطّت خطاياه وإن كانت مثل زبد البحر', src: 'متفق عليه' },
+  { id: 'sh', au: 'sh', t: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ', f: 'من قالها مئة مرة حُطّت خطاياه وإن كانت مثل زبد البحر', src: 'متفق عليه' },
   { id: 'kl', t: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ', f: 'كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن', src: 'متفق عليه' },
   { id: 'bq', t: 'سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلَا إِلَهَ إِلَّا اللَّهُ، وَاللَّهُ أَكْبَرُ', f: 'أحبّ الكلام إلى الله', src: 'رواه مسلم' },
-  { id: 'is', t: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ', f: 'كان النبي ﷺ يستغفر الله في اليوم أكثر من سبعين مرة', src: 'رواه البخاري' },
-  { id: 'sl', t: 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ', f: 'من صلّى عليّ صلاةً صلّى الله عليه بها عشرًا', src: 'رواه مسلم' },
+  { id: 'is', au: 'is', t: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ', f: 'كان النبي ﷺ يستغفر الله في اليوم أكثر من سبعين مرة', src: 'رواه البخاري' },
+  { id: 'sl', au: 'sl', t: 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ', f: 'من صلّى عليّ صلاةً صلّى الله عليه بها عشرًا', src: 'رواه مسلم' },
   { id: 'hw', t: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', f: 'كنزٌ من كنوز الجنة', src: 'متفق عليه' },
-  { id: 'hm', t: 'الْحَمْدُ لِلَّهِ', f: '«والحمد لله تملأ الميزان»', src: 'رواه مسلم' },
-  { id: 'th', t: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', f: 'من قالها عشر مرات كان كمن أعتق أربعة أنفس من ولد إسماعيل', src: 'متفق عليه' },
+  { id: 'hm', au: 'hm', t: 'الْحَمْدُ لِلَّهِ', f: '«والحمد لله تملأ الميزان»', src: 'رواه مسلم' },
+  { id: 'th', au: 'th', t: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', f: 'من قالها عشر مرات كان كمن أعتق أربعة أنفس من ولد إسماعيل', src: 'متفق عليه' },
   { id: 'ak', t: 'اللَّهُ أَكْبَرُ كَبِيرًا، وَالْحَمْدُ لِلَّهِ كَثِيرًا، وَسُبْحَانَ اللَّهِ بُكْرَةً وَأَصِيلًا', f: '«عجبتُ لها، فُتحت لها أبواب السماء»', src: 'رواه مسلم' },
   { id: 'hs', t: 'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ', f: 'قالها إبراهيم عليه السلام حين أُلقي في النار', src: 'رواه البخاري' },
   { id: 'yn', t: 'لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ', f: 'لم يدعُ بها مسلم في شيء قطّ إلا استجاب الله له', src: 'رواه الترمذي' },
-  { id: 'rd', t: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا', v: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا', f: 'وجبت له الجنة', src: 'رواه أبو داود' },
-  { id: 'ad', t: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ', f: 'كلماتٌ تعدل ذكرًا طويلًا', src: 'رواه مسلم' },
+  { id: 'rd', au: 'rd', t: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا', v: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا', f: 'وجبت له الجنة', src: 'رواه أبو داود' },
+  { id: 'ad', au: 'ad', t: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ', f: 'كلماتٌ تعدل ذكرًا طويلًا', src: 'رواه مسلم' },
+  // وسن 4.8: أذكار جديدة مسجّلة بصوت بشري
+  { id: 'hb', au: 'hb', t: 'حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ', f: 'من قالها سبع مرات صباحًا ومساءً كفاه الله ما أهمّه', src: 'رواه أبو داود' },
+  { id: 'yq', au: 'yq', t: 'يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ', f: 'أوصى بها النبي ﷺ فاطمة رضي الله عنها صباحًا ومساءً', src: 'رواه النسائي والحاكم' },
+  { id: 'bs', au: 'bs', t: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيعُ الْعَلِيمُ', f: 'من قالها ثلاثًا لم يضرّه شيء', src: 'رواه أبو داود والترمذي' },
+  { id: 'aw', au: 'aw', t: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', f: 'من قالها لم يضرّه شيء حتى يرتحل من منزله', src: 'رواه مسلم' },
+  { id: 'tk', au: 'tk', t: 'اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ', f: '«والله أكبر» من الباقيات الصالحات وأحبّ الكلام إلى الله', src: 'رواه مسلم' },
 ];
+// وسن 4.8: «صوت بشري» حقيقي — تسجيلات الشيخ فارس عبّاد لهذه الأذكار (مدمجة في التطبيق)
+const POP_VOICED = POP_ADHKAR.filter(a => a.au).map(a => a.id);
+const VOICE_BY = 'الشيخ فارس عبّاد';
 const POP_DEF = { on: false, from: '08:00', to: '22:00', every: 60, days: [0, 1, 2, 3, 4, 5, 6], style: 'notif', sound: 'soft', vib: true, count: 3, order: 'cycle',
-  sel: ['sh', 'is', 'sl', 'hw', 'bq', 'hm'], custom: [], secs: 15, keep: 20, rate: 0.85 };
+  sel: ['sh', 'is', 'sl', 'hw', 'bq', 'hm'], custom: [], secs: 15, keep: 20, rate: 0.85, hv: true, voice: ['sl', 'is', 'sh'] };
 const POP_EVERY = [[15, 'd15'], [30, 'd30'], [60, 'ساعة'], [120, 'ساعتان'], [180, 'h3']];
 const popLbl = t => t === 'd15' ? N(15) + ' د' : t === 'd30' ? N(30) + ' د' : t === 'h3' ? N(3) + ' ساعات' : t;
 const POP_COUNTS = [1, 3, 7, 10, 33, 100];
 const WDAYS = [[6, 'سبت'], [0, 'أحد'], [1, 'إثنين'], [2, 'ثلاثاء'], [3, 'أربعاء'], [4, 'خميس'], [5, 'جمعة']];
 
 const PopZ = {
-  get() { return Object.assign({}, POP_DEF, Settings.pop || {}); },
+  get() { const c = Object.assign({}, POP_DEF, Settings.pop || {}); if (c.sound === 'voice') c.sound = 'tts'; return c; },
   set(patch) { const c = Object.assign(this.get(), patch); setSetting('pop', c); this.sync(); return c; },
   items(c) {
     c = c || this.get();
-    const pre = POP_ADHKAR.filter(a => c.sel.includes(a.id)).map(a => ({ t: a.t, n: c.count, f: a.f, v: a.v || a.t }));
+    const vo = c.hv !== false ? (c.voice || []) : [];
+    const pre = POP_ADHKAR.filter(a => c.sel.includes(a.id)).map(a => ({ t: a.t, n: c.count, f: a.f, v: a.v || a.t, a: a.au && vo.includes(a.id) ? a.au : '' }));
     const cus = (c.custom || []).filter(x => x.on !== false).map(x => ({ t: x.t, n: x.n || c.count, f: '', v: x.t }));
     return pre.concat(cus);
   },
@@ -69,6 +79,17 @@ const popTimes = n => n === 1 ? 'مرة واحدة' : n === 2 ? 'مرتين' : p
 Bus.on('resume', () => { try { PopZ.take(); } catch (e) {} });
 setTimeout(() => { try { PopZ.take(); PopZ.sync(); } catch (e) {} }, 1500);
 
+/* وسن 4.8: استماع مسبق للصوت البشري داخل التطبيق */
+let _pzA = null;
+function popVoice(key, btn) {
+  try { if (_pzA) { _pzA.pause(); _pzA = null; } $$('.pz-pl.on').forEach(x => { x.classList.remove('on'); x.innerHTML = icon('play'); });
+    if (!/^[a-z0-9]{1,8}$/.test(key || '')) return;
+    const a = _pzA = new Audio('snd/dhikr/' + key + '.ogg'); a.volume = 1;
+    if (btn) { btn.classList.add('on'); btn.innerHTML = icon('stop'); }
+    a.onended = a.onerror = () => { if (btn) { btn.classList.remove('on'); btn.innerHTML = icon('play'); } if (_pzA === a) _pzA = null; };
+    const p = a.play(); if (p && p.catch) p.catch(() => {});
+  } catch (e) {}
+}
 /* ═══ الشاشة ═══ */
 function popTimeSheet(title, cur, onPick) {
   Sheet.open('<div class="sh-t">' + esc(title) + '</div><div class="mx form-g"><input class="field big" type="time" id="pt-v" value="' + esc(cur) + '" style="text-align:center;font-size:24px">' +
@@ -118,12 +139,17 @@ SCREENS.popz = {
         (c.style === 'overlay' ? (nat && !ov ? '<div class="li pz-warn"><div class="ic">' + icon('warn') + '</div><div class="grow"><div class="t">اسمح بالظهور فوق التطبيقات</div><div class="s">دون هذا الإذن يظهر الذكر إشعارًا منبثقًا</div></div><button class="act" id="pz-ov">السماح</button></div>' : '') +
           srow('مدة بقائها على الشاشة', '', seg('secs', [[10, N(10) + ' ث'], [15, N(15) + ' ث'], [30, N(30) + ' ث'], [60, 'دقيقة']], c.secs)) : '') + '</div>' +
       sec('الصوت') + '<div class="list mx">' +
-        srow('مع كل ذكر', ({ soft: 'نغمة قصيرة هادئة', voice: 'يُقرأ الذكر بصوت هادئ (صوت النطق العربي في هاتفك)', silent: 'بلا صوت' })[c.sound], seg('sound', [['soft', 'نغمة هادئة'], ['voice', 'تذكير صوتي'], ['silent', 'صامت']], c.sound)) +
-        (c.sound === 'voice' ? srow('سرعة القراءة', '<span id="pz-tts">' + (nat ? 'جارٍ التحقق من الصوت العربي…' : 'يعمل في تطبيق أندرويد') + '</span>', seg('rate', [[0.7, 'متأنّية'], [0.85, 'هادئة'], [1, 'عادية']], c.rate), true) : '') +
+        '<div class="li pz-hv"><div class="ic g">' + icon('vol') + '</div><div class="grow"><div class="t">صوت بشري للأذكار</div><div class="s">تسجيل حقيقي بصوت ' + VOICE_BY + ' — ليس صوتًا آليًّا. اختاري من القائمة أدناه الأذكار التي تُقرأ بصوته (' + N((c.voice || []).length) + ' مختارة)</div></div><button class="switch ' + (c.hv !== false ? 'on' : '') + '" id="pz-hvs"></button></div>' +
+        srow('الأذكار الأخرى', ({ soft: 'تظهر بنغمة قصيرة هادئة', tts: 'يقرؤها صوت النطق الآلي في هاتفك', silent: 'تظهر بلا صوت' })[c.sound] || '', seg('sound', [['soft', 'نغمة هادئة'], ['silent', 'صامتة'], ['tts', 'صوت الهاتف']], c.sound)) +
+        (c.sound === 'tts' ? srow('سرعة القراءة', '<span id="pz-tts">' + (nat ? 'جارٍ التحقق من الصوت العربي…' : 'يعمل في تطبيق أندرويد') + '</span>', seg('rate', [[0.7, 'متأنّية'], [0.85, 'هادئة'], [1, 'عادية']], c.rate), true) : '') +
         '<div class="li"><div class="ic">' + icon('vib') + '</div><div class="grow"><div class="t">اهتزاز خفيف</div></div><button class="switch ' + (c.vib ? 'on' : '') + '" id="pz-vib"></button></div></div>' +
       '<div class="mx pz-test"><button class="btn gold block" id="pz-try"' + (nat ? '' : ' disabled') + '>' + icon('play') + 'جرّب الآن</button>' +
-        (c.sound === 'voice' ? '<button class="btn ghost block" id="pz-say">' + icon('vol') + 'استمع إلى الصوت</button>' : '') + '</div>' +
-      sec('الأذكار') + '<div class="list mx pz-list">' + POP_ADHKAR.map(a => '<div class="li pz-it"><div class="grow"><div class="t zq">' + esc(a.t) + '</div><div class="s">' + esc(a.f) + ' · ' + esc(a.src) + '</div></div><button class="switch ' + (c.sel.includes(a.id) ? 'on' : '') + '" data-sel="' + a.id + '"></button></div>').join('') +
+        (c.sound === 'tts' ? '<button class="btn ghost block" id="pz-say">' + icon('vol') + 'استمعي إلى صوت الهاتف</button>' : '') + '</div>' +
+      sec('الأذكار') + '<div class="pz-vnote mx">' + icon('vol') + '<span>الأذكار التي بجانبها «بصوت» يمكن أن تُقرأ بصوت ' + VOICE_BY + ' حين تظهر — فعّليها لما تحبّين، وتبقى البقية بنغمتها الهادئة.</span></div>' +
+        '<div class="list mx pz-list">' + POP_ADHKAR.map(a => { const von = c.hv !== false && (c.voice || []).includes(a.id);
+          return '<div class="li pz-it"><div class="grow"><div class="t zq">' + esc(a.t) + '</div><div class="s">' + esc(a.f) + (a.src ? ' · ' + esc(a.src) : '') + '</div>' +
+            (a.au ? '<div class="pz-vrow"><button class="pz-vo' + (von ? ' on' : '') + '" data-vo="' + a.id + '">' + icon('vol') + (von ? 'بصوت ' + VOICE_BY : 'بصوت؟') + '</button><button class="pz-pl" data-pl="' + a.au + '" aria-label="استماع">' + icon('play') + '</button></div>' : '') +
+            '</div><button class="switch ' + (c.sel.includes(a.id) ? 'on' : '') + '" data-sel="' + a.id + '"></button></div>'; }).join('') +
         (c.custom || []).map((x, i) => '<div class="li pz-it"><div class="grow"><div class="t zq">' + esc(x.t) + '</div><div class="s">ذكر خاص · ' + N(x.n || c.count) + '</div></div><button class="act" data-del="' + i + '" aria-label="حذف">' + icon('trash') + '</button><button class="switch ' + (x.on !== false ? 'on' : '') + '" data-cus="' + i + '"></button></div>').join('') +
         '<button class="li" id="pz-add"><div class="ic">' + icon('plus') + '</div><div class="grow"><div class="t">إضافة ذكر خاص</div><div class="s">اكتب ذكرك أو دعاءك المفضّل</div></div></button></div>' +
       '<div class="pz-foot mx">' + icon('info') + '<span>' + N(items.length) + ' ' + (items.length === 1 ? 'ذكر مختار' : 'أذكار مختارة') + ' — تظهر بالتناوب. يمكنك إيقافها لبقية اليوم من الإشعار نفسه، وما تعدّه يُضاف إلى مسبحتك وبستانك.</span></div>';
@@ -147,6 +173,12 @@ SCREENS.popz = {
       PopZ.sync(); Native.call('ensureNotifPermission'); Native.call('testDhikrPop'); toast(c.style === 'overlay' && !Native.call('canOverlay') ? 'سيظهر إشعارًا — اسمح بالظهور فوق التطبيقات للنافذة العائمة' : 'هكذا سيظهر لك الذكر', 3000); };
     const sy = $('#pz-say', el); if (sy) sy.onclick = () => { const it = PopZ.items()[0]; if (!it) return; if (!Native.has('ttsSpeak')) { toast('التذكير الصوتي يعمل في تطبيق أندرويد'); return; } Native.call('ttsSpeak', it.v || it.t); };
     if ($('#pz-tts', el) && Native.has('ttsCheck')) Native.call('ttsCheck');
+    // وسن 4.8: الصوت البشري — مفتاح عام، واختيار الأذكار التي تُقرأ بصوته، واستماع مسبق
+    const hvs = $('#pz-hvs', el); if (hvs) hvs.onclick = () => { const c = PopZ.get(); PopZ.set({ hv: c.hv === false }); re(); };
+    $$('[data-vo]', el).forEach(b => b.onclick = () => { const id = b.dataset.vo, c = PopZ.get(); let vo = (c.voice || []).slice();
+      vo = vo.includes(id) ? vo.filter(x => x !== id) : vo.concat(id); const patch = { voice: vo }; if (vo.includes(id)) { patch.hv = true; if (!c.sel.includes(id)) patch.sel = c.sel.concat(id); }
+      PopZ.set(patch); if (vo.includes(id)) popVoice(POP_ADHKAR.find(a => a.id === id).au); re(); });
+    $$('[data-pl]', el).forEach(b => b.onclick = () => popVoice(b.dataset.pl, b));
     $$('[data-sel]', el).forEach(b => b.onclick = () => { const id = b.dataset.sel, c = PopZ.get(); const sel = c.sel.includes(id) ? c.sel.filter(x => x !== id) : c.sel.concat(id);
       PopZ.set({ sel }); b.classList.toggle('on', sel.includes(id)); });
     $$('[data-cus]', el).forEach(b => b.onclick = () => { const i = +b.dataset.cus, c = PopZ.get(), cu = (c.custom || []).slice(); cu[i] = Object.assign({}, cu[i], { on: cu[i].on === false }); PopZ.set({ custom: cu }); b.classList.toggle('on', cu[i].on !== false); });
@@ -179,26 +211,40 @@ function bindRemindVoice(el) {
 }
 setTimeout(() => { try { if (Native.has('setRemindVoice')) Native.call('setRemindVoice', !!Settings.remVoice); } catch (e) {} }, 1600);
 
-/* ═══ أصوات المسبحة: حبّة خشبية هادئة · قطرة ماء · بلا صوت (تُولَّد في الجهاز، بلا ملفات) ═══ */
+/* ═══ أصوات المسبحة (تُولَّد في الجهاز، بلا ملفات) — وسن 4.8: أصوات أهدأ مع صدى ناعم ═══
+   نغمة هادئة: نقرة وتر ناعمة تمشي على سلّم خماسي فتصنع لحنًا هادئًا مع كل تسبيحة
+   جرس بلّوري · خشب العود · حبّتان · حبّة خشبية · قطرة ماء · نقرة ناعمة */
+const TAS_PENTA = [293.66, 329.63, 369.99, 440, 493.88, 587.33, 493.88, 440, 369.99, 329.63];
 const TasSound = {
-  ctx: null,
+  ctx: null, step: 0, rev: null,
   ac() { if (!this.ctx) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; try { this.ctx = new A(); } catch (e) { return null; } }
     if (this.ctx.state === 'suspended') try { this.ctx.resume(); } catch (e) {} return this.ctx; },
+  // صدى ناعم قصير (استجابة مولَّدة) يجعل الصوت أهدأ وأنعم
+  reverb(c) { if (this.rev) return this.rev; try { const L = Math.floor(c.sampleRate * 1.6), b = c.createBuffer(2, L, c.sampleRate);
+      for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < L; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / L, 3.2) * .6; }
+      const cv = c.createConvolver(); cv.buffer = b; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200; const g = c.createGain(); g.gain.value = .32;
+      cv.connect(lp); lp.connect(g); g.connect(c.destination); this.rev = cv; } catch (e) { this.rev = null; } return this.rev; },
   play(kind, done) {
-    kind = kind || Settings.tasSnd || 'off'; if (kind === 'off') return;
-    const c = this.ac(); if (!c) return; const t = c.currentTime, out = c.createGain(); out.gain.value = 0.55; out.connect(c.destination);
-    const tone = (f, a, d, type, f2) => { const o = c.createOscillator(), g = c.createGain(); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d * 0.6);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g); g.connect(out); o.start(t); o.stop(t + d + 0.02); };
-    if (done) { [[659.3, 0], [880, 0.12], [1318.5, 0.24]].forEach(([f, dl]) => { const o = c.createOscillator(), g = c.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0.0001, t + dl); g.gain.exponentialRampToValueAtTime(0.09, t + dl + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dl + 0.9); o.connect(g); g.connect(out); o.start(t + dl); o.stop(t + dl + 1); }); return; }
-    if (kind === 'bead') {
-      // «طَق» خشبي ناعم: نقرة قصيرة مرشّحة + نغمة خشبية منخفضة
-      const n = Math.floor(c.sampleRate * 0.03), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    kind = kind || tasSnd(); if (kind === 'off') return;
+    const c = this.ac(); if (!c) return; const t = c.currentTime, out = c.createGain(); out.gain.value = (+Settings.tasVol || 0.7) * 0.8; out.connect(c.destination);
+    const wet = (kind === 'harp' || kind === 'bell' || kind === 'wood' || done) ? this.reverb(c) : null; if (wet) out.connect(wet);
+    const tone = (f, a, d, type, f2, at) => { const o = c.createOscillator(), g = c.createGain(), t0 = t + (at || 0); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + d * 0.6);
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(a, t0 + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d); o.connect(g); g.connect(out); o.start(t0); o.stop(t0 + d + 0.02); };
+    const click = (fq, q, a, at, len) => { const n = Math.floor(c.sampleRate * (len || 0.03)), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
       for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 6);
-      const src = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(); src.buffer = buf; bp.type = 'bandpass'; bp.frequency.value = 1900; bp.Q.value = 2.2; g.gain.value = 0.22;
-      src.connect(bp); bp.connect(g); g.connect(out); src.start(t);
-      tone(520, 0.07, 0.09, 'triangle'); tone(1040, 0.018, 0.05, 'sine');
-    } else if (kind === 'drop') { tone(780, 0.06, 0.16, 'sine', 1320); }
+      const src = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(); src.buffer = buf; bp.type = 'bandpass'; bp.frequency.value = fq; bp.Q.value = q; g.gain.value = a;
+      src.connect(bp); bp.connect(g); g.connect(out); src.start(t + (at || 0)); };
+    if (done) { [[587.33, 0], [739.99, 0.14], [880, 0.28], [1174.66, 0.44]].forEach(([f, dl]) => tone(f, 0.075, 1.4, 'sine', 0, dl)); return; }
+    if (kind === 'harp') {   // نقرة وتر ناعمة: أساس + توافقيات خافتة، ولحن خماسي يتقدّم مع كل ضغطة
+      const f = TAS_PENTA[this.step++ % TAS_PENTA.length]; tone(f, 0.11, 1.1, 'sine'); tone(f * 2, 0.028, 0.6, 'sine'); tone(f * 3, 0.01, 0.35, 'triangle'); click(2600, 1.2, 0.02, 0, 0.008);
+    } else if (kind === 'bell') { const f = 1046.5; tone(f, 0.05, 1.3, 'sine'); tone(f * 2.76, 0.018, 0.7, 'sine'); tone(f * 5.4, 0.008, 0.35, 'sine'); }
+    else if (kind === 'wood') { const f = [392, 440, 523.25][this.step++ % 3]; tone(f, 0.12, 0.32, 'sine'); tone(f * 4, 0.02, 0.08, 'sine'); click(1400, 1.6, 0.05, 0, 0.012); }
+    else if (kind === 'clack') { click(2300, 2.6, 0.2, 0, 0.018); click(2000, 2.4, 0.13, 0.045, 0.016); tone(620, 0.03, 0.06, 'triangle'); }
+    else if (kind === 'bead') { click(1900, 2.2, 0.22); tone(520, 0.07, 0.09, 'triangle'); tone(1040, 0.018, 0.05, 'sine'); }
+    else if (kind === 'drop') { tone(780, 0.06, 0.16, 'sine', 1320); }
     else if (kind === 'soft') { tone(440, 0.05, 0.22, 'sine'); tone(880, 0.012, 0.12, 'sine'); }
   },
 };
+// الافتراضي «نغمة هادئة» (يمكن إيقافه من المسبحة)
+function tasSnd() { return Settings.tasSnd == null ? 'harp' : Settings.tasSnd; }
 window.TasSound = TasSound;
