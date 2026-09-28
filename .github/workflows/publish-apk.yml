@@ -1,0 +1,29 @@
+name: Publish APK
+on:
+  push:
+    branches: [apk-parts]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble APK
+        run: |
+          set -euo pipefail
+          VER="$(tr -d ' \n\r' < parts/VERSION)"
+          cat parts/Wasan-"$VER".apk.part* > "Wasan-$VER.apk"
+          echo "$(tr -d ' \n\r' < parts/Wasan-$VER.apk.sha256)  Wasan-$VER.apk" | sha256sum -c -
+          ls -l "Wasan-$VER.apk"
+          echo "VER=$VER" >> "$GITHUB_ENV"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if ! gh release view "v$VER" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "v$VER" -R "$GITHUB_REPOSITORY" --target main --title "Wasan $VER" --notes-file parts/NOTES.md
+          fi
+          gh release upload "v$VER" "Wasan-$VER.apk" -R "$GITHUB_REPOSITORY" --clobber
