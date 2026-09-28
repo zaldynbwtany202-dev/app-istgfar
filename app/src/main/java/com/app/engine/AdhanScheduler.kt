@@ -219,22 +219,33 @@ object AdhanScheduler {
         }
     }
 
-    fun fire(ctx: Context, intent: Intent) {
+    /** يُرجع نصًّا يُقرأ بالصوت (وسن 4.7: «التذكير الصوتي» للتذكيرات اليومية) أو null */
+    fun fire(ctx: Context, intent: Intent): String? {
+        var speak: String? = null
         try {
-            if (intent.getStringExtra("token") != token(ctx)) return
+            if (intent.getStringExtra("token") != token(ctx)) return null
             val at = intent.getLongExtra("at", 0L)
             val now = System.currentTimeMillis()
             // عنصر أذان واحد فقط يُشغَّل صوته؛ البقية (تذكيرات في الدقيقة نفسها) إشعارات عادية
             val due = entries(ctx).filter { abs(it.at - at) < 60_000 && now - it.at < 20 * 60_000 }
             if (due.any { it.key == "test" }) prefs(ctx).edit().remove("test").apply()
             due.forEach { show(ctx, it) }
+            if (voiceRemind(ctx) && canPlayAloud(ctx) && !AdhanService.playing) {
+                val r = due.filter { it.ch == "remind" }
+                if (r.isNotEmpty()) speak = "تذكيرٌ لطيف: " + r.joinToString("، ") { it.title }
+            }
         } catch (e: Exception) {
             Log.w(TAG, "fire failed", e)
         } finally {
             scheduleNext(ctx)
             PrayerWidgets.updateAll(ctx)
         }
+        return speak
     }
+
+    // ── وسن 4.7 · التذكير الصوتي للتذكيرات اليومية (أذكار الصباح والمساء، الكهف، العادات…) ──
+    fun setVoiceRemind(ctx: Context, on: Boolean) { prefs(ctx).edit().putBoolean("voiceRemind", on).apply() }
+    fun voiceRemind(ctx: Context): Boolean = prefs(ctx).getBoolean("voiceRemind", false)
 
     // ────────────────── صوت الأذان والقنوات ──────────────────
 

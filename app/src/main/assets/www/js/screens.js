@@ -279,6 +279,7 @@ SCREENS.azkar = {
       }).join('') + '</div>' +
       sec('أدوات الذكر') + '<div class="list mx">' +
       '<button class="li" data-go="tasbih"><div class="ic">' + kwIcon('beads') + '</div><div class="grow"><div class="t">المسبحة الإلكترونية</div><div class="s">عدّاد مع أهداف وإحصاءات يومية</div></div><div class="end">' + icon('chev') + '</div></button>' +
+      '<button class="li" data-go="popz"><div class="ic g">' + icon('bell') + '</div><div class="grow"><div class="t">الأذكار المنبثقة</div><div class="s">' + esc(PopZ.get().on ? PopZ.status() : 'ذكرٌ لطيف يظهر لك في أوقات تختارها') + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
       '<button class="li" data-go="istighfar"><div class="ic g">' + kwIcon('heart') + '</div><div class="grow"><div class="t">وِرد الاستغفار</div><div class="s">مئة استغفار يوميًا</div></div><div class="end">' + icon('chev') + '</div></button>' +
       '<button class="li" data-go="names"><div class="ic">' + kwIcon('star8') + '</div><div class="grow"><div class="t">أسماء الله الحسنى</div><div class="s">تسعة وتسعون اسمًا مع معانيها</div></div><div class="end">' + icon('chev') + '</div></button></div>';
   },
@@ -339,6 +340,7 @@ function zkCard(A, it, i) {
 }
 
 /* ═══════════════ المسبحة ═══════════════ */
+const TAS_SND = { off: 'بلا صوت', bead: 'حبّة خشبية', drop: 'قطرة ماء', soft: 'نقرة ناعمة' };
 const TB = Object.assign({ sel: 0, count: 0, cycles: 0, total: 0, today: 0, day: '', custom: [], targets: {} }, Store.get('tasbih', {}));
 (function migrateOld() { try { const o = localStorage.getItem('noor_tasbih'); if (o && !Store.get('tasbih', null)) { const v = JSON.parse(o); TB.total = v.total || 0; TB.cycles = v.cycles || 0; } } catch (e) {} })();
 const tbSave = () => Store.set('tasbih', TB);
@@ -346,8 +348,12 @@ const tbList = () => NOOR_DATA.TASBIH.concat(TB.custom || []);
 const tbTarget = () => { const d = tbList()[TB.sel] || tbList()[0]; const t = TB.targets[TB.sel]; return t != null ? t : d.n; };
 SCREENS.tasbih = {
   parent: 'more',
-  render() {
+  render(a) {
     if (TB.day !== dayKey(new Date())) { TB.day = dayKey(new Date()); TB.today = 0; tbSave(); }
+    // وسن 4.7: فتح المسبحة من «الأذكار المنبثقة» على الذكر نفسه وبعدده (مرة واحدة لكل فتح)
+    if (a && a.t && !a._on) { a._on = 1; const k = normAr(a.t); let i = tbList().findIndex(x => normAr(x.t) === k);
+      if (i < 0) { TB.custom = (TB.custom || []).concat([{ t: a.t, n: +a.n || 0 }]); i = tbList().length - 1; }
+      TB.sel = i; if (+a.n) TB.targets[i] = +a.n; TB.count = 0; tbSave(); }
     const L = tbList(); if (TB.sel >= L.length) TB.sel = 0;
     const d = L[TB.sel], tg = tbTarget();
     return hdr('المسبحة', 'اضغط على الدائرة للتسبيح', { back: true, compact: true, actions: [{ id: 't-reset', icon: 'refresh', label: 'تصفير' }] }) +
@@ -358,7 +364,7 @@ SCREENS.tasbih = {
       '<span class="ripple" id="t-rip"></span><span class="cn" id="t-n">' + N(TB.count) + '</span><span class="ct" id="t-t">' + (tg ? 'من ' + N(tg) : 'بلا حدّ') + '</span><span class="lp" id="t-loop"></span></button></div>' +
       '<div class="stat3 mx" style="margin-top:26px"><div class="stat"><b class="num" id="t-cy">' + N(TB.cycles) + '</b><span>الدورات</span></div>' +
       '<div class="stat"><b class="num" id="t-td">' + fmtInt(TB.today) + '</b><span>اليوم</span></div><div class="stat"><b class="num" id="t-tt">' + fmtInt(TB.total) + '</b><span>الإجمالي</span></div></div>' +
-      '<div class="tb-tools"><button class="act" id="t-tg">' + icon('target') + 'الهدف</button><button class="act" id="t-vb">' + icon('vib') + (Settings.vibrate ? 'الاهتزاز مفعّل' : 'الاهتزاز متوقف') + '</button></div>';
+      '<div class="tb-tools"><button class="act" id="t-tg">' + icon('target') + 'الهدف</button><button class="act" id="t-sd">' + icon('vol') + (TAS_SND[Settings.tasSnd || 'off'] || TAS_SND.off) + '</button><button class="act" id="t-vb">' + icon('vib') + (Settings.vibrate ? 'الاهتزاز مفعّل' : 'الاهتزاز متوقف') + '</button></div>';
   },
   mount(el) {
     this.paint();
@@ -367,6 +373,8 @@ SCREENS.tasbih = {
     $('#t-chips', el).onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; TB.sel = +b.dataset.i; TB.count = 0; tbSave(); Router.refresh(); };
     $('#t-reset', el).onclick = () => { TB.count = 0; tbSave(); this.paint(); toast('تم تصفير العدّاد'); };
     $('#t-vb', el).onclick = () => { setSetting('vibrate', !Settings.vibrate); Router.refresh(); };
+    $('#t-sd', el).onclick = () => pickSheet('صوت المسبحة', 'صوت خفيف هادئ مع كل تسبيحة — ونغمة لطيفة عند إتمام الدورة', [['off', 'بلا صوت'], ['bead', 'حبّة خشبية'], ['drop', 'قطرة ماء'], ['soft', 'نقرة ناعمة']].map(([v, t]) => ({ v, t })),
+      Settings.tasSnd || 'off', v => { setSetting('tasSnd', v); TasSound.play(v); Router.refresh(); });
     $('#t-tg', el).onclick = () => pickSheet('الهدف', 'عدد التسبيحات في الدورة الواحدة', [33, 34, 99, 100, 500, 1000, 0].map(v => ({ v, t: v ? N(v) + ' تسبيحة' : 'بلا حدّ (عدّ مفتوح)' })), tbTarget(),
       v => { TB.targets[TB.sel] = v; TB.count = 0; tbSave(); Router.refresh(); });
     $('#t-add', el).onclick = () => {
@@ -381,6 +389,7 @@ SCREENS.tasbih = {
     const tg = tbTarget(); TB.count++; TB.today++; TB.total++; Growth.add('tas', 1);
     let done = false; if (tg && TB.count >= tg) { TB.cycles++; done = true; TB.count = 0; }
     tbSave(); clearTimeout(this._hold); this.paint(done, done ? tg : null);
+    try { TasSound.play(null, done); } catch (e) {}
     const rp = $('#t-rip'); if (rp) { rp.classList.remove('go'); void rp.offsetWidth; rp.classList.add('go'); }
     if (done) { vibrate(220); const b = $('#t-btn'); b.classList.remove('done'); void b.offsetWidth; b.classList.add('done'); toast('أتممت ' + N(tg) + ' — بارك الله فيك'); this._hold = setTimeout(() => this.paint(), 650); }
     else vibrate(14);
@@ -781,7 +790,9 @@ SCREENS.settings = {
         (() => { const hs = NotifHealth.state(), bad = NotifHealth.broken(hs), weak = NotifHealth.weak(hs);
           return '<button class="li" id="s-perm"><div class="ic g">' + icon('shield') + '</div><div class="grow"><div class="t">وصول الأذان في وقته' + (bad || weak ? '<span class="nh-dot' + (bad ? '' : ' w') + '"></span>' : '') + '</div><div class="s">' +
             (bad ? 'بعض الأذونات ناقصة — اضغط للإصلاح' : weak ? 'جاهز · ننصح باستثناء وسن من توفير البطارية' : 'كل الأذونات جاهزة · جرّب الأذان') + '</div></div><div class="end">' + icon('chev') + '</div></button></div>'; })() +
-        sec('التذكيرات') + '<div class="list mx">' + REMINDERS.map(([k, ic, t, s]) => '<div class="li"><div class="ic">' + icon(ic) + '</div><div class="grow" ' + (['azm', 'aze', 'sleep', 'jumua'].includes(k) ? 'data-rt="' + k + '"' : '') + '><div class="t">' + t + '</div><div class="s">' + s() + '</div></div><button class="switch ' + (Settings.remind[k] ? 'on' : '') + '" data-rm="' + k + '"></button></div>').join('') + '</div>' : '') +
+        sec('التذكيرات') + '<div class="list mx">' +
+          '<button class="li" data-go="popz"><div class="ic g">' + icon('bell') + '</div><div class="grow"><div class="t">الأذكار المنبثقة</div><div class="s">' + esc(PopZ.status()) + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
+          remindVoiceRow() + REMINDERS.map(([k, ic, t, s]) => '<div class="li"><div class="ic">' + icon(ic) + '</div><div class="grow" ' + (['azm', 'aze', 'sleep', 'jumua'].includes(k) ? 'data-rt="' + k + '"' : '') + '><div class="t">' + t + '</div><div class="s">' + s() + '</div></div><button class="switch ' + (Settings.remind[k] ? 'on' : '') + '" data-rm="' + k + '"></button></div>').join('') + '</div>' : '') +
       (Native.has('pinWidget') ? sec('أدوات الشاشة الرئيسية') + '<div class="list mx">' +
         '<button class="li" data-pin="day"><div class="ic">' + icon('widget') + '</div><div class="grow"><div class="t">«مواقيت اليوم»</div><div class="s">الصلاة القادمة وعدّ تنازلي والصلوات الخمس (4×2)</div></div><div class="end">' + icon('plus') + '</div></button>' +
         '<button class="li" data-pin="next"><div class="ic">' + icon('clock') + '</div><div class="grow"><div class="t">«الصلاة القادمة»</div><div class="s">أداة صغيرة بعدّ تنازلي حيّ (2×1)</div></div><div class="end">' + icon('plus') + '</div></button></div>' : '') +
@@ -834,6 +845,7 @@ SCREENS.settings = {
     $$('[data-pin]', el).forEach(b => b.onclick = () => { const ok = Native.has('canPinWidget') && Native.call('canPinWidget') && Native.call('pinWidget', b.dataset.pin);
       if (!ok) toast('اضغط مطوّلًا على الشاشة الرئيسية ← الأدوات (Widgets) ← وسن', 4200); });
     const rec = $('#s-rec', el); if (rec) rec.onclick = () => reciterSheet(() => Router.refresh());
+    bindRemindVoice(el); if ($('#rv-tts', el) && Settings.remVoice && Native.has('ttsCheck')) Native.call('ttsCheck');
   },
 };
 const REMINDERS = [

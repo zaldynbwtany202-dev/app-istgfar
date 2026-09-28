@@ -26,6 +26,7 @@ import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.Settings
+import android.speech.tts.TextToSpeech
 import android.util.Base64
 import android.util.Log
 import android.view.View
@@ -49,6 +50,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.noor.app.engine.AdhanScheduler
 import com.noor.app.engine.AdhanService
 import com.noor.app.engine.CalcMethod
+import com.noor.app.engine.DhikrPop
+import com.noor.app.engine.PopOverlay
+import com.noor.app.engine.WasanVoice
 import com.noor.app.engine.HijriCalendar
 import com.noor.app.engine.NoorLocation
 import com.noor.app.engine.PrayerEngine
@@ -583,6 +587,38 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         @JavascriptInterface fun notifEnabled(): Boolean = AdhanScheduler.notificationsEnabled(this@MainActivity)
 
+        // ── وسن 4.7 · الأذكار المنبثقة ──
+        @JavascriptInterface fun setDhikrPop(json: String) = DhikrPop.save(this@MainActivity, json)
+        @JavascriptInterface fun testDhikrPop() { DhikrPop.ensureChannels(this@MainActivity); DhikrPop.test(this@MainActivity) }
+        @JavascriptInterface fun dhikrNext(): Double = DhikrPop.nextInfo(this@MainActivity).toDouble()
+        @JavascriptInterface fun dhikrMuted(): Double = DhikrPop.mutedUntil(this@MainActivity).toDouble()
+        @JavascriptInterface fun unmuteDhikr() = DhikrPop.unmute(this@MainActivity)
+        @JavascriptInterface fun takeDhikrDone(): String = DhikrPop.takeDone(this@MainActivity)
+        @JavascriptInterface fun canOverlay(): Boolean = PopOverlay.can(this@MainActivity)
+        @JavascriptInterface fun requestOverlay() {
+            if (Build.VERSION.SDK_INT < 23) return
+            runOnUiThread {
+                try { startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))) }
+                catch (_: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (_: Exception) { } }
+            }
+        }
+
+        // ── وسن 4.7 · التذكير الصوتي (محرّك النطق العربي في الهاتف) ──
+        @JavascriptInterface fun ttsSpeak(text: String) {
+            WasanVoice.speak(applicationContext, text, 0.85f) { js("try{window.onTtsDone&&onTtsDone()}catch(e){}") }
+            WasanVoice.check(applicationContext) { st -> js("try{window.onTtsState&&onTtsState(" + JSONObject.quote(st) + ")}catch(e){}") }
+        }
+        @JavascriptInterface fun ttsCheck() { WasanVoice.check(applicationContext) { st -> js("try{window.onTtsState&&onTtsState(" + JSONObject.quote(st) + ")}catch(e){}") } }
+        @JavascriptInterface fun ttsStop() = WasanVoice.stop()
+        @JavascriptInterface fun openTtsSettings() {
+            runOnUiThread {
+                try { startActivity(Intent("com.android.settings.TTS_SETTINGS").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                catch (_: Exception) { try { startActivity(Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)) } catch (_: Exception) { } }
+            }
+        }
+        @JavascriptInterface fun setRemindVoice(on: Boolean) = AdhanScheduler.setVoiceRemind(this@MainActivity, on)
+        @JavascriptInterface fun remindVoice(): Boolean = AdhanScheduler.voiceRemind(this@MainActivity)
+
         /** «صلّيت» المسجّلة من إشعارات الأذان منذ آخر فتح */
         @JavascriptInterface fun takePrayed(): String = AdhanScheduler.takePrayed(this@MainActivity)
 
@@ -722,7 +758,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/4.6 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/4.7 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }

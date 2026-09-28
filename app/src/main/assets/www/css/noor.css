@@ -1347,3 +1347,43 @@ body:has(.reader) #skin-wall{display:none}
 [data-skin=kberry] .hc,[data-skin=kberry] .azc{outline:1.5px dashed rgba(226,52,79,.22);outline-offset:-7px}
 /* صورة الثيم المرسومة في اختيار السمة */
 .thm-kw.thm-art img{inset:0;width:100%;height:100%;object-fit:cover}
+
+/* ════ وسن 4.7 · الأذكار المنبثقة ════ */
+.pz-demo{padding:14px 16px 4px}
+.pz-phone{position:relative;height:208px;border-radius:26px;overflow:hidden;border:1px solid var(--line);
+  background:radial-gradient(120% 90% at 80% 0%,color-mix(in srgb,var(--brand) 26%,transparent),transparent 60%),linear-gradient(180deg,var(--card-2),var(--card));box-shadow:var(--shadow-sm)}
+.pz-bar{height:22px;display:flex;justify-content:center;align-items:center}.pz-bar span{width:54px;height:5px;border-radius:3px;background:var(--line-2)}
+.pz-card{position:absolute;left:14px;right:14px;top:30px;padding:10px 14px 12px;border-radius:22px;color:#fff;
+  background:linear-gradient(180deg,#154A3D,#0B211C);border:1px solid rgba(212,175,99,.42);box-shadow:0 14px 34px rgba(4,22,17,.38);
+  animation:pzin 6.5s var(--ease) infinite}
+.pz-card.ov{top:26px}
+.pz-h{display:flex;align-items:center;gap:7px;font-size:11.5px}.pz-h img{width:19px;height:19px;border-radius:6px}.pz-h b{color:#E9D4A0;font-weight:600}
+.pz-h i{margin-inline-start:auto;font-style:normal;color:#B8CFC6;font-size:12px}
+.pz-t{font-family:var(--font-d);font-size:21px;line-height:1.6;text-align:center;margin-top:4px}
+.pz-s{font-size:11.3px;line-height:1.6;color:#BFD8CE;text-align:center}
+.pz-r{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px}
+.pz-c{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#2A1E05;background:linear-gradient(135deg,#F7E3A6,#C9953F);box-shadow:0 4px 12px rgba(201,149,63,.35);animation:pzt 6.5s ease-in-out infinite}
+.pz-hint{font-size:11px;color:#BFD8CE}
+.pz-acts{display:flex;justify-content:center;gap:18px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}
+.pz-acts span{font-size:11.5px;font-weight:600;color:#E9D4A0}
+.pz-art{position:absolute;bottom:-6px;left:10px;width:64px;height:64px;object-fit:contain;opacity:.9;animation:kwbob 5s ease-in-out infinite}
+@keyframes pzin{0%{transform:translateY(-130%);opacity:0}9%{transform:translateY(4px);opacity:1}13%{transform:translateY(0)}82%{transform:translateY(0);opacity:1}92%,100%{transform:translateY(-40%);opacity:0}}
+@keyframes pzt{0%,30%,100%{transform:scale(1)}33%{transform:scale(.88)}37%{transform:scale(1)}48%{transform:scale(.88)}52%{transform:scale(1)}}
+.pz-note,.pz-foot{display:flex;gap:9px;margin-top:12px;padding:11px 13px;border-radius:14px;background:var(--card-2);border:1px solid var(--line);font-size:12.3px;line-height:1.75;color:var(--tx-2)}
+.pz-note .i,.pz-foot .i{width:17px;height:17px;flex:none;margin-top:3px;color:var(--gold-tx)}
+.pz-foot{margin-bottom:24px}
+.pz-main{margin-top:12px}
+.pz-days{display:flex;flex-wrap:wrap;gap:7px;width:100%;margin-top:10px}
+.pz-days button{height:36px;min-width:44px;padding:0 12px;border-radius:12px;font-size:13px;font-weight:600;background:var(--card-2);border:1.5px solid var(--line);color:var(--tx-2);transition:all .2s var(--ease)}
+.pz-days button.on{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--brand) 35%,transparent)}
+.pz-it .t.zq{font-family:var(--font-d);font-size:17px;line-height:1.75;font-weight:400}
+.pz-it .s{line-height:1.6}
+.pz-warn .ic{color:var(--warn)}
+.pz-muted .ic{color:var(--tx-3)}
+.pz-test{display:grid;gap:8px;margin-top:12px}
+@media (prefers-reduced-motion:reduce){.pz-card,.pz-c{animation:none}}
+/* 4.7 · صوت «هدوء عميق» في صفّ كامل */
+.amb-grid .amb:last-child:nth-child(3n+1){grid-column:1/-1;flex-direction:row;justify-content:center;gap:12px;padding:12px}
+.amb-grid .amb:last-child:nth-child(3n+1) .amb-ic{width:40px;height:40px}
+.pz-sr{flex-wrap:wrap}.pz-sr .grow{min-width:100%}.pz-sr .seg{width:100%;margin-top:10px}
+@keyframes kwbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
