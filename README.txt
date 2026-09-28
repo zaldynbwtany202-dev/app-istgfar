@@ -1,3 +1,15 @@
+وسن · Wasan 5.1 — إصدار «عودة الثيمات والعالم كله»
+=====================================================
+ما الجديد في 5.1 (فوق كل ما في 5.0)
+  - عودة ثيمات 4.8 المرسومة (css/noor.css من 4.8 دون الرسوم الإسلامية المحذوفة) + ١٠ ثيمات صور فقط (PHOTO10) بدقة 2160×3000 WebP
+    + ٥ ثيمات متحرّكة g:'anim' (awave · acloud · aleaf · arain · aaurora) في js/anim.js و css/anim.css وأصول img/an/. THEME_ALIAS للثيمات المحذوفة.
+  - لوحة الاستغفار بالتلوين (boards.js: IG.cfg · igcOrder · igcWordArt · igcPaint · igcShare · igcSheet) + خانة صور مستقلة pickImageFor('ig') في MainActivity.
+  - المواقيت حول العالم: js/tz.js (NOOR_TZ من zone.tab + NOOR_TZA للأسماء القديمة)، Geo في prayer.js (ccFor · tzFor · offset · guess)،
+    Times.tz/locDay/tzNote/tzMismatch، COUNTRY_METHOD لكل الدول + methodFor + طريقة russia، calcTimes مع بديل قطبي (٦٠°)،
+    src:'manual' للإحداثيات، geoCC من Geocoder في MainActivity وتحديث الموقع في onResume كل ٣٠ دقيقة. cities.js: ٣٧٠ مدينة / ١٣٧ دولة.
+  - متابعة تقريبية للقرّاء بلا توقيت (audio.js: EstT.build · warp · addAnchor، Player.resync) وزر «الشيخ يقرأ هذه الآن» في ورقة الآية (quran.js).
+  - الإصدار 5.1 (versionCode 14).
+
 وسن · Wasan 5.0 — إصدار «الصور الحقيقية والهدوء»
 =====================================================
 ما الجديد في 5.0 (فوق كل ما في 4.8)

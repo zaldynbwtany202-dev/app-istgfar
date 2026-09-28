@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   وسن 4.0 · المحرّك الفلكي (مواقيت الصلاة · التقويم الهجري · القبلة)
+   وسن 5.1 · المحرّك الفلكي (مواقيت الصلاة · التقويم الهجري · القبلة) — لكل دول العالم
    يعمل دون إنترنت وبلا أي مكتبات خارجية.
    ─ مواقيت: خوارزمية فلكية قياسية مع تكرار للتدقيق، وطرق حساب متعددة
      (زاوية أو دقائق للعشاء/المغرب)، ومعالجة خطوط العرض العليا.
@@ -33,18 +33,22 @@ const NoorEngine = (() => {
     kuwait:   { name: 'الكويت',                          fajr: 18,   isha: 17.5 },
     qatar:    { name: 'قطر',                             fajr: 18,   isha: { min: 90 } },
     turkey:   { name: 'تركيا — رئاسة الشؤون الدينية',     fajr: 18,   isha: 17 },
-    singapore:{ name: 'سنغافورة وماليزيا',               fajr: 20,   isha: 18 },
+    singapore:{ name: 'سنغافورة وماليزيا وإندونيسيا',    fajr: 20,   isha: 18 },
+    russia:   { name: 'روسيا — الإدارة الدينية لمسلمي روسيا', fajr: 16, isha: 15 },
     france:   { name: 'فرنسا — اتحاد المنظمات (12°)',     fajr: 12,   isha: 12 },
     isna:     { name: 'أمريكا الشمالية ISNA',             fajr: 15,   isha: 15 },
     tehran:   { name: 'معهد الجيوفيزياء — طهران',        fajr: 17.7, isha: 14, maghrib: 4.5, midnight: 'jafari' },
     jafari:   { name: 'الجعفري — مؤسسة ليفا',            fajr: 16,   isha: 14, maghrib: 4,   midnight: 'jafari' },
   };
-  const METHOD_ORDER = ['algeria','mwl','makkah','egypt','morocco','tunisia','karachi','gulf','kuwait','qatar','turkey','singapore','france','isna','tehran','jafari'];
-  /* الطريقة المقترحة حسب الدولة */
-  const COUNTRY_METHOD = { DZ:'algeria', MA:'morocco', TN:'tunisia', LY:'egypt', EG:'egypt', SD:'egypt', SA:'makkah', YE:'makkah',
-    AE:'gulf', OM:'gulf', BH:'gulf', QA:'qatar', KW:'kuwait', IQ:'mwl', SY:'egypt', JO:'egypt', LB:'egypt', PS:'egypt',
-    TR:'turkey', PK:'karachi', IN:'karachi', BD:'karachi', AF:'karachi', MY:'singapore', SG:'singapore', ID:'singapore',
-    IR:'tehran', US:'isna', CA:'isna', FR:'france', MR:'mwl' };
+  const METHOD_ORDER = ['algeria','mwl','makkah','egypt','morocco','tunisia','karachi','gulf','kuwait','qatar','turkey','singapore','russia','france','isna','tehran','jafari'];
+  /* الطريقة المقترحة حسب الدولة — وسن 5.1: لكل دول العالم (ما لم يُذكر هنا فرابطة العالم الإسلامي) */
+  const COUNTRY_METHOD = { DZ:'algeria', MA:'morocco', TN:'tunisia', LY:'egypt', EG:'egypt', SD:'egypt', SS:'egypt', SA:'makkah', YE:'makkah',
+    AE:'gulf', OM:'gulf', BH:'gulf', QA:'qatar', KW:'kuwait', IQ:'mwl', SY:'egypt', JO:'egypt', LB:'egypt', PS:'egypt', IL:'egypt',
+    TR:'turkey', CY:'turkey', AZ:'turkey', BA:'turkey', AL:'turkey', XK:'turkey', MK:'turkey', ME:'turkey', RS:'turkey', BG:'turkey',
+    PK:'karachi', IN:'karachi', BD:'karachi', AF:'karachi', LK:'karachi', NP:'karachi', MV:'karachi', BT:'karachi',
+    MY:'singapore', SG:'singapore', ID:'singapore', BN:'singapore', TH:'singapore', PH:'singapore', MM:'singapore', KH:'singapore', VN:'singapore', LA:'singapore', TL:'singapore',
+    IR:'tehran', RU:'russia', US:'isna', CA:'isna', FR:'france', MR:'mwl' };
+  const methodFor = cc => COUNTRY_METHOD[cc] || 'mwl';
 
   /* ─────────────── الفلك ─────────────── */
   function julian(y, m, d) {
@@ -71,6 +75,12 @@ const NoorEngine = (() => {
    * @returns ساعات عشرية محلية لكل وقت + midnight + lastThird
    */
   function prayerTimes(date, o) {
+    // وسن 5.1: في المناطق القطبية (نهار أو ليل متصل) نأخذ مواقيت أقرب خط عرض تتعاقب فيه الشمس
+    const T = calcTimes(date, o);
+    if ((isNaN(T.sunrise) || isNaN(T.sunset)) && Math.abs(+o.lat) > 60) { const P = calcTimes(date, Object.assign({}, o, { lat: Math.sign(+o.lat) * 60 })); P.polar = true; return P; }
+    return T;
+  }
+  function calcTimes(date, o) {
     const lat = +o.lat, lng = +o.lng;
     const tz = (o.tz != null) ? o.tz : -date.getTimezoneOffset() / 60;
     const m = METHODS[o.method] || METHODS.mwl;
@@ -268,7 +278,7 @@ const NoorEngine = (() => {
   const occasionOn = h => OCCASIONS.find(o => o.m === h.month && o.d === h.day) || null;
 
   return {
-    METHODS, METHOD_ORDER, COUNTRY_METHOD, KAABA,
+    METHODS, METHOD_ORDER, COUNTRY_METHOD, methodFor, KAABA,
     prayerTimes, toDate, qibla, kaabaDistance, distanceKm, locateFromQibla,
     hijri, hijriMonthDays, HMONTHS, GMONTHS, GMONTHS_DZ, WEEKDAYS, OCCASIONS, occasionOn,
     usesUmmAlQura: !!_fmt,

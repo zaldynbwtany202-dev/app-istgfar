@@ -26,7 +26,7 @@ const Ramadan = {
 };
 /* أوقات البطاقة: الإمساك · الإفطار · وجهة العدّ التنازلي */
 function ramadanTarget(now) {
-  const t = Times.forDay(now);
+  const t = Times.forDay(Times.locDay(now));
   if (now < t.imsak) return { l: 'على الإمساك', at: t.imsak };
   if (now < t.maghrib) return { l: 'على الإفطار', at: t.maghrib };
   const d2 = addDays(now, 1), h2 = hijriOf(d2);
@@ -42,7 +42,7 @@ function ramadanCard(now) {
       '<div class="grow"><div class="rmd-t">' + (nr.days === 1 ? 'رمضان غدًا بإذن الله' : 'رمضان بعد ' + pD(nr.days)) + '</div>' +
       '<div class="rmd-s">«اللهم بلّغنا رمضان» — هيّئ قلبك ونيّتك، واقضِ ما عليك من صيام</div></div>' + icon('chev', 'faint') + '</div></button>';
   }
-  const days = NoorEngine.hijriMonthDays(now, Settings.hijriOffset), n = days.length || 30, t = Times.forDay(now), tg = ramadanTarget(now);
+  const days = NoorEngine.hijriMonthDays(now, Settings.hijriOffset), n = days.length || 30, t = Times.forDay(Times.locDay(now)), tg = ramadanTarget(now);
   const st = Ramadan.get(h.year, h.day), fasted = Ramadan.count(h.year, 1), exc = Ramadan.count(h.year, -1);
   const cells = Array.from({ length: n }, (_, i) => { const dd = i + 1, v = Ramadan.get(h.year, dd);
     return '<button class="rmd-c' + (v === 1 ? ' f' : v === -1 ? ' x' : '') + (dd === h.day ? ' t' : '') + (dd > h.day ? ' fu' : '') + '" data-rd="' + dd + '"' + (dd > h.day ? ' disabled' : '') + '>' + N(dd) + '</button>'; }).join('');

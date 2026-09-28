@@ -133,7 +133,7 @@ const ReadTrack = {
 
 function gardenPhase(now) {
   try {
-    const t = Times.forDay(now);
+    const t = Times.forDay(Times.locDay(now));
     if (now < t.fajr || now >= t.isha) return 'night';
     if (now < new Date(t.sunrise.getTime() + 30 * 60000)) return 'dawn';
     if (now < t.asr) return 'day';

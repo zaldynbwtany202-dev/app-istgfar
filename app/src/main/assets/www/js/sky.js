@@ -27,7 +27,7 @@ const LivingSky = (() => {
   /* وسن 4.5 · «المشاهد»: ألوان السماء من السمة إن كان لها مشهد خاص (skins.js) */
   const skyP = () => { try { const k = typeof curSkin === 'function' ? curSkin() : null; return k && k.sky ? k.sky : P; } catch (e) { return P; } };
   function frames(now) {
-    const t = Times.forDay(now), d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), d1 = new Date(d0.getTime() + 864e5);
+    const t = Times.forDay(Times.locDay(now)), d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), d1 = new Date(d0.getTime() + 864e5);
     const at = (base, min) => base && !isNaN(base) ? new Date(base.getTime() + min * M) : null;
     const f = [[d0, 'night'], [at(t.fajr, -50), 'night'], [t.fajr, 'predawn'], [at(t.sunrise, -18), 'dawn'], [at(t.sunrise, 24), 'morning'],
       [at(t.sunrise, 120), 'day'], [t.dhuhr, 'noon'], [t.asr, 'afternoon'], [at(t.maghrib, -45), 'golden'], [at(t.maghrib, -4), 'sunset'],
