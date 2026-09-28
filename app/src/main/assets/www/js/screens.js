@@ -344,7 +344,29 @@ function zkCard(A, it, i) {
 }
 
 /* ═══════════════ المسبحة ═══════════════ */
-const TAS_SND = { off: 'بلا صوت', harp: 'نغمة هادئة', bell: 'جرس بلّوري', wood: 'خشب العود', clack: 'حبّتان', bead: 'حبّة خشبية', drop: 'قطرة ماء', soft: 'نقرة ناعمة' };
+/** وسن 6 · صوت المسبحة: أصوات طبيعية، وصوت الشيخ عند تمام الدورة، ومستوى الصوت، وتنبيه إن كان صوت الوسائط مكتومًا */
+Bus.on('resume', () => { if (Settings.tasVolKey && Router.cur && Router.cur.r === 'tasbih' && Native.has('setVolumeCount')) Native.call('setVolumeCount', true); });
+function stripTashkeel(s) { return String(s || '').replace(/[\u064B-\u0652\u0670]/g, ''); }
+function tasSoundSheet(done) {
+  const draw = sh => {
+    const cur = tasSnd(), mv = Native.has('mediaVolume') ? +Native.call('mediaVolume') : -1, vo = Settings.tasVoice !== false;
+    sh.innerHTML = '<div class="grab"></div><div class="sh-t">صوت المسبحة</div><div class="sh-s">أصوات طبيعية هادئة كحبّات المسبحة في يدك — بلا موسيقى</div>' +
+      (mv === 0 ? '<div class="geo-n mx">' + icon('warn') + '<div class="grow"><b>صوت الوسائط في هاتفك مكتوم</b><span>ارفعيه بزرّ الصوت الجانبي — أزرار الصوت داخل وسن تضبطه مباشرة</span></div></div>' : '') +
+      '<div class="list mx" id="tss-l" style="margin-top:10px">' + Object.keys(TAS_SND).map(v => '<button class="li opt' + (v === cur ? ' on' : '') + '" data-v="' + v + '"><div class="ic">' + icon(v === 'off' ? 'x' : 'vol') + '</div><div class="grow"><div class="t">' + TAS_SND[v] + '</div></div>' + (v === cur ? icon('check') : '') + '</button>').join('') + '</div>' +
+      '<div class="list mx" style="margin-top:10px"><button class="li" id="tss-v"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">صوت الشيخ فارس عبّاد عند تمام الدورة</div><div class="s">يقول الذكر نفسه (أستغفر الله، الحمد لله، الله أكبر، سبحان الله وبحمده، الصلاة على النبي ﷺ)</div></div>' +
+      '<span class="switch ' + (vo ? 'on' : '') + '"></span></button></div>' +
+      '<div class="mx form" style="margin-top:12px"><label>مستوى الصوت</label><input type="range" id="tss-vol" min="0.1" max="1" step="0.05" value="' + (+Settings.tasVol || 0.7) + '"></div>' +
+      '<div class="row mx" style="gap:10px;margin-top:14px"><button class="btn ghost grow" id="tss-try">' + icon('play') + 'تجربة</button><button class="btn gold grow" id="tss-ok">تم</button></div>';
+    $('#tss-l', sh).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; setSetting('tasSnd', b.dataset.v); TasSound.play(b.dataset.v); draw(sh); };
+    $('#tss-v', sh).onclick = () => { setSetting('tasVoice', !(Settings.tasVoice !== false)); draw(sh); if (Settings.tasVoice !== false) DhikrVoice.play('hm', +Settings.tasVol || .9); };
+    $('#tss-vol', sh).oninput = e => { Settings.tasVol = +e.target.value; };
+    $('#tss-vol', sh).onchange = e => { setSetting('tasVol', +e.target.value); TasSound.play(); };
+    $('#tss-try', sh).onclick = () => { TasSound.play(); setTimeout(() => TasSound.play(), 260); setTimeout(() => TasSound.play(null, true), 620); };
+    $('#tss-ok', sh).onclick = () => Sheet.close(done);
+  };
+  Sheet.open('', sh => draw(sh), done);
+}
+const TAS_SND = { bead: 'حبّة خشبية', clack: 'حبّتان', stone: 'حبّة حجرية', knock: 'طرقة خشب', drop: 'قطرة ماء', soft: 'نقرة ناعمة', off: 'بلا صوت' };   // وسن 6: لا نغمات موسيقية
 // وسن 4.8: ثلاثة أشكال للمسبحة
 const TAS_STY = { ring: ['دائرة الحبّات', 'اضغطي على الدائرة'], real: ['مسبحة حقيقية', 'اسحبي الحبّة بإصبعك كما في يدك'], string: ['خيط الحبّات', 'اسحبي الحبّة للأسفل أو اضغطي'], press: ['عدّاد كبير', 'اضغطي في أي مكان من البطاقة'] };
 const tasSty = () => TAS_STY[Settings.tasStyle] ? Settings.tasStyle : 'ring';
@@ -352,7 +374,7 @@ const TB = Object.assign({ sel: 0, count: 0, cycles: 0, total: 0, today: 0, day:
 (function migrateOld() { try { const o = localStorage.getItem('noor_tasbih'); if (o && !Store.get('tasbih', null)) { const v = JSON.parse(o); TB.total = v.total || 0; TB.cycles = v.cycles || 0; } } catch (e) {} })();
 const tbSave = () => Store.set('tasbih', TB);
 const tbList = () => NOOR_DATA.TASBIH.concat(TB.custom || []);
-const tbTarget = () => { const d = tbList()[TB.sel] || tbList()[0]; const t = TB.targets[TB.sel]; return t != null ? t : d.n; };
+const tbTarget = () => { const d = tbList()[TB.sel] || tbList()[0]; if (Settings.tasSeq && TB.sel <= 2) return d.n; const t = TB.targets[TB.sel]; return t != null ? t : d.n; };
 /* ── مسبحة الحبّات: خيط عمودي، حبّات تنزلق من الأعلى إلى الأسفل، وفواصل ذهبية بعد ١١ و٢٢ ── */
 const STR = { n: 22, r: 14, sp: 1.5, gt: 132, gb: 238, cx: 150 };
 function tbsCols() {
@@ -394,7 +416,7 @@ SCREENS.tasbih = {
       '<div class="tb-wrap tb-' + st + '"><div class="tb-dhikr" id="t-d">' + esc(d.t) + '</div>' + main + '</div>' +
       '<div class="stat3 mx" style="margin-top:22px"><div class="stat"><b class="num" id="t-cy">' + N(TB.cycles) + '</b><span>الدورات</span></div>' +
       '<div class="stat"><b class="num" id="t-td">' + fmtInt(TB.today) + '</b><span>اليوم</span></div><div class="stat"><b class="num" id="t-tt">' + fmtInt(TB.total) + '</b><span>الإجمالي</span></div></div>' +
-      '<div class="tb-tools"><button class="act" id="t-tg">' + icon('target') + 'الهدف</button><button class="act" id="t-sd">' + icon('vol') + (TAS_SND[tasSnd()] || TAS_SND.off) + '</button><button class="act" id="t-vb">' + icon('vib') + (Settings.vibrate ? 'الاهتزاز مفعّل' : 'الاهتزاز متوقف') + '</button></div>';
+      '<div class="tb-tools"><button class="act' + (Settings.tasSeq ? ' on' : '') + '" id="t-seq">' + icon('list') + 'دبر الصلاة</button><button class="act" id="t-undo">' + icon('undo') + 'تراجع</button>' + (Native.has('setVolumeCount') ? '<button class="act' + (Settings.tasVolKey ? ' on' : '') + '" id="t-vk">' + icon('vol') + 'العدّ بزر الصوت</button>' : '') + '<button class="act" id="t-tg">' + icon('target') + 'الهدف</button><button class="act" id="t-sd">' + icon('vol') + (TAS_SND[tasSnd()] || TAS_SND.off) + '</button><button class="act" id="t-vb">' + icon('vib') + (Settings.vibrate ? 'الاهتزاز مفعّل' : 'الاهتزاز متوقف') + '</button></div>';
   },
   mount(el) {
     const st = tasSty(), btn = $('#t-btn', el);
@@ -410,9 +432,16 @@ SCREENS.tasbih = {
     $('#t-chips', el).onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; TB.sel = +b.dataset.i; TB.count = 0; tbSave(); Router.refresh(); };
     $('#t-sty', el).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; setSetting('tasStyle', b.dataset.v); vibrate(8); Router.refresh(); };
     $('#t-reset', el).onclick = () => { TB.count = 0; tbSave(); this.paint(); toast('تم تصفير العدّاد'); };
+    // وسن 6: تسبيح دبر الصلاة (٣٣ + ٣٣ + ٣٤ تلقائيًّا)، والتراجع عن ضغطة خاطئة، والعدّ بأزرار الصوت
+    $('#t-seq', el).onclick = () => { const on = !Settings.tasSeq; setSetting('tasSeq', on); if (on) { TB.sel = 0; TB.count = 0; tbSave(); toast('تسبيح دبر الصلاة: سبحان الله ٣٣، الحمد لله ٣٣، الله أكبر ٣٤'); } Router.refresh(); };
+    $('#t-undo', el).onclick = () => { if (TB.count <= 0) { toast('لا شيء للتراجع عنه'); return; } TB.count--; TB.today = Math.max(0, TB.today - 1); TB.total = Math.max(0, TB.total - 1); try { Growth.add('tas', -1); } catch (e) {} tbSave(); vibrate(8);
+      if (tasSty() === 'real') Router.refresh(); else { if (tasSty() === 'string') { this._o = (this._o || 0) - 1; this.layout(false); } this.paint(); } };
+    const vk = $('#t-vk', el); if (vk) vk.onclick = () => { const on = !Settings.tasVolKey; setSetting('tasVolKey', on); Native.call('setVolumeCount', on); toast(on ? 'اضغطي زر الصوت للتسبيح دون النظر إلى الشاشة' : 'عادت أزرار الصوت لضبط الصوت'); Router.refresh(); };
+    if (Settings.tasVolKey) Native.call('setVolumeCount', true);
+    window.onVolKey = () => { if (!(Router.cur && Router.cur.r === 'tasbih')) return; if (tasSty() === 'real') { try { Misbaha.release(560); } catch (e) { this.inc(); } } else this.inc(); };
+    Native.call('keepScreenOn', true);
     $('#t-vb', el).onclick = () => { setSetting('vibrate', !Settings.vibrate); Router.refresh(); };
-    $('#t-sd', el).onclick = () => pickSheet('صوت المسبحة', 'صوت هادئ مريح مع كل تسبيحة — ونغمة لطيفة عند إتمام الدورة', Object.keys(TAS_SND).map(v => ({ v, t: TAS_SND[v] })),
-      tasSnd(), v => { setSetting('tasSnd', v); TasSound.play(v); Router.refresh(); });
+    $('#t-sd', el).onclick = () => tasSoundSheet(() => Router.refresh());
     $('#t-tg', el).onclick = () => pickSheet('الهدف', 'عدد التسبيحات في الدورة الواحدة', [33, 34, 99, 100, 500, 1000, 0].map(v => ({ v, t: v ? N(v) + ' تسبيحة' : 'بلا حدّ (عدّ مفتوح)' })), tbTarget(),
       v => { TB.targets[TB.sel] = v; TB.count = 0; tbSave(); Router.refresh(); });
     $('#t-add', el).onclick = () => {
@@ -455,14 +484,22 @@ SCREENS.tasbih = {
     if (tasSty() === 'string') { this._o = (this._o || 0) + 1; this.layout(true); }
     this.paint(done, done ? tg : null);
     const real = tasSty() === 'real';
-    if (!real || done) try { TasSound.play(null, done); } catch (e) {}   // في المسبحة الحقيقية تكفي طقطقة الحبّات
+    if (!real && !done) try { TasSound.play(); } catch (e) {}   // في المسبحة الحقيقية تكفي طقطقة الحبّات
+    if (done) { const vk = Settings.tasVoice === false ? '' : voiceKeyOf((tbList()[TB.sel] || {}).t);   // وسن 6: تمام الدورة بصوت الشيخ فارس عبّاد
+      try { TasSound.play(null, true); } catch (e) {} if (vk && tasSnd() !== 'off') setTimeout(() => DhikrVoice.play(vk, +Settings.tasVol || .9), 420); }
     if (!real) try { kwPop(artKey(), done); } catch (e) {}
     const rp = $('#t-rip'); if (rp) { rp.classList.remove('go'); void rp.offsetWidth; rp.classList.add('go'); }
     const b = $('#t-btn'); if (b) { b.classList.remove('tap'); void b.offsetWidth; b.classList.add('tap'); }
-    if (done) { vibrate(220); if (b) { b.classList.remove('done'); void b.offsetWidth; b.classList.add('done'); } toast('أتممت ' + N(tg) + ' — بارك الله فيك'); this._hold = setTimeout(() => this.paint(), 650); }
+    if (done) { vibrate(220); if (b) { b.classList.remove('done'); void b.offsetWidth; b.classList.add('done'); }
+      if (Settings.tasSeq && TB.sel <= 2) {   // الانتقال التلقائي في تسبيح دبر الصلاة
+        const L = tbList();
+        if (TB.sel < 2) { TB.sel++; tbSave(); toast('أحسنتِ — التالي: ' + stripTashkeel(L[TB.sel].t)); setTimeout(() => Router.refresh(), 900); }
+        else { TB.sel = 0; tbSave(); toast('تمّت المئة — «لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير»', 5200); setTimeout(() => Router.refresh(), 1400); }
+      } else toast('أتممت ' + N(tg) + ' — بارك الله فيك');
+      this._hold = setTimeout(() => this.paint(), 650); }
     else if (!real) vibrate(14);
   },
-  leave() { try { Misbaha.destroy(); } catch (e) {} },
+  leave() { try { Misbaha.destroy(); } catch (e) {} if (Native.has('setVolumeCount')) Native.call('setVolumeCount', false); window.onVolKey = null; if (!(window.Player && Player.on)) Native.call('keepScreenOn', false); },
   paint(done, show) {
     const tg = tbTarget(), n = $('#t-n'); if (!n) return;
     const c = show != null ? show : TB.count;
@@ -1033,8 +1070,13 @@ function soundSheet() {
 window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.textContent = j.title || SOUND_NAMES[j.mode] || ''; toast('صوت الأذان: ' + (j.title || '')); } catch (e) {} };
 
 /* ═══════════════ عن التطبيق ═══════════════ */
-const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '5.1';
+const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '6.0';
 const WHATS_NEW = [
+  ['6.0', [['headphones', 'سور أكثر بأصوات قرّائك — مع متابعة الآيات', 'أحمد خضر ٦٩ سورة، ومحمود الشحات أنور ٦٤، وعبدالرحمن مسعد ١٧، وعبدالله شعبان ٣٠ — تُسمَع من أرشيف الإنترنت أو تُنزَّل لتعمل دون إنترنت، وتوقيت كل آية محسوب من التسجيل نفسه فيتابعها المصحف. وإن لم تتوفّر سورة بصوت قارئك اقترحنا لها وحدها صوتًا بديلًا ثم نعود إلى قارئك'],
+    ['palette', 'الفراشات كما كانت — وثيمات حيّة جديدة', 'عاد ثيم الفراشات الزرقاء بحركته وألوانه الأصلية تمامًا، ومعه «فراشة المورفو» بصورتها الحقيقية، وأربعة ثيمات حيّة جديدة: ليلة النجوم بشهبها، والفوانيس، والثلج، وبتلات الورد'],
+    ['vol', 'مؤثرات صوتية تعمل فعلًا', 'صوت الحبّات والنقر صار بمحرّك الصوت الأصلي في الهاتف، فيعمل دائمًا وبلا تأخير — مع تنبيه إن كان صوت الوسائط صامتًا'],
+    ['grid', 'لوحة الاستغفار بلا موسيقى', 'حُذفت الرنّة الموسيقية: مع كل استغفار صوت حبّة هادئ، وعند اكتمال اللوحة يقول الشيخ فارس عبّاد «أستغفر الله وأتوب إليه» — ويمكنك جعله كل ٣٣ أو إيقافه'],
+    ['beads', 'مسبحة أذكى', 'تسبيح «دبر الصلاة» تلقائيًّا ٣٣ / ٣٣ / ٣٤، وزرّ «تراجع» للعدّة الخاطئة، والعدّ بزرّ الصوت دون النظر إلى الشاشة، وصوت الشيخ بالذكر نفسه عند تمام كل دورة، وأصوات حبّات طبيعية بلا نغمات — والشاشة لا تنطفئ أثناء التسبيح']]],
   ['5.1', [['palette', 'عادت ثيماتك القديمة — وأجمل', 'رجعت الثيمات المرسومة التي أحببتِها (الفراشات، الساكورا، الوردي، الليلي…) كما كانت بمشاهدها، ومعها ١٠ صور إسلامية بأعلى دقة متاحة'],
     ['waves', 'ثيمات متحرّكة', 'موج، وغيم، وأوراق الشجر، ومطر، وشفق قطبي — حركة ناعمة تتوقف تلقائيًّا حين لا تظهر لتبقى البطارية بخير'],
     ['grid', 'لوحة الاستغفار بالتلوين', 'اختاري صورة أو كلمة (أستغفر الله، الله، اسمٌ تحبّينه…) فتبدأ رمادية كصفحة تلوين، ومع كل استغفار يتلوّن مربّع حتى تكتمل الصورة — ١٠٠ أو ٣٠٠ أو ١٠٠٠ مربّع'],
@@ -1088,7 +1130,7 @@ SCREENS.about = {
       '<div class="li"><div class="ic">' + icon('book') + '</div><div class="grow"><div class="t">نص القرآن الكريم</div><div class="s">الرسم العثماني برواية حفص عن عاصم، بخط مجمّع الملك فهد (KFGQPC Uthmanic Hafs)</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('text') + '</div><div class="grow"><div class="t">الخطوط</div><div class="s">IBM Plex Sans Arabic وReem Kufi وAmiri وAmiri Quran — رخصة SIL Open Font License 1.1</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">الرسوم والرموز</div><div class="s">رسوم البستان مرسومة خصيصًا لوسن، والرموز ثلاثية الأبعاد من Fluent Emoji (مايكروسوفت) برخصة MIT</div></div></div>' +
-      '<button class="li" id="ab-ph"><div class="ic">' + icon('image') + '</div><div class="grow"><div class="t">صور الثيمات (5.0)</div><div class="s">١٠ صور بأعلى دقة من ويكيميديا كومنز برخص حرّة (CC0، ملك عام، CC BY، CC BY-SA) — اضغطي لرؤية اسم كل مصوّر ورخصته</div></div>' + icon('chev', 'faint') + '</button>' +
+      '<button class="li" id="ab-ph"><div class="ic">' + icon('image') + '</div><div class="grow"><div class="t">صور الثيمات</div><div class="s">١١ صورة بأعلى دقة من ويكيميديا كومنز برخص حرّة (CC0، ملك عام، CC BY، CC BY-SA) — اضغطي لرؤية اسم كل مصوّر ورخصته</div></div>' + icon('chev', 'faint') + '</button>' +
       '<div class="li"><div class="ic">' + icon('sparkle') + '</div><div class="grow"><div class="t">الشعار (5.0)</div><div class="s">«وسن» بخط Noto Nastaliq Urdu من Google برخصة SIL Open Font License</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">بيانات المدن</div><div class="s">إحداثيات من GeoNames.org برخصة CC BY 4.0</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('hands') + '</div><div class="grow"><div class="t">الأذكار والأدعية</div><div class="s">من كتاب «حصن المسلم» وكتب السنة مع ذكر المصدر لكل ذكر</div></div></div>' +

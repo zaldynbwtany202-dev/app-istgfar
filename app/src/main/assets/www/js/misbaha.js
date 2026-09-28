@@ -18,6 +18,8 @@ const BeadSound = {
     for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 5); return (this.nb = b); },
   click(kind, vol) {
     if (tasSnd() === 'off') return;
+    // وسن 6: المشغّل الأصلي أولًا (يعمل دائمًا)، مع اختلاف طفيف في طبقة كل حبّة كالمسبحة الحقيقية
+    if (typeof Sfx !== 'undefined' && Sfx.play('bead_' + (MISB_SND[kind] ? kind : 'wood'), Math.max(0.05, Math.min(1, vol)) * (+Settings.tasVol || .7), 0.92 + Math.random() * 0.16)) return;
     const c = typeof TasSound !== 'undefined' ? TasSound.ac() : null; if (!c) return;
     const P = MISB_SND[kind] || MISB_SND.wood, t = c.currentTime, j = 1 + (Math.random() - .5) * .12;
     const out = c.createGain(); out.gain.value = Math.max(0.03, Math.min(1, vol)) * (+Settings.tasVol || .7) * .9; out.connect(c.destination);

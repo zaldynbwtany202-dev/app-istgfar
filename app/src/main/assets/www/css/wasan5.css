@@ -40,23 +40,23 @@
 .ha-demo .lbl{font-size:12.5px;color:var(--ink-2);font-weight:600}.ha-demo .name{font-family:var(--font-x);font-size:44px;font-weight:700;line-height:1.2}.ha-demo .at{font-size:15px}
 
 /* ── سلاسة: لا ضبابية حيّة خلف العناصر الثابتة (مكلفة جدًّا على أندرويد) ── */
-#tabbar,.pbar,.cd,.gchip,.gwater,.lvlup,.ibtn.glassy,.lvchip,.hzbar,.asbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-#tabbar{background:var(--card);background:color-mix(in srgb,var(--card) 97%,transparent)}
-.pbar{background:var(--card)}
-.hzbar,.asbar{background:var(--card-2)}
-.scene .ibtn.glassy,.scene .lvchip{background:var(--gl);border-color:var(--gl-b)}
+[data-ph] #tabbar,[data-anim] #tabbar,[data-ph] .pbar,[data-anim] .pbar,[data-ph] .cd,[data-anim] .cd,[data-ph] .gchip,[data-anim] .gchip,[data-ph] .gwater,[data-anim] .gwater,[data-ph] .lvlup,[data-anim] .lvlup,[data-ph] .ibtn.glassy,[data-anim] .ibtn.glassy,[data-ph] .lvchip,[data-anim] .lvchip,[data-ph] .hzbar,[data-anim] .hzbar,[data-ph] .asbar,[data-anim] .asbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+[data-ph] #tabbar,[data-anim] #tabbar{background:var(--card);background:color-mix(in srgb,var(--card) 97%,transparent)}
+[data-ph] .pbar,[data-anim] .pbar{background:var(--card)}
+[data-ph] .hzbar,[data-anim] .hzbar,[data-ph] .asbar,[data-anim] .asbar{background:var(--card-2)}
+[data-ph] .scene .ibtn.glassy,[data-anim] .scene .ibtn.glassy,[data-ph] .scene .lvchip,[data-anim] .scene .lvchip{background:var(--gl);border-color:var(--gl-b)}
 
-/* ── هدوء: لا حركة دائمة في الخلفيات ── */
+/* ── هدوء: لا حركة دائمة في الخلفيات — وسن 6: لثيمات الصور والمتحرّكة فقط؛ الثيمات المرسومة القديمة كما كانت في 4.8 تمامًا ── */
 /* النجوم: تتلألأ واحدة من كل ثلاث (أخف بكثير)، وتتوقف كل حركة المشهد حين يخرج من الشاشة */
-.scene .sky-stars i{animation:none}.scene .sky-stars i:nth-child(3n+1){animation:twk 4.5s ease-in-out infinite}
+[data-ph] .scene .sky-stars i,[data-anim] .scene .sky-stars i{animation:none}[data-ph] .scene .sky-stars i:nth-child(3n+1),[data-anim] .scene .sky-stars i:nth-child(3n+1){animation:twk 4.5s ease-in-out infinite}
 .scene.paused,.scene.paused *,.scene.paused *::before,.scene.paused *::after{animation-play-state:paused!important}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media (prefers-reduced-motion:reduce){[data-ph] *,[data-ph] *::before,[data-ph] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 /* ── ألوان الثيم بدل الأخضر الثابت (المسبحة والعدّاد واليوم الحالي) ── */
-.counter{background:radial-gradient(circle at 50% 38%,var(--brand-3) 0%,var(--brand) 55%,var(--brand-deep) 100%);box-shadow:0 22px 50px rgba(0,0,0,.30),inset 0 2px 0 rgba(255,255,255,.14),inset 0 -12px 30px rgba(0,0,0,.26)}
-.counter::before{opacity:.05}
-.zk .cnt,.cd2.today,.rmd-b.on{background:linear-gradient(180deg,var(--brand-2),var(--brand))}
-.zk .cnt{box-shadow:0 6px 16px rgba(0,0,0,.18)}
+[data-ph] .counter,[data-anim] .counter{background:radial-gradient(circle at 50% 38%,var(--brand-3) 0%,var(--brand) 55%,var(--brand-deep) 100%);box-shadow:0 22px 50px rgba(0,0,0,.30),inset 0 2px 0 rgba(255,255,255,.14),inset 0 -12px 30px rgba(0,0,0,.26)}
+[data-ph] .counter::before,[data-anim] .counter::before{opacity:.05}
+[data-ph] .zk .cnt,[data-anim] .zk .cnt,[data-ph] .cd2.today,[data-anim] .cd2.today,[data-ph] .rmd-b.on,[data-anim] .rmd-b.on{background:linear-gradient(180deg,var(--brand-2),var(--brand))}
+[data-ph] .zk .cnt,[data-anim] .zk .cnt{box-shadow:0 6px 16px rgba(0,0,0,.18)}
 [data-ph] .beads .bd{fill:var(--card-3)}
 [data-ph] .beads .bd.on{fill:url(#bdG)}
 
@@ -81,7 +81,7 @@
 #splash::before{opacity:.05}
 #splash .wm-splash{height:124px;margin:0 0 6px;filter:drop-shadow(0 10px 28px rgba(0,0,0,.38));animation:wmin .8s var(--ease) both}
 .wm{overflow:visible}
-.wm-hero{height:40px}
+[data-ph] .wm-hero,[data-anim] .wm-hero{height:40px}
 .wm-onb{height:92px}
 .wm-about{height:76px}
 
@@ -127,3 +127,7 @@
 .geo-n>.i{width:20px;height:20px;color:var(--gold);flex:none}
 .geo-n b{display:block;font-size:13.5px;font-weight:700;line-height:1.5}
 .geo-n span{display:block;font-size:12px;color:var(--tx-3);line-height:1.6;margin-top:2px}
+
+/* وسن 6: حبّات المسبحة في الثيمات الحيّة بلون الثيم (لا الأخضر الثابت للداكن) */
+[data-anim] .beads .bd{fill:var(--card-3)}
+[data-anim] .beads .bd.on{fill:url(#bdG)}

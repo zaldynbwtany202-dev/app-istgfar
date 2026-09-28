@@ -365,7 +365,7 @@ function ayahSheet(i, span) {
     '<button class="act" data-x="copy">' + icon('copy') + 'نسخ</button><button class="act" data-x="share">' + icon('share') + 'مشاركة</button>' +
     '<button class="act" data-x="bm">' + icon(bm ? 'bookmarkf' : 'bookmark') + (bm ? 'إزالة العلامة' : 'حفظ علامة') + '</button>' +
     '<button class="act" data-x="last">' + icon('pin') + 'موضع التوقف</button>' +
-    (Player.on && Player.est && Player.cs === Q.s[i] ? '<button class="act" data-x="sync">' + icon('target') + 'الشيخ يقرأ هذه الآن</button>' : '') +
+    (Player.on && (Player.est || Player.adj) && Player.cs === Q.s[i] ? '<button class="act" data-x="sync">' + icon('target') + 'الشيخ يقرأ هذه الآن</button>' : '') +
     '<button class="act" data-x="play">' + icon('headphones') + 'استماع من هنا</button><button class="act" data-x="tafsir">' + icon('tafsir') + 'التفسير</button>' +
     '<button class="act" data-x="img">' + icon('image') + 'صورة</button>' +
     '<button class="act" data-x="note">' + icon('edit') + (nt ? 'ملاحظتي' : 'تدبّر') + '</button></div>' + hlRow +
