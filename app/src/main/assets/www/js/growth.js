@@ -156,15 +156,53 @@ function gardenCard(opts) {
 }
 
 /* ═══════════════ شاشة «بستانك» ═══════════════ */
+
+/* ═══ وسن 4.7 · «حديقة أيامك»: نبتة لكل يوم من الثلاثين الماضية، تنمو بقدر ما سقيتَه ═══ */
+const STAGE_NEW = ['بذرة تحت التراب', 'أول ورقتين', 'ممشى من حجارة', 'أغصان وفراشات', 'فانوس معلّق', 'أزهار وسياج', 'رمّان وطيور', 'نخيل ومقعد', 'جدول وجسر وزنابق', 'لوتس وحمائم ونافورة'];
+const dayLevel = xp => xp <= 0 ? 0 : xp < 30 ? 1 : xp < 70 ? 2 : xp < DAILY_GOAL ? 3 : 4;
+const DG_NAMES = ['بذرة', 'نبتة', 'برعم', 'زهرة', 'ازدهار'];
+function dayPlant(A, d, lv, th, glow, k) {
+  let s = '<ellipse cx="20" cy="41" rx="12" ry="3.4" fill="#8A6A48" opacity=".35"/>';
+  if (lv === 0) return s + '<ellipse cx="20" cy="39.5" rx="3.6" ry="2.6" fill="#8B5E34"/><ellipse cx="19" cy="38.6" rx="1.4" ry=".7" fill="#D9B07A" opacity=".8"/>';
+  const h = [0, 9, 16, 22, 26][lv];
+  s += '<path d="M20 41Q19 ' + (41 - h * .6) + ' 20 ' + (41 - h) + '" fill="none" stroke="#4E9A55" stroke-width="1.6" stroke-linecap="round"/>';
+  if (lv >= 1) s += A.leaf(d, { x: 20, y: 41 - h * .45, l: 8 + lv, r: -58, pal: 'green' }) + A.leaf(d, { x: 20, y: 41 - h * .6, l: 7 + lv, r: 62, pal: 'deep' });
+  if (lv === 2) s += '<ellipse cx="20" cy="' + (41 - h - 2.5) + '" rx="2.6" ry="3.8" fill="#F29CB8"/><path d="M17.6 ' + (41 - h) + 'Q20 ' + (41 - h + 1.8) + ' 22.4 ' + (41 - h) + 'L20 ' + (41 - h + 2.4) + 'Z" fill="#6FA85A"/>';
+  if (lv >= 3) {
+    const y = 41 - h - 3, big = lv === 4, sc = big ? 1.25 : 0.95;
+    if (th === 'kbfly') s += A.hydrangea(d, { x: 20, y, r: 6.5 * sc, pal: ['blue', 'sky', 'peri'][k % 3] });
+    else if (th === 'krose') s += A.rose3(d, { x: 20, y, r: 6.5 * sc, pal: ['red', 'pink'][k % 2] });
+    else if (th === 'kstar') s += A.star(d, { x: 20, y, s: 5.6 * sc, glow: big });
+    else if (th === 'kberry') s += A.berry(d, { x: 20, y: y + 2, s: 0.2 * sc, r: (k % 3 - 1) * 10 });
+    else if (th === 'kbloom') s += A.tulip(d, { x: 20, y: y - 3, h: 1, s: 0.42 * sc, pal: ['pink', 'yellow', 'lilac'][k % 3] });
+    else s += A.daisy(d, { x: 20, y, r: 6 * sc, pal: ['white', 'lemon', 'pink'][k % 3] });
+  }
+  if (glow) s += A.sparkle(d, { x: 31, y: 12, s: 3.4, c: '#FFE38A' }) + A.sparkle(d, { x: 9, y: 18, s: 2.4, c: '#FFE38A' });
+  return s;
+}
+function daysGarden() {
+  if (typeof Art === 'undefined' || !Art._ || !Art._.leaf) return '';
+  const A = Art._, d = A.doc('dg'), th = artKey(), now = new Date();
+  let cells = '';
+  for (let i = 29; i >= 0; i--) {
+    const day = addDays(now, -i), g = Growth.day(day), xp = g.xp || 0, lv = dayLevel(xp), pr = Tracker.count(day);
+    cells += '<button class="dg-c' + (i === 0 ? ' today' : '') + ' l' + lv + '" data-dg="' + dayKey(day) + '" data-x="' + Math.round(xp) + '" data-p="' + pr + '" aria-label="' + esc(fmtG(day)) + '">' +
+      '<svg viewBox="0 2 40 42" class="dg-svg">' + dayPlant(A, d, lv, th, pr === 5 && lv >= 3, i) + '</svg><span class="num">' + N(day.getDate()) + '</span></button>';
+  }
+  const legend = DG_NAMES.map((n, lv) => '<span><svg viewBox="0 2 40 42" class="dg-svg">' + dayPlant(A, d, lv, th, false, lv) + '</svg>' + n + '</span>').join('');
+  return '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>' + d.defs() + '</defs></svg>' +
+    '<div class="hc dgw"><div class="dg-grid" id="dg">' + cells + '</div><div class="dgl">' + legend + '</div>' +
+    '<div class="faint" style="font-size:12px;margin-top:8px;line-height:1.7">كل نبتة يومٌ من أيامك: تنمو بقدر ما جمعتَ من نقاط، وتلمع إن صلّيت الخمس في وقتها</div></div>';
+}
 SCREENS.garden = {
   parent: 'more',
   render() {
     const g = Growth.info(), today = Growth.day(), st = g.stage;
     const road = Garden.STAGES.map((s, i) => {
       const open = g.L >= s.from, lv = open ? Math.min(g.L, (Garden.STAGES[i + 1] || { from: 1001 }).from - 1) : s.from;
-      return '<div class="gstage ' + (open ? 'open' : 'lock') + (i === st ? ' cur' : '') + '"><div class="gs-art">' + Garden.render(lv, { phase: 'day', id: 'st' + i }) +
+      return '<div class="gstage ' + (open ? 'open' : 'lock') + (i === st ? ' cur' : '') + '"><div class="gs-art">' + Garden.render(lv, { phase: 'day', id: 'st' + i, lite: true }) +
         (open ? '' : '<div class="gs-lock">' + icon('target') + '</div>') + '</div><div class="gs-t">' + esc(s.name) + '</div><div class="gs-s num">' +
-        (open ? (i === st ? 'أنت هنا' : 'تمّت') : 'من المستوى ' + N(s.from)) + '</div></div>';
+        (open ? (i === st ? 'أنت هنا' : 'تمّت') : 'من المستوى ' + N(s.from)) + '</div><div class="gs-n">' + esc(STAGE_NEW[i] || '') + '</div></div>';
     }).join('');
     return hdr('بستانك', 'كَشَجَرَةٍ طَيِّبَةٍ أَصْلُهَا ثَابِتٌ وَفَرْعُهَا فِي السَّمَاءِ', { back: true, compact: true }) +
       '<div class="mx mt">' + gardenCard({ big: true, id: 'gbig' }) + '</div>' +
@@ -173,6 +211,7 @@ SCREENS.garden = {
       '<div class="gtrack mt" style="height:9px"><i style="width:' + (clamp((today.xp || 0) / DAILY_GOAL, 0, 1) * 100).toFixed(1) + '%;background:linear-gradient(90deg,#5CC4DF,#8FE0C0)"></i></div>' +
       '<div class="row" style="gap:18px;margin-top:12px;font-size:13px" ><span>' + icon('flame', '', 'width:16px;height:16px;color:var(--warn)') + ' <b class="num">' + N(Growth.streak()) + '</b> ' + 'أيام متتالية</span>' +
       '<span>' + icon('calendar', '', 'width:16px;height:16px') + ' <b class="num">' + N(Growth.activeDays()) + '</b> يوم نشاط</span></div></div>' +
+      sec('حديقة أيامك') + daysGarden() +
       sec('استعرض رحلتك') + '<div class="hc"><div class="gprev" id="g-prev">' + Garden.render(g.L, { phase: gardenPhase(new Date()), id: 'gpv' }) + '</div>' +
       '<div class="row" style="justify-content:space-between;margin-top:10px"><b id="g-pl">المستوى ' + N(g.L) + '</b><span class="muted" id="g-ps">' + esc(Garden.STAGES[st].name) + '</span></div>' +
       '<input type="range" id="g-rng" min="1" max="' + g.L + '" value="' + g.L + '" ' + (g.L < 2 ? 'disabled' : '') + '><div class="faint" style="font-size:12px;margin-top:4px">اسحب لترى كيف نما بستانك منذ البذرة</div></div>' +
@@ -181,11 +220,16 @@ SCREENS.garden = {
       '<div class="foot-note">النقاط تحفيز على الخير لا ميزان للأعمال · «أحبّ الأعمال إلى الله أدومها وإن قلّ»</div>';
   },
   mount(el) {
+    const dg = $('#dg', el);
+    if (dg) dg.onclick = e => { const b = e.target.closest('[data-dg]'); if (!b) return; const dd = new Date(b.dataset.dg + 'T12:00:00'), x = +b.dataset.x, p = +b.dataset.p;
+      vibrate(6); toast(weekday(dd) + ' ' + fmtG(dd) + ' · ' + (x ? N(x) + ' نقطة' : 'لم يُسقَ') + ' · ' + N(p) + '/' + N(5) + ' صلوات', 3200); };
     const rg = $('#g-rng', el); if (!rg) return;
-    const upd = debounce(() => { const L = +rg.value; $('#g-prev', el).innerHTML = Garden.render(L, { phase: gardenPhase(new Date()), id: 'gpv' });
-      $('#g-pl', el).textContent = 'المستوى ' + N(L); $('#g-ps', el).textContent = Garden.STAGES[Garden.stageOf(L)].name; }, 30);
+    // وسن 4.7: أثناء السحب نرسم نسخة خفيفة، ثم التفاصيل كاملة حين يتوقف الإصبع
+    const draw = lite => { const L = +rg.value; $('#g-prev', el).innerHTML = Garden.render(L, { phase: gardenPhase(new Date()), id: 'gpv', lite });
+      $('#g-pl', el).textContent = 'المستوى ' + N(L); $('#g-ps', el).textContent = Garden.STAGES[Garden.stageOf(L)].name; };
+    const upd = debounce(() => draw(true), 30), full = debounce(() => draw(false), 260);
     const paint = () => rg.style.setProperty('--p', ((rg.value - 1) / Math.max(1, rg.max - 1) * 100) + '%');
-    paint(); rg.addEventListener('input', () => { paint(); upd(); });
+    paint(); rg.addEventListener('input', () => { paint(); upd(); full(); });
   },
 };
 

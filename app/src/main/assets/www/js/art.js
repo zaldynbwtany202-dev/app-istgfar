@@ -384,6 +384,129 @@ const Art = (() => {
       s += '<path d="M' + f(x - 1.3) + ' ' + f(y) + 'Q' + f(x + b * .4) + ' ' + f(y - h * .6) + ' ' + f(x + b) + ' ' + f(y - h) + 'Q' + f(x + b * .3) + ' ' + f(y - h * .5) + ' ' + f(x + 1.3) + ' ' + f(y) + 'Z"/>'; }
     return '<g fill="' + gg + '"' + op(o) + '>' + s + '</g>';
   }
+
+  /* ═══════════ وسن 4.7 · «البستان المرسوم»: عناصر جديدة للبستان ═══════════ */
+  /* رمّانة (ثمرة شجرة البستان) */
+  function pomSym(d) {
+    return d.sym('pg', id => {
+      const gb = d.def('pgb', RG(.36, .3, .85, [[0, '#FFB0A8'], [.35, '#F0515C'], [.75, '#C52238'], [1, '#8E1226']]));
+      return '<g id="' + id + '"><path d="M-3.4 -8.6L-4.6 -12.6L-1.8 -10.6L0 -13.6L1.8 -10.6L4.6 -12.6L3.4 -8.6Z" fill="#A8283A"/><circle r="10" fill="' + gb + '"/>' +
+        '<path d="M-3.2 -9.4Q0 -8.2 3.2 -9.4" fill="none" stroke="#7A0E20" stroke-width=".9" opacity=".6"/><ellipse cx="-3.6" cy="-3.8" rx="3.2" ry="2" transform="rotate(-30 -3.6 -3.8)" fill="#fff" opacity=".55"/><circle cx="-5.6" cy="-5.4" r=".9" fill="#fff" opacity=".8"/></g>';
+    });
+  }
+  const pomegranate = (d, o) => use(pomSym(d), o.x, o.y, o.s || .35, o.r || 0, op(o));
+  /* طائر صغير واقف (أبو الحنّاء · أزرق · كناري · وردي) */
+  const BIRD = { robin: ['#8C6A55', '#6E5040', '#F28A4A', '#FFD2B0'], blue: ['#5B92E0', '#3A68B8', '#F7C9A2', '#FFE7D2'], canary: ['#F8D24A', '#E0A92A', '#FFE78C', '#FFF6CC'], rose: ['#EE93B0', '#C9668A', '#FFD3E0', '#FFF0F5'] };
+  function birdSym(d, pal) {
+    const c = BIRD[pal] || BIRD.robin;
+    return d.sym('bd' + pal, id => {
+      const gb = d.def('bdg' + pal, RG(.4, .3, .8, [[0, c[3]], [.35, c[0]], [1, c[1]]])), gr = d.def('bdr' + pal, RG(.45, .4, .7, [[0, c[3]], [1, c[2]]]));
+      return '<g id="' + id + '"><path d="M7 -1L15 -5L14 -1.5L16 1L7 2Z" fill="' + c[1] + '"/><ellipse cx="1" cy="0" rx="8.6" ry="6.6" fill="' + gb + '"/>' +
+        '<ellipse cx="-2.4" cy="1.6" rx="5.2" ry="4.2" fill="' + gr + '"/><circle cx="-5.6" cy="-5" r="4.8" fill="' + gb + '"/><path d="M-10.2 -5.6L-13.4 -4.4L-10 -3.6Z" fill="#F2A63A"/>' +
+        '<circle cx="-7" cy="-6" r="1.15" fill="#1E1A18"/><circle cx="-7.3" cy="-6.3" r=".4" fill="#fff"/><path d="M1 -3.4Q6 -5 9 -1.2Q5 1.6 1 0.4Z" fill="' + c[1] + '" opacity=".75"/>' +
+        '<path d="M-1.6 6L-2 9.4M1.8 6L1.6 9.4" stroke="#6B4A2E" stroke-width=".9" stroke-linecap="round"/></g>';
+    });
+  }
+  const bird = (d, o) => g(o.x, o.y, o.flip ? [-(o.s || .5), o.s || .5] : (o.s || .5), o.r || 0, '<g class="gbd" style="animation-delay:-' + f((o.dl || 0)) + 's"><use href="' + birdSym(d, o.pal || 'robin') + '"/></g>', op(o));
+  /* حمامة بيضاء طائرة */
+  function dove(d, o) {
+    const gw = d.def('dvw', LG(0, 0, 0, 1, [[0, '#FFFFFF'], [1, '#DCE6F2']])), gb = d.def('dvb', RG(.4, .35, .8, [[0, '#FFFFFF'], [1, '#D6E0EE']]));
+    const wings = '<path d="M-2 -1C-6 -12 -16 -18 -24 -16C-18 -12 -12 -6 -8 1Z" fill="' + gw + '"/><path d="M2 -1C6 -12 16 -18 24 -16C18 -12 12 -6 8 1Z" fill="' + gw + '"/>';
+    return g(o.x, o.y, o.s || .5, o.r || 0, '<ellipse cx="0" cy="2" rx="9" ry="4.6" fill="' + gb + '"/><path d="M8 2L15 -1L14 4L16 6L8 5Z" fill="#E6EDF6"/><circle cx="-8" cy="0" r="3.6" fill="' + gb + '"/>' +
+      '<path d="M-11.4 -.2L-14 .8L-11.2 1.6Z" fill="#E7A24A"/><circle cx="-9" cy="-.8" r=".8" fill="#2A2A36"/>' + (o.flap ? '<g class="wg dv">' + wings + '</g>' : wings), op(o));
+  }
+  /* نخلة: جذع بحلقات، وسعف ريشي، وعذق تمر */
+  function palmTree(d, o) {
+    const x = o.x, y = o.y, h = o.h || 60, ln = o.lean || 0, r = rng(o.seed || 3);
+    const top = [x + ln, y - h], c1 = [x + ln * .1, y - h * .45], c2 = [x + ln * .7, y - h * .8];
+    let s = '<ellipse cx="' + f(x + ln * .2) + '" cy="' + f(y + 1) + '" rx="' + f(h * .22) + '" ry="' + f(h * .04) + '" fill="#000" opacity=".12"/>';
+    s += branch(d, [[x, y], c1, c2, top], h * .085, h * .05, 'p');
+    for (let i = 1; i < 9; i++) { const t = i / 9, p = bz([x, y], c1, c2, top, t), w = (h * .085 + (h * .05 - h * .085) * t) / 2;
+      s += '<path d="M' + f(p[0] - w) + ' ' + f(p[1]) + 'Q' + f(p[0]) + ' ' + f(p[1] + w * .5) + ' ' + f(p[0] + w) + ' ' + f(p[1]) + '" fill="none" stroke="#5E3F24" stroke-width=".8" opacity=".45"/>'; }
+    const gf = d.def('pfg', LG(0, 0, 0, 1, [[0, '#7FCB78'], [.6, '#3E9A55'], [1, '#2A7442']])), gf2 = d.def('pfg2', LG(0, 0, 0, 1, [[0, '#6ABB68'], [1, '#26663A']]));
+    let back = '', front = '';
+    const N = 11;
+    for (let k = 0; k < N; k++) {
+      const a = -Math.PI + (k / (N - 1)) * Math.PI + (r() - .5) * .2, L = h * (.56 + r() * .16);
+      const droop = .45 + .4 * Math.abs(Math.cos(a));
+      const ex = top[0] + Math.cos(a) * L, ey = top[1] + Math.sin(a) * L * .45 + L * droop * .55;
+      const mx = top[0] + Math.cos(a) * L * .55, my = top[1] - L * .16 + Math.sin(a) * L * .2;
+      const pts = [], W = h * .12;
+      for (let i = 0; i <= 12; i++) { const t = i / 12, u = 1 - t, px = u * u * top[0] + 2 * u * t * mx + t * t * ex, py = u * u * top[1] + 2 * u * t * my + t * t * ey;
+        const dx = 2 * u * (mx - top[0]) + 2 * t * (ex - mx), dy = 2 * u * (my - top[1]) + 2 * t * (ey - my), Ln = Math.hypot(dx, dy) || 1;
+        pts.push([px, py, -dy / Ln, dx / Ln, W * Math.sin(Math.PI * Math.pow(t, .7)) * (i % 2 ? .62 : 1)]); }
+      const L1 = pts.map(p => pt([p[0] + p[2] * p[4], p[1] + p[3] * p[4]])), R1 = pts.slice().reverse().map(p => pt([p[0] - p[2] * p[4] * .8, p[1] - p[3] * p[4] * .8]));
+      const fr = '<path d="M' + L1.join('L') + 'L' + R1.join('L') + 'Z" fill="' + (k % 2 ? gf2 : gf) + '"/><path d="M' + pt(top) + 'Q' + f(mx) + ' ' + f(my) + ' ' + f(ex) + ' ' + f(ey) + '" fill="none" stroke="#2A6A3A" stroke-width=".7" opacity=".7"/>';
+      if (Math.sin(a) < -.35) back += fr; else front += fr;
+    }
+    let dates = '';
+    if (o.dates !== false) for (let i = 0; i < 9; i++) { const dx = (i % 3 - 1) * 2.4 + (r() - .5), dy = Math.floor(i / 3) * 2.3 + 2; dates += '<ellipse cx="' + f(top[0] + dx) + '" cy="' + f(top[1] + dy + 1.5) + '" rx="1.3" ry="1.7" fill="' + (i % 2 ? '#B8672A' : '#8E4A1E') + '"/>'; }
+    return s + back + '<circle cx="' + f(top[0]) + '" cy="' + f(top[1]) + '" r="' + f(h * .05) + '" fill="#6B4A2E"/>' + dates + front;
+  }
+  /* حجر ممشى */
+  const stone = (d, o) => { const gs = d.def('stn', LG(0, 0, 0, 1, [[0, '#D8D2C6'], [1, '#9C9486']])); return g(o.x, o.y, o.s || 1, o.r || 0, '<ellipse cy="1" rx="7.4" ry="3.1" fill="#000" opacity=".12"/><ellipse rx="7" ry="2.9" fill="' + gs + '"/><ellipse cx="-1.6" cy="-.8" rx="3.4" ry="1" fill="#fff" opacity=".35"/>', op(o)); };
+  /* ورقة زنبق الماء وزهرة اللوتس */
+  function lily(d, o) {
+    const gp = d.def('lyp', RG(.4, .35, .8, [[0, '#9EDB8A'], [.6, '#56A964'], [1, '#2F7A48']]));
+    let s = '<g transform="scale(1 .42)"><path d="M0 0L9.4 -2.2A9.6 9.6 0 1 1 9.4 2.2Z" fill="' + gp + '"/><path d="M0 0L-7 -4M0 0L-8 3M0 0L-2 -8.6M0 0L-1 8.6M0 0L5 -7M0 0L5 7" stroke="#A9E39A" stroke-width=".6" opacity=".6"/></g>';
+    if (o.flower) { const gl = d.def('lyf', LG(0, 1, 0, 0, [[0, '#F58CB4'], [.6, '#FFC2D8'], [1, '#FFF2F7']]));
+      [-58, -30, 0, 30, 58].forEach((a, i) => { s += '<path d="M0 0C-2.4 -3 -2.2 -7.4 0 -9.6C2.2 -7.4 2.4 -3 0 0Z" transform="translate(0 -1.2) rotate(' + a + ') scale(' + (i === 2 ? 1.05 : .92) + ')" fill="' + gl + '"/>'; });
+      s += '<circle cy="-2" r="1.4" fill="#FFD54A"/>'; }
+    return g(o.x, o.y, o.s || 1, o.r || 0, s, op(o));
+  }
+  /* جسر خشبي مقوّس فوق الجدول */
+  function bridge(d, o) {
+    const w = o.w || 60, hh = o.h || 12, gw = d.def('brg', LG(0, 0, 0, 1, [[0, '#C79A62'], [1, '#8A6038']]));
+    let s = '<path d="M' + f(-w / 2) + ' 0Q0 ' + f(-hh * 2) + ' ' + f(w / 2) + ' 0L' + f(w / 2) + ' 3.6Q0 ' + f(-hh * 2 + 4.4) + ' ' + f(-w / 2) + ' 3.6Z" fill="' + gw + '"/>';
+    for (let i = 1; i < 10; i++) { const t = i / 10, x = -w / 2 + w * t, y = -hh * 4 * t * (1 - t); s += '<path d="M' + f(x) + ' ' + f(y + .3) + 'l0 3" stroke="#6E4A2C" stroke-width=".6" opacity=".6"/>'; }
+    let rail = 'M' + f(-w / 2) + ' ' + f(-7); for (let i = 1; i <= 10; i++) { const t = i / 10, x = -w / 2 + w * t, y = -hh * 4 * t * (1 - t) - 7; rail += 'L' + f(x) + ' ' + f(y); }
+    for (let i = 0; i <= 5; i++) { const t = i / 5, x = -w / 2 + w * t, y = -hh * 4 * t * (1 - t); s += '<rect x="' + f(x - .9) + '" y="' + f(y - 7.4) + '" width="1.8" height="7.6" rx=".6" fill="#8A6038"/>'; }
+    s += '<path d="' + rail + '" fill="none" stroke="#9C7042" stroke-width="1.6" stroke-linecap="round"/>';
+    return g(o.x, o.y, o.s || 1, 0, '<ellipse cy="4" rx="' + f(w * .45) + '" ry="2" fill="#0A3A4A" opacity=".18"/>' + s, op(o));
+  }
+  /* نافورة حجرية بمياه متدفّقة */
+  function fountain(d, o) {
+    const gs = d.def('fns', LG(0, 0, 0, 1, [[0, '#E8E2D6'], [1, '#A89F90']])), gw = d.def('fnw', LG(0, 0, 0, 1, [[0, '#BFEAF7'], [1, '#6FC3E0']]));
+    const w = o.w || 30, s = w / 30;
+    let b = '<ellipse cy="1" rx="17" ry="4" fill="#000" opacity=".12"/><path d="M-15 -6L-13 0Q0 3 13 0L15 -6Z" fill="' + gs + '"/><ellipse cy="-6" rx="15" ry="3.6" fill="#CFC8BA"/><ellipse cy="-6.2" rx="13" ry="2.8" fill="' + gw + '"/>' +
+      '<path d="M-2 -6L-1.6 -16L1.6 -16L2 -6Z" fill="' + gs + '"/><path d="M-7 -16Q0 -13.4 7 -16L6 -18.6Q0 -17.4 -6 -18.6Z" fill="' + gs + '"/><ellipse cy="-18.4" rx="6" ry="1.5" fill="' + gw + '"/>' +
+      '<path d="M-.8 -18.6L0 -23.4L.8 -18.6Z" fill="#9FDDF0"/>';
+    b += '<g class="fjet" fill="none" stroke="#DDF5FC" stroke-width=".9" stroke-linecap="round"><path d="M0 -23C-4 -27 -8 -24 -10 -7"/><path d="M0 -23C4 -27 8 -24 10 -7"/><path d="M0 -23C-2 -28 -4 -26 -5 -18.4"/><path d="M0 -23C2 -28 4 -26 5 -18.4"/></g>';
+    b += '<g class="fdrop" fill="#EAFBFF"><circle cx="-10.4" cy="-7" r=".7"/><circle cx="10.4" cy="-7" r=".7"/><circle cx="-5.2" cy="-18.4" r=".5"/><circle cx="5.2" cy="-18.4" r=".5"/></g>';
+    return g(o.x, o.y, s, 0, b, op(o));
+  }
+  /* فانوس معلّق (يتوهّج ليلًا) */
+  function lantern(d, o) {
+    const gg = d.def('lng', LG(0, 0, 0, 1, [[0, '#FFF6C8'], [1, '#F7C75A']])), gl = d.def('lngl', RG(.5, .5, .5, [[0, '#FFE9A8', .85], [.4, '#FFE9A8', .3], [1, '#FFE9A8', 0]]));
+    const L = o.len || 12;
+    return g(o.x, o.y, o.s || 1, 0, '<g class="glan" style="animation-delay:-' + f(o.dl || 0) + 's"><path d="M0 0V' + f(L) + '" stroke="#7A5B35" stroke-width=".7"/>' + (o.glow ? '<circle cy="' + f(L + 7) + '" r="' + (o.night ? 22 : 12) + '" fill="' + gl + '"/>' : '') +
+      '<g transform="translate(0 ' + f(L) + ')"><path d="M-3 1.6Q0 -1.4 3 1.6Z" fill="#B8862E"/><path d="M-4.4 2.2L4.4 2.2L5.2 8L4.4 13.4L-4.4 13.4L-5.2 8Z" fill="' + gg + '" stroke="#B8862E" stroke-width=".9"/>' +
+      '<path d="M0 2.2V13.4M-2.6 2.2L-3 13.4M2.6 2.2L3 13.4" stroke="#C9953F" stroke-width=".5" opacity=".7"/><path d="M-3 13.4Q0 16.4 3 13.4Z" fill="#B8862E"/><circle cy="17" r=".9" fill="#B8862E"/></g></g>', op(o));
+  }
+  /* سياج خشبي */
+  function fence(d, o) {
+    const n = o.n || 7, sp = o.sp || 9, h = o.h || 16, gw = d.def('fcg', LG(0, 0, 1, 0, [[0, '#C9A26E'], [1, '#9C7446']]));
+    let s = '<rect x="-2" y="' + f(h * .3) + '" width="' + f((n - 1) * sp + 7) + '" height="2.4" rx="1" fill="#8E6840"/><rect x="-2" y="' + f(h * .68) + '" width="' + f((n - 1) * sp + 7) + '" height="2.4" rx="1" fill="#8E6840"/>';
+    for (let i = 0; i < n; i++) s += '<path d="M' + f(i * sp) + ' ' + f(h) + 'V2L' + f(i * sp + 1.6) + ' 0L' + f(i * sp + 3.2) + ' 2V' + f(h) + 'Z" fill="' + gw + '"/>';
+    return g(o.x, o.y, o.s || 1, 0, s, op(o));
+  }
+  /* مقعد الحديقة */
+  function bench(d, o) {
+    const gw = d.def('bnw', LG(0, 0, 0, 1, [[0, '#B9895A'], [1, '#86603A']]));
+    return g(o.x, o.y, o.s || 1, 0, '<ellipse cx="22" cy="21" rx="24" ry="2.4" fill="#000" opacity=".12"/><rect x="2" y="12" width="3" height="9" fill="#5E4428"/><rect x="39" y="12" width="3" height="9" fill="#5E4428"/>' +
+      '<rect x="0" y="10" width="44" height="3.6" rx="1.4" fill="' + gw + '"/><rect x="1" y="1" width="42" height="2.8" rx="1.2" fill="' + gw + '"/><rect x="1" y="5.2" width="42" height="2.6" rx="1.2" fill="' + gw + '"/>' +
+      '<rect x="3" y="1" width="2.2" height="10" fill="#6E5030"/><rect x="38.8" y="1" width="2.2" height="10" fill="#6E5030"/>', op(o));
+  }
+  /* خصلة عشب */
+  function tuft(d, o) {
+    const c = o.c || ['#8FD88A', '#4FA85E', '#2F7A45'], gg = d.def('tf' + c[1].slice(1), LG(0, 1, 0, 0, [[0, c[2]], [1, c[0]]])), h = o.h || 8, r = rng(o.seed || 1);
+    let s = ''; for (let i = 0; i < 6; i++) { const a = -1 + i * .4 + (r() - .5) * .2, hh = h * (.6 + r() * .5), bx = (i - 2.5) * 1.1, ex = bx + Math.sin(a) * hh * .7, ey = -hh;
+      s += '<path d="M' + f(bx - .9) + ' 0Q' + f(bx + (ex - bx) * .3) + ' ' + f(ey * .6) + ' ' + f(ex) + ' ' + f(ey) + 'Q' + f(bx + (ex - bx) * .4) + ' ' + f(ey * .5) + ' ' + f(bx + .9) + ' 0Z"/>'; }
+    return g(o.x, o.y, o.s || 1, 0, '<g fill="' + gg + '">' + s + '</g>', op(o));
+  }
+  /* نبتة صغيرة بورقتين */
+  const sprout = (d, o) => { const gl = d.def('spr', LG(0, 0, 1, 1, [[0, '#B4EC9E'], [1, '#4FA85E']]));
+    return g(o.x, o.y, o.s || 1, 0, '<path d="M0 0Q-.6 -5 0 -9" fill="none" stroke="#4E9A55" stroke-width="1.4" stroke-linecap="round"/><path d="M0 -8C-2 -12 -7 -12 -9 -9C-6 -7 -2 -7 0 -8Z" fill="' + gl + '"/><path d="M0 -8.6C2 -13 7 -13.4 9 -10.6C6 -8.2 2.4 -8 0 -8.6Z" fill="' + gl + '"/>', op(o)); };
   const hill = (d, key, dPath, c) => '<path d="' + dPath + '" fill="' + d.def('hl' + key, LG(0, 0, 0, 1, [[0, c[0]], [1, c[1]]])) + '"/>';
 
   /* غصن متدرّج السماكة على منحنى بيزييه */
@@ -391,7 +514,7 @@ const Art = (() => {
     const n = 26, L = [], Rr = [];
     for (let i = 0; i <= n; i++) { const t = i / n, p = bz(pts[0], pts[1], pts[2], pts[3], t), q = bz(pts[0], pts[1], pts[2], pts[3], Math.min(1, t + .01)), p0 = bz(pts[0], pts[1], pts[2], pts[3], Math.max(0, t - .01));
       const dx = q[0] - p0[0], dy = q[1] - p0[1], Ln = Math.hypot(dx, dy) || 1, w = (w0 + (w1 - w0) * t) / 2; L.push([p[0] - dy / Ln * w, p[1] + dx / Ln * w]); Rr.push([p[0] + dy / Ln * w, p[1] - dx / Ln * w]); }
-    const gb = d.def('br' + (key || ''), LG(0, 0, 0, 1, key === 'l' ? [[0, '#A9785E'], [1, '#6E4634']] : [[0, '#94644C'], [1, '#5E3A2A']]));
+    const gb = d.def('br' + (key || ''), key === 'p' ? LG(0, 0, 1, 0, [[0, '#B58A58'], [.55, '#946A40'], [1, '#6E4C2C']]) : LG(0, 0, 0, 1, key === 'l' ? [[0, '#A9785E'], [1, '#6E4634']] : [[0, '#94644C'], [1, '#5E3A2A']]));
     return '<path d="M' + L.map(pt).join('L') + 'L' + Rr.reverse().map(pt).join('L') + 'Z" fill="' + gb + '"/>';
   }
   const HERO = {
@@ -595,27 +718,52 @@ const Art = (() => {
   function sprites(th) {
     const r = rng(th.length * 131 + 7); let s = '';
     const tw = (n, c) => { for (let i = 0; i < n; i++) s += '<i class="kt" style="left:' + f(4 + r() * 88) + '%;top:' + f(8 + r() * 56) + '%;width:' + Math.round(8 + r() * 8) + 'px;animation-delay:-' + f(r() * 3) + 's;animation-duration:' + f(2.4 + r() * 2) + 's"><svg viewBox="-10 -10 20 20"><path d="' + SPK + '" fill="' + c + '"/></svg></i>'; };
+    // وسن 4.7: فراشات أكثر، وفقاعات ضوء تطفو، وأشعّة تتنفّس، وشهب، وقلوب تصعد، وبتلات أغزر
+    const fly = (pal, k, dur, top, w) => { const d = doc('f'); const b = bfly(d, { x: 0, y: 0, s: 1, pal, flap: true });
+      s += '<i class="kf ' + k + '" style="top:' + top + '%;animation-duration:' + dur + 's;animation-delay:-' + f(r() * dur) + 's' + (w ? ';width:' + w + 'px;height:' + Math.round(w * .76) + 'px' : '') + '">' + d.svg('-108 -82 216 162', b) + '</i>'; };
+    const bokehs = (n, c) => { for (let i = 0; i < n; i++) { const z = Math.round(10 + r() * 22); s += '<i class="kbk" style="left:' + f(r() * 94) + '%;top:' + f(20 + r() * 60) + '%;width:' + z + 'px;height:' + z + 'px;--c:' + c[i % c.length] + ';animation-duration:' + f(9 + r() * 7) + 's;animation-delay:-' + f(r() * 14) + 's"></i>'; } };
+    const hearts = (n, pals) => { for (let i = 0; i < n; i++) { const d = doc('r'); const b = heart(d, { x: 0, y: 0, s: 10, pal: pals[i % pals.length] });
+      s += '<i class="kr" style="left:' + f(8 + r() * 84) + '%;width:' + Math.round(10 + r() * 7) + 'px;animation-duration:' + f(9 + r() * 6) + 's;animation-delay:-' + f(r() * 14) + 's">' + d.svg('-11 -11 22 21', b) + '</i>'; } };
     if (th === 'kbfly') {
-      [['morpho', 'k1', 22, 30], ['sky', 'k2', 26, 42], ['ice', 'k3', 30, 74]].forEach(([pal, k, dur, top], i) => { const d = doc('f'); const b = bfly(d, { x: 0, y: 0, s: 1, pal, flap: true });
-        s += '<i class="kf ' + k + '" style="top:' + top + '%;animation-duration:' + dur + 's;animation-delay:-' + f(r() * dur) + 's">' + d.svg('-108 -82 216 162', b) + '</i>'; });
-      tw(6, '#FFFFFF');
+      s += '<i class="kry" style="animation-delay:-2s"></i><i class="kry r2" style="animation-delay:-5s"></i>';
+      bokehs(7, ['rgba(255,255,255,.55)', 'rgba(190,225,255,.5)']);
+      [['morpho', 'k1', 22, 30], ['sky', 'k2', 26, 42], ['ice', 'k3', 30, 74], ['royal', 'k4', 34, 56], ['morpho', 'k5', 28, 16]].forEach(([pal, k, dur, top], i) => fly(pal, k, dur, top, i > 2 ? 22 : 0));
+      tw(7, '#FFFFFF');
     } else if (th === 'krose') {
-      for (let i = 0; i < 12; i++) s += '<i class="pt kp" style="left:' + f(r() * 100) + '%;animation-duration:' + f(10 + r() * 8) + 's;animation-delay:-' + f(r() * 18) + 's;--dx:' + Math.round(20 + r() * 50) * (r() < .5 ? -1 : 1) + 'px;--r:' + Math.round(120 + r() * 240) + 'deg;--s:' + f2(.7 + r() * .7) + '"></i>';
-      tw(4, '#FFFFFF');
+      for (let i = 0; i < 14; i++) s += '<i class="pt kp" style="left:' + f(r() * 100) + '%;animation-duration:' + f(10 + r() * 8) + 's;animation-delay:-' + f(r() * 18) + 's;--dx:' + Math.round(20 + r() * 50) * (r() < .5 ? -1 : 1) + 'px;--r:' + Math.round(120 + r() * 240) + 'deg;--s:' + f2(.7 + r() * .7) + '"></i>';
+      bokehs(6, ['rgba(255,255,255,.6)', 'rgba(255,170,200,.45)']);
+      hearts(4, ['pink', 'red']);
+      fly('pink', 'k2', 27, 38, 24);
+      tw(5, '#FFFFFF');
     } else if (th === 'kstar') {
       [[20, 34, 9], [29, 60, 12], [40, 24, 7], [63, 50, 10], [72, 28, 7]].forEach(([x, L, z], i) => { const d = doc('h'); const b = star(d, { x: 0, y: 0, s: 10 });
         s += '<i class="kh" style="left:' + x + '%;animation-delay:-' + f(r() * 3) + 's;animation-duration:' + f(3.2 + r() * 1.6) + 's"><b style="height:' + L + 'px"></b>' + d.svg('-11 -11 22 22', b, ' style="width:' + (z * 2.2) + 'px;height:' + (z * 2.2) + 'px"') + '</i>'; });
-      tw(10, '#FFF3C4');
+      s += '<i class="ksh" style="top:14%;left:62%;animation-delay:-1s"></i><i class="ksh" style="top:28%;left:88%;animation-delay:-5.5s;animation-duration:9s"></i>';
+      s += '<i class="kcl" style="top:62%;animation-duration:46s"></i><i class="kcl c2" style="top:70%;animation-duration:58s;animation-delay:-20s"></i>';
+      tw(16, '#FFF3C4');
     } else if (th === 'kberry') {
-      for (let i = 0; i < 6; i++) { const d = doc('r'); const b = heart(d, { x: 0, y: 0, s: 10, pal: i % 2 ? 'red' : 'pink' });
-        s += '<i class="kr" style="left:' + f(8 + r() * 84) + '%;width:' + Math.round(10 + r() * 7) + 'px;animation-duration:' + f(9 + r() * 6) + 's;animation-delay:-' + f(r() * 14) + 's">' + d.svg('-11 -11 22 21', b) + '</i>'; }
-      tw(4, '#FFFFFF');
+      hearts(6, ['pink', 'red']);
+      bokehs(6, ['rgba(255,255,255,.6)', 'rgba(255,200,210,.45)']);
+      fly('pink', 'k1', 25, 34, 24);
+      tw(5, '#FFFFFF');
     } else if (th === 'kbloom') {
-      for (let i = 0; i < 11; i++) { const d = doc('s'); const b = sakura(d, { x: 0, y: 0, r: 10, pal: i % 3 ? 'pink' : 'white' });
+      for (let i = 0; i < 14; i++) { const d = doc('s'); const b = sakura(d, { x: 0, y: 0, r: 10, pal: i % 3 ? 'pink' : 'white' });
         s += '<i class="kb" style="left:' + f(r() * 100) + '%;width:' + Math.round(10 + r() * 8) + 'px;animation-duration:' + f(11 + r() * 8) + 's;animation-delay:-' + f(r() * 19) + 's;--dx:' + Math.round(30 + r() * 50) * (r() < .5 ? -1 : 1) + 'px;--r:' + Math.round(160 + r() * 260) + 'deg">' + d.svg('-11 -11 22 22', b) + '</i>'; }
-      tw(4, '#FFFFFF');
+      fly('pink', 'k2', 26, 40, 24); fly('lemon', 'k4', 31, 58, 20);
+      bokehs(5, ['rgba(255,255,255,.6)', 'rgba(255,205,180,.45)']);
+      tw(5, '#FFFFFF');
     }
     return s;
+  }
+  /* جسيم صغير برمز الثيم (نقر المسبحة · الاحتفال) */
+  function particle(th) {
+    const d = doc('q'); let b = '', vb = '-11 -11 22 22';
+    if (th === 'kbfly') { b = bfly(d, { x: 0, y: 0, s: 1, pal: ['morpho', 'sky', 'ice', 'royal'][Math.floor(Math.random() * 4)], flap: true }); vb = '-108 -82 216 162'; }
+    else if (th === 'krose') b = Math.random() < .5 ? heart(d, { x: 0, y: 0, s: 10, pal: 'pink' }) : rose(d, { x: 0, y: 0, r: 10, pal: 'pink' });
+    else if (th === 'kstar') b = Math.random() < .6 ? star(d, { x: 0, y: 0, s: 10 }) : sparkle(d, { x: 0, y: 0, s: 9, c: '#FFF3C4' });
+    else if (th === 'kberry') { if (Math.random() < .55) { b = berry(d, { x: 0, y: 4, s: .26 }); } else b = heart(d, { x: 0, y: 0, s: 10, pal: 'red' }); }
+    else b = sakura(d, { x: 0, y: 0, r: 10, pal: ['pink', 'white', 'deep'][Math.floor(Math.random() * 3)] });
+    return d.svg(vb, b);
   }
 
   /* زينة شريط العنوان الملوّن (ألوان أفتح لتظهر فوق لون الثيم) */
@@ -633,10 +781,11 @@ const Art = (() => {
   function hero(th, gr) { const d = doc('h'); const fn = HERO[th]; return d.svg('0 0 390 492', fn ? fn(d, gr == null ? 1 : gr) : '', ' preserveAspectRatio="xMidYMax slice"'); }
   const growth = L => cl(.55 + (L || 1) / 1300, .55, 1);
   return {
-    has: th => !!HERO[th], hero, icon, marker, corner, pattern, tbArt, thumb, beads, beadTop, sprites, growth,
+    has: th => !!HERO[th], hero, icon, marker, corner, pattern, tbArt, thumb, beads, beadTop, sprites, growth, particle,
     heroURI: (th, L) => { const q = Math.round(growth(L) * 20); return uri('h' + th + q, () => hero(th, q / 20)); },
     iconURI: th => uri('i' + th, () => icon(th)), cornerURI: th => uri('c' + th, () => corner(th)), patternURI: th => uri('p' + th, () => pattern(th)),
     tbURI: th => uri('t' + th, () => tbArt(th)), thumbURI: th => uri('b' + th, () => thumb(th)), hdrURI: th => uri('r' + th, () => hdrArt(th)),
-    _: { doc, bfly, rose, rose3, berry, sakura, daisy, tulip, hydrangea, star, crescent, cloud, sparkle, heart, leaf },
+    _: { doc, bfly, rose, rose3, rosebud, berry, blossom, trileaf, sakura, sbud, daisy, tulip, hydrangea, fmn, fmnCluster, babys, lavsprig, star, crescent, cloud, sparkle, heart, leaf, bokeh, grass,
+      pomegranate, bird, dove, palmTree, stone, lily, bridge, fountain, lantern, fence, bench, tuft, sprout, BF },
   };
 })();

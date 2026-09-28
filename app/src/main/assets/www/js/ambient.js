@@ -1,6 +1,9 @@
 /* ════════════════════════════════════════════════════════════════
    وسن 4.5 · أصوات الطبيعة أثناء القراءة
    حلقات هادئة مضمّنة في التطبيق (تعمل دون إنترنت): أمواج، مطر، عصافير، نسيم، جدول، ليل.
+   وسن 4.7 · «أصوات مريحة»: تسجيلات جديدة هادئة (رخص حرّة CC0/CC BY — انظر «حول وسن»)، نُقّيت من الحدّة:
+   ترشيح الترددات العالية الحادّة، وتنعيم القفزات المفاجئة، ومستوى أخفض بكثير، وحلقات أطول بلا فاصل،
+   وتلاشٍ أبطأ عند البدء (نحو ست ثوانٍ)، وصوت جديد «هدوء عميق».
    ─ تشغيل بتلاشٍ ناعم، وتكرار متّصل بمزج عنصرين صوتيين (لا فجوة عند نهاية الحلقة)
    ─ تهدأ تلقائيًا عند تشغيل التلاوة (إيقاف مؤقت أو خفض أو بلا تغيير — حسب اختيارك)
    ════════════════════════════════════════════════════════════════ */
@@ -12,12 +15,15 @@ const AMBIENT = [
   ['wind', 'نسيم وأوراق', 'wind'],
   ['stream', 'جدول ماء', 'drop'],
   ['night', 'ليل هادئ', 'moon'],
+  ['deep', 'هدوء عميق', 'heart'],
 ];
 const Ambient = {
   els: [], cur: 0, id: '', next: '', on: false, g: 0, duck: 1, xf: 3, _t: 0, _rc: 0,
   name(id) { const x = AMBIENT.find(a => a[0] === (id || this.id)); return x ? x[1] : ''; },
   src(id) { return (window.__AMB && window.__AMB[id]) || 'snd/amb_' + id + '.ogg'; },   // __AMB: نسخة مضمّنة في المعاينة الحيّة
-  vol() { return clamp(Settings.ambVol == null ? 0.55 : +Settings.ambVol, 0, 1); },
+  vol() { return clamp(Settings.ambVol == null ? 0.45 : +Settings.ambVol, 0, 1); },
+  /** منحنى سمعي: تحكّم أدقّ في المستويات الهادئة */
+  amp(v) { return Math.pow(clamp(v, 0, 1), 1.5); },
   target() { return this.on ? this.vol() * this.duck : 0; },
   ensure() { if (!this.els.length) this.els = [0, 1].map(() => { const a = new Audio(); a.preload = 'auto'; a.w = 0; a.volume = 0; return a; }); },
   kick(a) { try { const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} },
@@ -51,7 +57,8 @@ const Ambient = {
   },
   run() { if (!this._t) this._t = setInterval(() => this.step(), 100); },
   step() {
-    const want = this.next ? 0 : this.target(), d = want - this.g, sp = 0.03;   // ≈ ثلاث ثوانٍ لتلاشٍ كامل
+    // وسن 4.7: بدء أنعم (≈ ست ثوانٍ حتى المستوى الكامل) وخفوت في نحو ثلاث ثوانٍ
+    const want = this.next ? 0 : this.target(), d = want - this.g, sp = d > 0 ? 0.017 : 0.034;
     this.g = Math.abs(d) <= sp ? want : this.g + Math.sign(d) * sp;
     if (this.next && this.g <= 0.001) { const n = this.next; this.next = ''; this.swap(n); }
     const A = this.els[this.cur], B = this.els[1 - this.cur];
@@ -59,7 +66,7 @@ const Ambient = {
       const left = A.duration - A.currentTime;
       if (left <= this.xf) {
         if (B.paused) { try { B.currentTime = 0; } catch (e) {} this.kick(B); }
-        const k = clamp(1 - left / this.xf, 0, 1); B.w = k; A.w = 1 - k;
+        const k = clamp(1 - left / this.xf, 0, 1); B.w = Math.sin(k * Math.PI / 2); A.w = Math.cos(k * Math.PI / 2);   // مزج متساوي القدرة: لا انخفاض في المنتصف
       }
       if (left <= 0.06) { try { A.pause(); } catch (e) {} A.w = 0; B.w = 1; this.cur = 1 - this.cur; }
     } else if (A && B && A.ended && !B.paused) { A.w = 0; B.w = 1; this.cur = 1 - this.cur; }
@@ -67,7 +74,7 @@ const Ambient = {
       this.els.forEach(a => { if (!a.paused) try { a.pause(); } catch (e) {} });
       if (!this.on && !this.next) { clearInterval(this._t); this._t = 0; }
     } else if (want > 0) { const C = this.els[this.cur]; if (C && C.paused) this.kick(C); }
-    this.els.forEach(a => { try { a.volume = clamp(this.g * (a.w || 0), 0, 1); } catch (e) {} });
+    this.els.forEach(a => { try { a.volume = clamp(this.amp(this.g) * (a.w || 0), 0, 1); } catch (e) {} });
   },
   /** إيقاف فوري عند مغادرة التطبيق (يعود بتلاشٍ عند الرجوع) */
   hush() { this.g = 0; this.els.forEach(a => { try { a.pause(); a.volume = 0; } catch (e) {} }); },
@@ -88,7 +95,7 @@ function ambientSheet() {
     '<input type="range" min="0" max="100" step="1" value="' + v0 + '" id="amb-vol">' +
     '<b style="display:block;margin:14px 0 8px">عند تشغيل التلاوة</b><div class="seg" id="amb-rc"><button data-v="pause">إيقاف مؤقت</button><button data-v="duck">خفض الصوت</button><button data-v="keep">بلا تغيير</button></div>' +
     '<button class="btn ghost block" id="amb-x" style="margin-top:16px"' + (Ambient.on ? '' : ' disabled') + '>' + icon('stop') + 'إيقاف الأصوات</button>' +
-    '<div class="faint center" style="font-size:11.5px;margin-top:10px;line-height:1.7">تسجيلات طبيعية حرّة الترخيص، مضمّنة في التطبيق وتعمل دون إنترنت</div></div>';
+    '<div class="faint center" style="font-size:11.5px;margin-top:10px;line-height:1.7">أصوات هادئة نُقّيت من الحدّة، مضمّنة في التطبيق وتعمل دون إنترنت</div></div>';
   Sheet.open(html, el => {
     const g = $('#amb-g', el), vol = $('#amb-vol', el), x = $('#amb-x', el);
     const sync = () => { g.innerHTML = chips(); x.disabled = !Ambient.on; };

@@ -44,7 +44,7 @@ const DEFAULTS = {
   remJumua: 45,
   // وسن 4.5
   accentHex: '', uiScale: 1, readDim: 0, qlh: 2.3, qalign: 'justify', qfont: 'hafs', readFull: false, hifzMode: 'all',
-  ambVol: 0.55, ambRecite: 'pause', ambLast: '', libReciter: '', qSrc: 'ayah', sleepMin: 0, asSpeed: 4,
+  ambVol: 0.45, ambRecite: 'pause', ambLast: '', libReciter: '', qSrc: 'ayah', sleepMin: 0, asSpeed: 4,
 };
 const Settings = Object.assign({}, DEFAULTS, Store.get('settings', {}));
 Settings.adjust = Object.assign({}, DEFAULTS.adjust, Settings.adjust || {});

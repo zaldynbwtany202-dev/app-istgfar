@@ -1,5 +1,7 @@
 /* ════════════════════════════════════════════════════════════════
    وسن 4.0 · «بستانك» — مولّد المشهد الإجرائي (1000 مستوى) · 4.5: ألوان المشهد وأشكاله من السمة
+   وسن 4.7 · «البستان المرسوم»: مرج أزهار حقيقي يتنوّع مع النموّ، ممشى حجري ثم جسر خشبي، زنابق ولوتس على
+   الجدول، نخيل بسعف وتمر، رمّان، فوانيس، طيور على السياج والمقعد، حمائم، نافورة، ويراعات — وشجرة تتمايل.
    كل مستوى يغيّر المشهد: يطول الجذع ويتفرّع، تكثر الأوراق، ثم تظهر الأزهار
    والثمار والطيور، وتنضمّ أشجار ونخيل وجدول ماء حتى تكتمل «الواحة الغنّاء».
    التوليد حتمي (بذرة ثابتة) فيبقى المشهد نفسه وينمو فقط مع كل مستوى.
@@ -117,13 +119,38 @@ const Garden = (() => {
     return s + '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r * 0.7) + '" fill="' + (mid || '#F6D36B') + '"/>';
   }
 
-  /** يرسم مشهد المستوى L. opts: {phase:'day|night|dawn|golden|sunset', w, h, id} */
+  /* وسن 4.7 · مرج الأزهار: أنواع تظهر تباعًا مع نموّ البستان (أو أزهار الثيم إن وُجدت) */
+  const MEADOW = [['daisy', 0], ['fmn', 100], ['tulip', 160], ['lav', 260], ['hyd', 350]];
+  const PAL = { daisy: ['white', 'lemon', 'pink', 'lilac'], fmn: ['', 'pink', 'lilac'], tulip: ['pink', 'yellow', 'lilac', 'peach', 'red', 'white'], hyd: ['blue', 'pink', 'lilac', 'sky'], rose: ['red', 'pink', 'blush'], rtop: ['pink', 'blush', 'red'], sakura: ['pink', 'white', 'deep'] };
+  function meadowItem(A, ad, type, pal, x, y, sc, k) {
+    switch (type) {
+      case 'daisy': return '<path d="M' + f1(x) + ' ' + f1(y) + 'v' + f1(-5 * sc) + '" stroke="#3E8A55" stroke-width="' + f1(0.8 * sc) + '"/>' + A.daisy(ad, { x, y: y - 5 * sc, r: 3.1 * sc, rot: k * 23, pal: pal || PAL.daisy[k % 4] });
+      case 'fmn': return A.fmnCluster(ad, { x, y: y - 1.5 * sc, n: 4, spread: 4.2 * sc, r: 1.9 * sc, seed: 60 + k, pal: pal || PAL.fmn[k % 3] });
+      case 'tulip': return A.tulip(ad, { x, y: y - 10 * sc, h: 10 * sc, bend: (k % 3 - 1) * 1.2, s: 0.34 * sc, pal: pal || PAL.tulip[k % 6] });
+      case 'lav': return A.lavsprig(ad, { x, y, h: 13 * sc, bend: (k % 3 - 1) * 1.5, seed: 30 + k, s: 1 });
+      case 'hyd': return A.hydrangea(ad, { x, y: y - 3 * sc, r: 4.6 * sc, pal: pal || PAL.hyd[k % 4] });
+      case 'rose': return A.rose3(ad, { x, y: y - 3 * sc, r: 4.2 * sc, pal: pal || PAL.rose[k % 3] });
+      case 'rtop': return A.rose(ad, { x, y: y - 2 * sc, r: 3.6 * sc, pal: pal || PAL.rtop[k % 3], rot: k * 37 });
+      case 'bud': return A.rosebud(ad, { x, y: y - 6 * sc, s: 0.2 * sc, pal: pal || 'red', r: (k % 3 - 1) * 8 });
+      case 'berry': return A.trileaf(ad, { x: x + 2 * sc, y: y - 1, s: 0.16 * sc, r: -30 + k * 17 }) + A.berry(ad, { x, y: y - 3 * sc, s: 0.1 * sc, r: (k % 3 - 1) * 12 });
+      case 'blossom': return A.blossom(ad, { x, y: y - 3 * sc, s: 0.26 * sc, r: k * 19 });
+      case 'star': return A.star(ad, { x, y: y - 4 * sc, s: 2.6 * sc, r: k * 13, glow: true, pal: pal || 'gold' });
+      case 'sparkle': return A.sparkle(ad, { x, y: y - 4 * sc, s: 3.2 * sc, c: '#FFF3C4' });
+      case 'sakura': return A.sakura(ad, { x, y: y - 3 * sc, r: 3.2 * sc, pal: pal || PAL.sakura[k % 3], rot: k * 29 });
+    }
+    return '';
+  }
+  const BFLY = ['lemon', 'pink', 'sky', 'lilac', 'morpho'];
+
+  /** يرسم مشهد المستوى L. opts: {phase:'day|night|dawn|golden|sunset', w, h, id, lite} */
   function render(L, opts) {
     opts = opts || {};
     L = cl(Math.round(L) || 1, 1, MAX);
-    const W = 360, H = 300, id = opts.id || 'g' + L, ph = opts.phase || 'day', bare = !!opts.bare;
+    const W = 360, H = 300, id = opts.id || 'g' + L, ph = opts.phase || 'day', bare = !!opts.bare, lite = !!opts.lite;
     const st = stageOf(L), R = rng(4242), sky = SKY[ph] || SKY.day, night = ph === 'night';
     const G = opts.skin !== undefined ? (opts.skin && opts.skin.garden) || null : curG(), gx = G && G.fx || {};
+    // وسن 4.7: رسوم «ريشة وسن» للبستان (أزهار، نخيل، طيور، جسر، نافورة…) — وإن غابت يبقى البستان كما كان
+    const A = (typeof Art !== 'undefined' && Art._ && Art._.palmTree) ? Art._ : null, ad = A ? A.doc(id + 'a') : null;
     const lix = leafIx(G), tOpts = G ? { greens: G.leaves.slice(0, 4), lix, bark: G.bark, hi: G.hi } : {};
     const lush = cl((L - 1) / 400, 0, 1);                                   // من أرض جافة إلى خضرة
     const hillA = mix('#B9A27A', G ? G.hillA : '#5BA86E', lush), hillB = mix('#A58E66', G ? G.hillB : '#3F8F5A', lush), ground = mix('#9C7B52', G ? G.ground : '#3E8A55', cl((L - 5) / 250, 0, 1));
@@ -139,7 +166,7 @@ const Garden = (() => {
       vb = f1(180 - vw2 / 2) + ' ' + f1(336 - vh2) + ' ' + f1(vw2) + ' ' + f1(vh2);
     }
     const SK = (G && G.gsky && G.gsky[ph]) || sky;
-    let s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '" preserveAspectRatio="' + (opts.par || 'xMidYMid slice') + '" class="garden-svg' + (bare ? ' bare' : '') + '">' +
+    let s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '" preserveAspectRatio="' + (opts.par || 'xMidYMid slice') + '" class="garden-svg' + (bare ? ' bare' : '') + (lite ? ' lite' : '') + '">' +
       '<defs><linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + SK[0] + '"/><stop offset=".6" stop-color="' + SK[1] + '"/><stop offset="1" stop-color="' + SK[2] + '"/></linearGradient>' +
       '<radialGradient id="' + id + 'glow"><stop offset="0" stop-color="#FFE9A8" stop-opacity=".75"/><stop offset="1" stop-color="#FFE9A8" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="' + id + 'w" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6FC3E0"/><stop offset=".5" stop-color="#9EDCF0"/><stop offset="1" stop-color="#5DB2D2"/></linearGradient>' +
@@ -148,12 +175,16 @@ const Garden = (() => {
     // النجوم والقمر ليلًا · الشمس نهارًا (في وضع «المشهد الحي» ترسمها السماء الحيّة)
     if (bare) { /* سماء شفافة */ }
     else if (night) {
-      const sr = rng(77); for (let k = 0; k < 40; k++) s += '<circle cx="' + f1(sr() * W) + '" cy="' + f1(sr() * 150) + '" r="' + f1(0.4 + sr() * 1.1) + '" fill="#fff" opacity="' + f1(0.35 + sr() * 0.6) + '"/>';
+      const sr = rng(77); for (let k = 0; k < 40; k++) s += '<circle cx="' + f1(sr() * W) + '" cy="' + f1(sr() * 150) + '" r="' + f1(0.4 + sr() * 1.1) + '" fill="#fff" opacity="' + f1(0.35 + sr() * 0.6) + '"' + (!lite && k % 5 === 0 ? ' class="gtw" style="animation-delay:-' + f1(sr() * 3) + 's"' : '') + '/>';
       s += '<path d="M292 44a20 20 0 1 0 14 34 16 16 0 0 1-14-34z" fill="#F4E3A6"/>';
     } else {
       const sy = { dawn: 118, day: 52, golden: 86, sunset: 132 }[ph] || 52;
       s += '<circle cx="292" cy="' + sy + '" r="54" fill="url(#' + id + 'glow)"/><circle cx="292" cy="' + sy + '" r="17" fill="#FFF1C4"/>';
-      const cr = rng(13); for (let k = 0; k < 3; k++) { const cx = 40 + cr() * 260, cy = 30 + cr() * 50; s += '<g opacity=".85" fill="#fff"><ellipse cx="' + f1(cx) + '" cy="' + f1(cy) + '" rx="26" ry="9"/><ellipse cx="' + f1(cx + 12) + '" cy="' + f1(cy - 6) + '" rx="15" ry="9"/></g>'; }
+      const cr = rng(13);
+      if (A) { for (let k = 0; k < 3; k++) { const cx = 20 + cr() * 250, cy = 22 + cr() * 46; s += '<g class="gcl" style="animation-delay:-' + f1(k * 9) + 's">' + A.cloud(ad, { x: cx, y: cy, s: 0.42 + cr() * 0.22, c: ['#FFFFFF', '#E6F0F8'], k: 'gc', op: 0.92 }) + '</g>'; } }
+      else for (let k = 0; k < 3; k++) { const cx = 40 + cr() * 260, cy = 30 + cr() * 50; s += '<g opacity=".85" fill="#fff"><ellipse cx="' + f1(cx) + '" cy="' + f1(cy) + '" rx="26" ry="9"/><ellipse cx="' + f1(cx + 12) + '" cy="' + f1(cy - 6) + '" rx="15" ry="9"/></g>'; }
+      // حمائم بيضاء تطير في «الواحة الغنّاء» (850+)
+      if (A && L >= 850 && !lite) s += A.dove(ad, { x: 74, y: 88, s: 0.42, r: -6, flap: true }) + A.dove(ad, { x: 112, y: 70, s: 0.34, r: 4, flap: true });
     }
     // التلال البعيدة
     s += '<path d="M-120 188 Q-40 170 0 196 Q60 150 130 178 T260 168 T360 180 Q420 166 480 186 V340 H-120Z" fill="url(#' + id + 'hA)" opacity=".8"/>';
@@ -162,18 +193,28 @@ const Garden = (() => {
     // الأرض
     const GY = 246;
     s += '<path d="M-120 236 Q-60 228 0 232 Q180 214 360 232 Q420 228 480 236 V340 H-120Z" fill="url(#' + id + 'gr)"/>';
-    // جدول الماء (روضة 650+) وبركة (850+)
+    // ممشى من حجارة (60+) يقود إلى الجسر لاحقًا
+    if (A && L >= 60) {
+      const path = [[190, 252], [198, 258], [208, 264], [217, 270.5], [228, 277], [239, 284], [251, 291], [263, 298]], n = cl(Math.floor((L - 60) / 18) + 2, 2, path.length);
+      path.slice(0, n).forEach(([x, y], k) => { if (L >= 650 && y > 268) return; s += A.stone(ad, { x, y, s: 0.55 + (y - 250) / 60, r: (k % 2 ? 6 : -4) }); });
+    }
+    // جدول الماء (روضة 650+)
     if (L >= 650) {
       const wv = cl((L - 650) / 120, 0.25, 1);
       s += '<path d="M-130 286 Q-60 ' + f1(270 - 4 * wv) + ' -10 282 Q90 ' + f1(262 - 6 * wv) + ' 180 276 T370 268 Q430 ' + f1(262 - 4 * wv) + ' 490 272 V' + f1(284 + 10 * wv) + ' Q430 ' + f1(292 + 4 * wv) + ' 370 ' + f1(280 + 10 * wv) + ' Q270 ' + f1(292 + 4 * wv) + ' 180 290 T-10 300 Q-60 304 -130 302Z" fill="url(#' + id + 'w)" opacity=".92"/>';
-      s += '<path d="M40 284 q10 -3 20 0 M150 283 q12 -3 24 0 M260 278 q10 -3 20 0" stroke="#fff" stroke-width="1.2" opacity=".7" fill="none"/>';
+      s += '<path class="gshim" d="M40 284 q10 -3 20 0 M150 283 q12 -3 24 0 M260 278 q10 -3 20 0 M92 290 q8 -2 16 0 M318 284 q9 -2 18 0" stroke="#fff" stroke-width="1.2" opacity=".7" fill="none"/>';
+      // زنابق الماء (720+) ولوتس (850+)
+      if (A && L >= 720) [[58, 287, 0.8], [120, 289, 0.7], [312, 281, 0.85], [22, 292, 0.6], [206, 286, 0.62]].forEach(([x, y, sc], k) => { if (k > 1 + Math.floor((L - 720) / 60)) return; s += A.lily(ad, { x, y, s: sc, flower: L >= 850 && k % 2 === 0, r: k * 40 }); });
+      // جسر خشبي فوق الجدول (700+)
+      if (A && L >= 700) s += A.bridge(ad, { x: 250, y: 283, w: 56, h: 9 });
     }
-    // العشب (يكثر مع المستوى)
-    const grassN = cl(Math.floor(L / 6), 0, 70), gr = rng(21);
+    // العشب (يكثر مع المستوى) — خصلات مرسومة
+    const grassN = cl(Math.floor(L / 6), 0, lite ? 24 : 60), gr = rng(21), gc = mix('#6E8F4E', G ? G.grass : '#2F7A45', lush);
     for (let k = 0; k < grassN; k++) {
       const x = gr() * W, y = 234 + gr() * 50, h = 4 + gr() * 6;
       if (L >= 650 && y > 266) continue;
-      s += '<path d="M' + f1(x) + ' ' + f1(y) + 'l-2 ' + f1(-h) + 'M' + f1(x) + ' ' + f1(y) + 'l2 ' + f1(-h * 0.8) + 'M' + f1(x) + ' ' + f1(y) + 'l0 ' + f1(-h * 1.1) + '" stroke="' + mix('#6E8F4E', G ? G.grass : '#2F7A45', lush) + '" stroke-width="1.2" stroke-linecap="round"/>';
+      if (A) s += A.tuft(ad, { x, y, h: h * 1.1, seed: k + 3, c: [mix(gc, '#FFFFFF', 0.35), gc, mix(gc, '#0B1F14', 0.3)] });
+      else s += '<path d="M' + f1(x) + ' ' + f1(y) + 'l-2 ' + f1(-h) + 'M' + f1(x) + ' ' + f1(y) + 'l2 ' + f1(-h * 0.8) + 'M' + f1(x) + ' ' + f1(y) + 'l0 ' + f1(-h * 1.1) + '" stroke="' + gc + '" stroke-width="1.2" stroke-linecap="round"/>';
     }
     // أشجار ونخيل البستان (450+)
     const extra = [[450, 70, 0.55, 'tree'], [500, 300, 0.62, 'palm'], [560, 38, 0.5, 'palm'], [620, 318, 0.48, 'tree'], [700, 112, 0.42, 'palm'], [760, 250, 0.44, 'tree'], [880, 18, 0.46, 'tree'], [940, 342, 0.5, 'palm']];
@@ -181,13 +222,17 @@ const Garden = (() => {
     extra.forEach(([lv, x, sc, kind], k) => {
       if (L < lv) return;
       const age = cl((L - lv) / 150, 0.35, 1);
-      if (kind === 'palm' && !(G && G.palm === false)) back.push(palm(x, GY - 6 + k % 2 * 4, 70 * sc * age + 20, (k % 2 ? -1 : 1) * 10, rng(500 + k)));
+      if (kind === 'palm' && !(G && G.palm === false)) back.push(A ? A.palmTree(ad, { x, y: GY - 6 + k % 2 * 4, h: 70 * sc * age + 20, lean: (k % 2 ? -1 : 1) * 10, seed: 500 + k, dates: L >= 300 }) : palm(x, GY - 6 + k % 2 * 4, 70 * sc * age + 20, (k % 2 ? -1 : 1) * 10, rng(500 + k)));
       else { const t = tree(Math.min(600, 150 + (L - lv) * 2), x, GY - 4, sc * (0.6 + 0.4 * age) * (kind === 'palm' ? 0.85 : 1), 900 + k, G ? Object.assign({ gid: id }, tOpts, { greens: G.leaves.slice(2, 5) }) : { greens: ['#3B9A62', '#4DAE70', '#2F8455'], gid: id });
-        back.push(t.svg + t.leaves + (gx.tree ? gx.tree({ L: Math.min(600, 150 + (L - lv) * 2), tree: t, rng: rng, seed: 900 + k, f1, mix, night, id, small: true }) : '')); }
+        back.push(t.svg + t.leaves + (gx.tree ? gx.tree({ L: Math.min(600, 150 + (L - lv) * 2), tree: t, rng: rng, seed: 900 + k, f1, mix, night, id, small: true, A, ad }) : '')); }
     });
     s += back.join('');
-    // الشجرة الرئيسية
+    // سياج خشبي (250+) ومقعد (400+) — خلف الشجرة
+    if (L >= 250) s += A ? A.fence(ad, { x: 12, y: 221, n: 8, sp: 8.6, h: 16 }) : (() => { let fx = ''; for (let k = 0; k < 7; k++) fx += '<rect x="' + (14 + k * 9) + '" y="222" width="3" height="16" rx="1" fill="#A07A4E"/>'; return fx + '<rect x="12" y="227" width="66" height="2.5" fill="#A07A4E"/><rect x="12" y="233" width="66" height="2.5" fill="#A07A4E"/>'; })();
+    if (L >= 400) s += A ? A.bench(ad, { x: 262, y: 227 }) : '<g fill="#8A6440"><rect x="262" y="236" width="44" height="4" rx="1.5"/><rect x="264" y="240" width="3" height="9"/><rect x="301" y="240" width="3" height="9"/><rect x="262" y="228" width="44" height="3" rx="1.5"/></g>';
+    // الشجرة الرئيسية (تتمايل بهدوء)
     const cx = 180;
+    let topTip = null;
     if (L < 10) {
       // بذرة ثم برعم
       s += '<ellipse cx="' + cx + '" cy="' + (GY + 4) + '" rx="30" ry="9" fill="' + mix('#7E5E3C', '#5E7D45', L / 10) + '"/>';
@@ -196,57 +241,82 @@ const Garden = (() => {
       if (L === 2) s += '<path d="M' + cx + ' ' + (GY - 5) + 'l1.5 -3" stroke="#6FB86A" stroke-width="1.6" stroke-linecap="round"/>';
       if (L >= 3) {
         const hh = 6 + L * 2.4;
-        s += '<path d="M' + cx + ' ' + GY + 'q-1 ' + f1(-hh * 0.6) + ' 0 ' + f1(-hh) + '" stroke="#4E9A55" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+        let sp = '<path d="M' + cx + ' ' + GY + 'q-1 ' + f1(-hh * 0.6) + ' 0 ' + f1(-hh) + '" stroke="#4E9A55" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
         const ls = 4 + L * 0.9;
-        s += '<path d="M' + cx + ' ' + f1(GY - hh) + 'c-' + f1(ls) + ' -' + f1(ls * 0.2) + ' -' + f1(ls * 1.3) + ' -' + f1(ls * 0.9) + ' -' + f1(ls * 1.6) + ' -' + f1(ls * 0.5) + 'c' + f1(ls * 0.4) + ' ' + f1(ls * 0.9) + ' ' + f1(ls) + ' ' + f1(ls) + ' ' + f1(ls * 1.6) + ' ' + f1(ls * 0.5) + 'z" fill="#5DBB6A"/>';
-        if (L >= 6) s += '<path d="M' + cx + ' ' + f1(GY - hh * 0.7) + 'c' + f1(ls) + ' -' + f1(ls * 0.2) + ' ' + f1(ls * 1.3) + ' -' + f1(ls * 0.9) + ' ' + f1(ls * 1.5) + ' -' + f1(ls * 0.4) + 'c-' + f1(ls * 0.4) + ' ' + f1(ls * 0.9) + ' -' + f1(ls) + ' ' + f1(ls) + ' -' + f1(ls * 1.5) + ' ' + f1(ls * 0.4) + 'z" fill="#4FA85D"/>';
+        sp += '<path d="M' + cx + ' ' + f1(GY - hh) + 'c-' + f1(ls) + ' -' + f1(ls * 0.2) + ' -' + f1(ls * 1.3) + ' -' + f1(ls * 0.9) + ' -' + f1(ls * 1.6) + ' -' + f1(ls * 0.5) + 'c' + f1(ls * 0.4) + ' ' + f1(ls * 0.9) + ' ' + f1(ls) + ' ' + f1(ls) + ' ' + f1(ls * 1.6) + ' ' + f1(ls * 0.5) + 'z" fill="#5DBB6A"/>';
+        if (L >= 6) sp += '<path d="M' + cx + ' ' + f1(GY - hh * 0.7) + 'c' + f1(ls) + ' -' + f1(ls * 0.2) + ' ' + f1(ls * 1.3) + ' -' + f1(ls * 0.9) + ' ' + f1(ls * 1.5) + ' -' + f1(ls * 0.4) + 'c-' + f1(ls * 0.4) + ' ' + f1(ls * 0.9) + ' -' + f1(ls) + ' ' + f1(ls) + ' -' + f1(ls * 1.5) + ' ' + f1(ls * 0.4) + 'z" fill="#4FA85D"/>';
+        s += '<g class="gtree" style="transform-origin:' + cx + 'px ' + GY + 'px">' + sp + '</g>';
       }
     } else {
       const bigTree = mainTree || tree(L, cx, GY, 1, 7, { gid: id });
       s += '<ellipse cx="' + cx + '" cy="' + (GY + 3) + '" rx="' + f1(18 + bigTree.leafR * 2.2) + '" ry="' + f1(4 + bigTree.leafR * 0.35) + '" fill="#000" opacity=".12"/>';
       if (L >= 1000) s += '<circle cx="' + cx + '" cy="' + f1(GY - bigTree.H * 0.72) + '" r="' + f1(bigTree.H * 0.95) + '" fill="url(#' + id + 'glow)" opacity=".75"/>';
-      s += bigTree.svg + bigTree.leaves;
+      let ts = bigTree.svg + bigTree.leaves;
       const tips = bigTree.tips;
-      if (gx.tree) s += gx.tree({ L, tree: bigTree, rng, seed: 7, f1, mix, night, id });
-      // الأزهار (200+)
-      if (L >= 200 && tips.length) {
-        const n = cl(Math.floor((L - 200) / 2.5), 0, 60), fr = rng(333), cols = (G && G.bloom) || ['#FFD1DC', '#FFFFFF', '#FFC4D6', '#FFE3EC'];
-        for (let k = 0; k < n; k++) { const t = tips[Math.floor(fr() * tips.length)]; s += flower(t.x + (fr() - 0.5) * bigTree.leafR * 1.6, t.y + (fr() - 0.5) * bigTree.leafR * 1.2, 1.6 + fr() * 1.2, cols[k % cols.length], G && G.bloomMid); }
+      topTip = tips.length ? tips.slice().sort((a, b) => a.y - b.y)[0] : null;
+      if (gx.tree) ts += gx.tree({ L, tree: bigTree, rng, seed: 7, f1, mix, night, id, A, ad });
+      // الأزهار (200+) — أزهار كرز مرسومة بلون الثيم
+      if (L >= 200 && tips.length && !(G && G.bloomArt === false)) {
+        const n = cl(Math.floor((L - 200) / 2.5), 0, lite ? 24 : 60), fr = rng(333), cols = (G && G.bloom) || ['#FFD1DC', '#FFFFFF', '#FFC4D6', '#FFE3EC'], bp = (G && G.bloomArt) || ['pink', 'white', 'pink', 'deep'];
+        for (let k = 0; k < n; k++) { const t = tips[Math.floor(fr() * tips.length)], x = t.x + (fr() - 0.5) * bigTree.leafR * 1.6, y = t.y + (fr() - 0.5) * bigTree.leafR * 1.2, rr = 1.6 + fr() * 1.2;
+          ts += A ? A.sakura(ad, { x, y, r: rr * 1.35, pal: bp[k % bp.length], rot: k * 31 }) : flower(x, y, rr, cols[k % cols.length], G && G.bloomMid); }
       }
-      // الثمار (300+)
+      // الثمار (300+) — رمّان
       if (L >= 300 && tips.length && !(G && G.fruit === false)) {
-        const n = cl(Math.floor((L - 300) / 4), 0, 42), fr = rng(555), fc = (G && G.fruit) || ['#D9483B', '#E88A2A'];
+        const n = cl(Math.floor((L - 300) / 5), 0, lite ? 14 : 34), fr = rng(555), fc = (G && G.fruit) || ['#D9483B', '#E88A2A'];
         for (let k = 0; k < n; k++) { const t = tips[Math.floor(fr() * tips.length)], x = t.x + (fr() - 0.5) * bigTree.leafR * 1.5, y = t.y + (fr() - 0.2) * bigTree.leafR;
-          s += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="3.1" fill="' + (k % 3 ? fc[0] : fc[1]) + '"/><circle cx="' + f1(x - 1) + '" cy="' + f1(y - 1) + '" r="1" fill="#fff" opacity=".6"/>'; }
+          ts += (A && !G) ? A.pomegranate(ad, { x, y, s: 0.3 + fr() * 0.06, r: (fr() - 0.5) * 30 }) : '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="3.1" fill="' + (k % 3 ? fc[0] : fc[1]) + '"/><circle cx="' + f1(x - 1) + '" cy="' + f1(y - 1) + '" r="1" fill="#fff" opacity=".6"/>'; }
       }
-      // فانوس معلّق (150+)
+      // فوانيس معلّقة (150+ واحد · 380+ اثنان · 600+ ثلاثة)
       if (L >= 150 && tips.length > 3) {
-        const t = tips.slice().sort((a, b) => a.y - b.y)[Math.floor(tips.length * 0.7)];
-        s += '<path d="M' + f1(t.x) + ' ' + f1(t.y) + 'v14" stroke="#7A5B35" stroke-width=".8"/><g transform="translate(' + f1(t.x - 4) + ' ' + f1(t.y + 14) + ')"><rect width="8" height="11" rx="2" fill="#F2C35B"/><rect x="1.8" y="2" width="4.4" height="7" rx="1" fill="#FFF1B8"/>' +
-          (night ? '<circle cx="4" cy="5.5" r="14" fill="url(#' + id + 'glow)" opacity=".8"/>' : '') + '</g>';
+        const srt = tips.slice().sort((a, b) => a.y - b.y), nL = L >= 600 ? 3 : L >= 380 ? 2 : 1;
+        [0.7, 0.45, 0.88].slice(0, nL).forEach((q, j) => { const t = srt[Math.min(srt.length - 1, Math.floor(srt.length * q))];
+          ts += A ? A.lantern(ad, { x: t.x, y: t.y, len: 10 + j * 3, glow: night || j === 0, night, dl: j * 1.3 }) : '<path d="M' + f1(t.x) + ' ' + f1(t.y) + 'v14" stroke="#7A5B35" stroke-width=".8"/><g transform="translate(' + f1(t.x - 4) + ' ' + f1(t.y + 14) + ')"><rect width="8" height="11" rx="2" fill="#F2C35B"/><rect x="1.8" y="2" width="4.4" height="7" rx="1" fill="#FFF1B8"/>' + (night ? '<circle cx="4" cy="5.5" r="14" fill="url(#' + id + 'glow)" opacity=".8"/>' : '') + '</g>'; });
       }
+      s += '<g class="gtree" style="transform-origin:' + cx + 'px ' + GY + 'px">' + ts + '</g>';
     }
-    // الأزهار الأرضية (40+)
-    const fl = cl(Math.floor((L - 40) / 7), 0, 46), frr = rng(88), fcol = (G && G.flowers) || ['#F7A6B5', '#F6D36B', '#B9A7F2', '#FFFFFF', '#F59C7A'];
+    // نافورة (900+)
+    if (A && L >= 900) s += A.fountain(ad, { x: 102, y: 262, w: 30 });
+    // مرج الأزهار الأرضية (40+) — بعمق: البعيد أصغر، والقريب أكبر
+    const fl = cl(Math.floor((L - 40) / 7), 0, lite ? 22 : 46), frr = rng(88), fcol = (G && G.flowers) || ['#F7A6B5', '#F6D36B', '#B9A7F2', '#FFFFFF', '#F59C7A'];
+    const types = G && G.meadow ? G.meadow : MEADOW.filter(m => L >= m[1]).map(m => m[0]);
+    const items = [];
     for (let k = 0; k < fl; k++) {
       const x = 8 + frr() * 344, y = 238 + frr() * 38;
-      if (Math.abs(x - cx) < 26 || (L >= 650 && y > 262)) continue;
-      s += '<path d="M' + f1(x) + ' ' + f1(y) + 'v-6" stroke="' + (G && G.stem || '#3E8A55') + '" stroke-width="1"/>' + flower(x, y - 6, 1.7, fcol[k % fcol.length], G && G.flowerMid);
+      if (Math.abs(x - cx) < 26 || (L >= 650 && y > 262) || (L >= 900 && Math.abs(x - 102) < 20 && y < 268)) continue;
+      items.push([x, y, k]);
     }
-    if (gx.ground) s += gx.ground({ L, id, rng, f1, mix, night, cx, GY, W });
-    // سياج خشبي (250+) ومقعد (400+)
-    if (L >= 250) { let fx = ''; for (let k = 0; k < 7; k++) fx += '<rect x="' + (14 + k * 9) + '" y="222" width="3" height="16" rx="1" fill="#A07A4E"/>'; s += fx + '<rect x="12" y="227" width="66" height="2.5" fill="#A07A4E"/><rect x="12" y="233" width="66" height="2.5" fill="#A07A4E"/>'; }
-    if (L >= 400) s += '<g fill="#8A6440"><rect x="262" y="236" width="44" height="4" rx="1.5"/><rect x="264" y="240" width="3" height="9"/><rect x="301" y="240" width="3" height="9"/><rect x="262" y="228" width="44" height="3" rx="1.5"/></g>';
-    // فراشات (120+) وطيور (320+)
-    const bf = cl(Math.max(Math.floor((L - 110) / 90), G && G.bfMin || 0), 0, 5), br2 = rng(64), bfc = (G && G.bfly) || ['#F59C7A', '#B9A7F2', '#F6D36B', '#7FD3E6', '#F7A6B5'];
+    items.sort((a, b) => a[1] - b[1]).forEach(([x, y, k]) => {
+      if (!A) { s += '<path d="M' + f1(x) + ' ' + f1(y) + 'v-6" stroke="' + (G && G.stem || '#3E8A55') + '" stroke-width="1"/>' + flower(x, y - 6, 1.7, fcol[k % fcol.length], G && G.flowerMid); return; }
+      const tp = String(types[k % types.length]).split(':'), sc = 0.85 + (y - 238) / 38 * 0.6;
+      s += meadowItem(A, ad, tp[0], tp[1] || '', x, y, sc, k);
+    });
+    if (gx.ground) s += gx.ground({ L, id, rng, f1, mix, night, cx, GY, W, A, ad });
+    // طيور على السياج والمقعد وأعلى الشجرة (320+)
+    if (A && L >= 320 && !lite && !night) {
+      const bp = (G && G.birds) || ['robin', 'canary', 'blue'], nb = L >= 640 ? 3 : L >= 480 ? 2 : 1;
+      const spots = [[44, 221.5, false], [293, 227.5, true], topTip ? [topTip.x + 4, topTip.y - (mainTree ? mainTree.leafR * 0.9 : 6), true] : null].filter(Boolean);
+      spots.slice(0, nb).forEach(([x, y, fl2], j) => { s += A.bird(ad, { x, y: y - 4.6, s: 0.46, pal: bp[j % bp.length], flip: fl2, dl: j * 0.9 }); });
+    }
+    // فراشات (120+) — مرسومة وترفرف
+    const bf = cl(Math.max(Math.floor((L - 110) / 90), G && G.bfMin || 0), 0, lite ? 2 : 5), br2 = rng(64), bfc = (G && G.bfly) || ['#F59C7A', '#B9A7F2', '#F6D36B', '#7FD3E6', '#F7A6B5'];
+    const bpal = (G && G.bflyArt) || BFLY;
     for (let k = 0; k < bf; k++) { const x = 40 + br2() * 280, y = 120 + br2() * 90, c = bfc[k % bfc.length];
-      s += '<g transform="translate(' + f1(x) + ' ' + f1(y) + ')" class="gbf"><ellipse cx="-3" cy="0" rx="3.4" ry="2.4" fill="' + c + '"/><ellipse cx="3" cy="0" rx="3.4" ry="2.4" fill="' + c + '"/><rect x="-.5" y="-2.4" width="1" height="4.8" fill="#3B2F23"/></g>'; }
+      if (A) s += '<g class="gbf2" style="animation-delay:-' + f1(k * 1.7) + 's">' + A.bfly(ad, { x, y, s: 0.062 + br2() * 0.018, r: (br2() - 0.5) * 40, pal: bpal[k % bpal.length], flap: !lite }) + '</g>';
+      else s += '<g transform="translate(' + f1(x) + ' ' + f1(y) + ')" class="gbf"><ellipse cx="-3" cy="0" rx="3.4" ry="2.4" fill="' + c + '"/><ellipse cx="3" cy="0" rx="3.4" ry="2.4" fill="' + c + '"/><rect x="-.5" y="-2.4" width="1" height="4.8" fill="#3B2F23"/></g>'; }
     const birds = cl(Math.floor((L - 300) / 80), 0, 6), bb = rng(91);
-    for (let k = 0; k < birds; k++) { const x = 30 + bb() * 300, y = 40 + bb() * 60; s += '<path d="M' + f1(x) + ' ' + f1(y) + 'q4 -4 8 0 q4 -4 8 0" stroke="' + (night ? '#C9D6E2' : '#3D4A55') + '" stroke-width="1.4" fill="none" stroke-linecap="round"/>'; }
+    for (let k = 0; k < birds; k++) { const x = 30 + bb() * 300, y = 40 + bb() * 60; s += '<path class="gfly" style="animation-delay:-' + f1(k * 1.3) + 's" d="M' + f1(x) + ' ' + f1(y) + 'q4 -4 8 0 q4 -4 8 0" stroke="' + (night ? '#C9D6E2' : '#3D4A55') + '" stroke-width="1.4" fill="none" stroke-linecap="round"/>'; }
+    // أزهار أمامية في الزاويتين تؤطّر المشهد (200+)
+    if (A && L >= 200 && !lite && !bare) {
+      const ft = types.length ? types : ['daisy'];
+      [[10, 298], [24, 292], [2, 288], [350, 298], [336, 293], [358, 288]].forEach(([x, y], j) => { const tp = String(ft[(j + 2) % ft.length]).split(':'); s += meadowItem(A, ad, tp[0], tp[1] || '', x, y, 2.1 - (j % 3) * 0.3, j + 7); });
+    }
     // يراعات ليلية (600+)
-    if (night && L >= 600) { const ff = rng(17); for (let k = 0; k < 14; k++) s += '<circle cx="' + f1(ff() * W) + '" cy="' + f1(150 + ff() * 110) + '" r="1.4" fill="#FFF3A8" opacity="' + f1(0.5 + ff() * 0.5) + '"/>'; }
+    if (night && L >= 600) { const ff = rng(17); for (let k = 0; k < 14; k++) s += '<circle class="gff" style="animation-delay:-' + f1(ff() * 4) + 's" cx="' + f1(ff() * W) + '" cy="' + f1(150 + ff() * 110) + '" r="1.4" fill="#FFF3A8" opacity="' + f1(0.5 + ff() * 0.5) + '"/>'; }
     if (night && !bare) s += '<rect width="' + W + '" height="' + H + '" fill="' + (G && G.nightTint || '#0A1A2A') + '" opacity=".18"/>';
-    return s + '</svg>';
+    s += '</svg>';
+    if (ad) { const dd = ad.defs(); if (dd) s = s.replace('</defs>', dd + '</defs>'); }
+    return s;
   }
   return { render, STAGES, MAX, stageOf };
 })();

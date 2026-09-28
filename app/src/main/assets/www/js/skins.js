@@ -222,13 +222,14 @@ const KW = (() => {
         flowers: ['#E8577E', '#FFD3DF', '#FFFFFF', '#D6336C'], flowerMid: '#FFD86B', palm: false, nightTint: '#2A0E1E',
         gsky: { day: ['#EFB0C8', '#F9D4E0', '#FFEFF2'], night: ['#2A0E1E', '#4A1A33', '#7A2C4E'], dawn: ['#86569A', '#E6A6BE', '#FFD8CE'], golden: ['#DE94B4', '#F6BCC4', '#FFDAC4'], sunset: ['#5A2A6A', '#D06A92', '#FFA2A0'] },
         fx: {
-          tree({ tree: t, rng, seed, small }) { if (!t.tips.length) return ''; const r = rng(seed + 44); let s = ''; const n = small ? 3 : 12;
-            for (let k = 0; k < n; k++) { const p = t.tips[Math.floor(r() * t.tips.length)]; s += im('rose', p.x + (r() - 0.5) * t.leafR * 1.4, p.y + (r() - 0.5) * t.leafR, (small ? 10 : 14) + r() * 4); }
+          // وسن 4.7: ورود مرسومة في تاج الشجرة وشجيرات ورد على الأرض (بدل الرموز)
+          tree({ tree: t, rng, seed, small, A, ad }) { if (!t.tips.length || !A) return ''; const r = rng(seed + 44); let s = ''; const n = small ? 4 : 16, P = ['red', 'pink', 'red', 'blush'];
+            for (let k = 0; k < n; k++) { const p = t.tips[Math.floor(r() * t.tips.length)]; s += A.rose3(ad, { x: p.x + (r() - 0.5) * t.leafR * 1.4, y: p.y + (r() - 0.5) * t.leafR, r: (small ? 2.6 : 3.6) + r() * 1.2, pal: P[k % 4], rot: (r() - 0.5) * 30 }); }
             return s; },
-          ground({ rng, cx, GY }) { const r = rng(717); let s = '';
+          ground({ rng, cx, GY, A, ad }) { if (!A) return ''; const r = rng(717); let s = '';
             [[34, 0.95], [98, 0.8], [262, 0.85], [326, 1]].forEach(([x, k], j) => { if (Math.abs(x - cx) < 40) return; const w = 26 * k, h = 15 * k, y = GY + 5 + (j % 2) * 5;
               s += '<ellipse cx="' + f1(x) + '" cy="' + f1(y - h * 0.4) + '" rx="' + f1(w * 0.62) + '" ry="' + f1(h * 0.62) + '" fill="#2F7A52"/><ellipse cx="' + f1(x - w * 0.18) + '" cy="' + f1(y - h * 0.62) + '" rx="' + f1(w * 0.36) + '" ry="' + f1(h * 0.42) + '" fill="#3C8C60"/>';
-              for (let q = 0; q < 4; q++) s += im('rose', x + (r() - 0.5) * w * 0.9, y - h * 0.45 - r() * h * 0.6, 12 + r() * 4); });
+              for (let q = 0; q < 4; q++) s += A.rose3(ad, { x: x + (r() - 0.5) * w * 0.9, y: y - h * 0.45 - r() * h * 0.6, r: 3.6 * k + r() * 1.2, pal: ['red', 'pink', 'blush', 'red'][(q + j) % 4] }); });
             return s; },
         },
       },
@@ -253,13 +254,14 @@ const KW = (() => {
         flowers: ['#FFE08A', '#FFFFFF', '#C9B8FF'], flowerMid: '#F5C94E', palm: false, nightTint: '#0A0C26',
         gsky: { day: ['#3A40A0', '#6F66C4', '#C0A8E4'], night: ['#070A24', '#12164A', '#2A2470'], dawn: ['#2A2A6E', '#6B4E9E', '#E0A0B8'], golden: ['#35357E', '#8A5EA8', '#E6A2A8'], sunset: ['#1E1C5A', '#5E3C8A', '#C86A8A'] },
         fx: {
-          tree({ tree: t, rng, seed, small }) { if (!t.tips.length) return ''; const r = rng(seed + 8); let s = '';
-            pickTips(t, small ? 3 : 11, r).forEach(p => { const x = p.x + (r() - 0.5) * t.leafR, y = p.y + t.leafR * (0.3 + r() * 0.5), L = 5 + r() * 7;
-              s += '<path d="M' + f1(x) + ' ' + f1(y - L) + 'v' + f1(L - 3) + '" stroke="#F5E3A0" stroke-width=".5" opacity=".7"/>' + im('star', x, y, (small ? 8 : 11) + r() * 4, 'tw', 'animation-delay:-' + (r() * 3).toFixed(1) + 's'); });
-            if (!small) { const top = t.tips.slice().sort((a, b) => a.y - b.y)[0]; if (top) s += im('gstar', top.x, top.y - t.leafR * 1.1, 22, 'tw'); }
+          // وسن 4.7: نجوم ذهبية مرسومة معلّقة بخيوط، ونجمة كبرى في القمّة، وبريق على العشب
+          tree({ tree: t, rng, seed, small, A, ad }) { if (!t.tips.length || !A) return ''; const r = rng(seed + 8); let s = '';
+            pickTips(t, small ? 3 : 11, r).forEach((p, k) => { const x = p.x + (r() - 0.5) * t.leafR, y = p.y + t.leafR * (0.3 + r() * 0.5), L = 5 + r() * 7;
+              s += '<path d="M' + f1(x) + ' ' + f1(y - L) + 'v' + f1(L - 3) + '" stroke="#F5E3A0" stroke-width=".5" opacity=".7"/><g class="gemo tw" style="animation-delay:-' + (r() * 3).toFixed(1) + 's">' + A.star(ad, { x, y, s: (small ? 3.2 : 4.4) + r() * 1.4, r: (r() - 0.5) * 30, glow: !small, pal: k % 4 === 3 ? 'silver' : 'gold' }) + '</g>'; });
+            if (!small) { const top = t.tips.slice().sort((a, b) => a.y - b.y)[0]; if (top) s += '<g class="gemo tw">' + A.star(ad, { x: top.x, y: top.y - t.leafR * 1.1, s: 8.5, glow: true }) + '</g>'; }
             return s; },
-          ground({ rng, cx, GY }) { const r = rng(33); let s = '';
-            for (let j = 0; j < 6; j++) { let x = 24 + j * 62 + (r() - 0.5) * 20; if (Math.abs(x - cx) < 30) x += 40; s += im('sparkles', x, GY + 2 + r() * 18, 11 + r() * 5, 'tw', 'animation-delay:-' + (r() * 3).toFixed(1) + 's'); }
+          ground({ rng, cx, GY, A, ad }) { if (!A) return ''; const r = rng(33); let s = '';
+            for (let j = 0; j < 6; j++) { let x = 24 + j * 62 + (r() - 0.5) * 20; if (Math.abs(x - cx) < 30) x += 40; s += '<g class="gemo tw" style="animation-delay:-' + (r() * 3).toFixed(1) + 's">' + A.sparkle(ad, { x, y: GY + 2 + r() * 18, s: 4 + r() * 2, c: '#FFF3C4' }) + '</g>'; }
             return s; },
         },
       },
@@ -284,14 +286,15 @@ const KW = (() => {
         flowers: ['#FFFFFF', '#F7A6B5', '#FFE08A'], palm: false, nightTint: '#241028',
         gsky: { day: ['#7CC0F2', '#C0E4FA', '#FFEDF1'], night: ['#241028', '#3E1A40', '#6A2A55'], dawn: ['#6A74B6', '#E6AEC0', '#FFDCCE'], golden: ['#98AEDA', '#F4CAC6', '#FFD6BA'], sunset: ['#4A3070', '#D0708A', '#FFA090'] },
         fx: {
-          tree({ tree: t, rng, seed, small }) { if (!t.tips.length) return ''; const r = rng(seed + 17); let s = ''; const n = small ? 4 : 16;
-            for (let k = 0; k < n; k++) { const p = t.tips[Math.floor(r() * t.tips.length)]; s += im('strawberry', p.x + (r() - 0.5) * t.leafR * 1.5, p.y + (r() - 0.25) * t.leafR * 1.1, (small ? 9 : 13) + r() * 4); }
+          // وسن 4.7: فراولات مرسومة بين الأوراق وأزهار بيضاء، ومشاتل فراولة على الأرض
+          tree({ tree: t, rng, seed, small, A, ad }) { if (!t.tips.length || !A) return ''; const r = rng(seed + 17); let s = ''; const n = small ? 4 : 16;
+            for (let k = 0; k < n; k++) { const p = t.tips[Math.floor(r() * t.tips.length)], x = p.x + (r() - 0.5) * t.leafR * 1.5, y = p.y + (r() - 0.25) * t.leafR * 1.1;
+              s += k % 3 === 2 ? A.blossom(ad, { x, y, s: small ? 0.2 : 0.28, r: k * 23 }) : A.berry(ad, { x, y, s: (small ? 0.09 : 0.12) + r() * 0.03, r: (r() - 0.5) * 30 }); }
             return s; },
-          ground({ rng, cx, GY }) { const r = rng(515); let s = '';
+          ground({ rng, cx, GY, A, ad }) { if (!A) return ''; const r = rng(515); let s = '';
             [[30, 1], [92, 0.85], [266, 0.9], [330, 1]].forEach(([x, k], j) => { if (Math.abs(x - cx) < 40) return; const y = GY + 6 + (j % 2) * 6;
-              s += im('herb', x - 9 * k, y - 5, 20 * k) + im('herb', x + 10 * k, y - 4, 18 * k, '', 'transform:scaleX(-1);transform-box:fill-box;transform-origin:center');
-              for (let q = 0; q < 3; q++) s += im('strawberry', x + (q - 1) * 11 * k + (r() - 0.5) * 3, y + (r() - 0.3) * 4, 13 * k + r() * 3); });
-            s += im('ladybug', cx + 58, GY + 12, 14);
+              s += A.trileaf(ad, { x: x - 8 * k, y: y - 2, s: 0.36 * k, r: -40 }) + A.trileaf(ad, { x: x + 8 * k, y: y - 1, s: 0.32 * k, r: 40, pal: 'light' }) + A.trileaf(ad, { x, y: y - 4, s: 0.3 * k, r: 0 });
+              for (let q = 0; q < 3; q++) s += A.berry(ad, { x: x + (q - 1) * 9 * k + (r() - 0.5) * 3, y: y + (r() - 0.3) * 4, s: 0.14 * k + r() * 0.03, r: (q - 1) * 14 }); });
             return s; },
         },
       },
@@ -317,12 +320,10 @@ const KW = (() => {
         flowers: ['#F7A6C1', '#FFE08A', '#FFFFFF', '#C9A8F5', '#F59C7A'], palm: false, nightTint: '#1E1840',
         gsky: { day: ['#92CCF4', '#D2ECFA', '#FFF5EA'], night: ['#1E1840', '#342A62', '#5E4680'], dawn: ['#7680BE', '#E8BACE', '#FFE4CE'], golden: ['#A2BAE2', '#F8D8BC', '#FFDEB2'], sunset: ['#4E3A7A', '#D88A9A', '#FFB090'] },
         fx: {
-          tree({ tree: t, rng, seed, small }) { if (!t.tips.length) return ''; const r = rng(seed + 29); let s = ''; const ks = ['sakura', 'blossom', 'hibiscus', 'sakura', 'blossom'], n = small ? 5 : 22;
-            for (let k = 0; k < n; k++) { const p = t.tips[Math.floor(r() * t.tips.length)]; s += im(ks[k % ks.length], p.x + (r() - 0.5) * t.leafR * 1.6, p.y + (r() - 0.5) * t.leafR * 1.2, (small ? 9 : 11.5) + r() * 4); }
-            return s; },
-          ground({ rng, cx, GY }) { const r = rng(64); let s = ''; const ks = ['tulip', 'blossom', 'sunflower', 'tulip', 'sakura', 'hyacinth', 'tulip', 'blossom'];
-            ks.forEach((k, j) => { let x = 16 + j * 46 + (r() - 0.5) * 14; if (Math.abs(x - cx) < 30) x += 40; s += im(k, x, GY + 3 + r() * 16, 14 + r() * 6); });
-            s += im('bee', cx + 52, GY - 70, 16, 'fl');
+          // وسن 4.7: أزهار كرز وأقحوان مرسومة في التاج (والمرج الأرضي من «meadow»)
+          tree({ tree: t, rng, seed, small, A, ad }) { if (!t.tips.length || !A) return ''; const r = rng(seed + 29); let s = ''; const n = small ? 5 : 22, P = ['pink', 'white', 'deep', 'pink', 'peach'];
+            for (let k = 0; k < n; k++) { const p = t.tips[Math.floor(r() * t.tips.length)], x = p.x + (r() - 0.5) * t.leafR * 1.6, y = p.y + (r() - 0.5) * t.leafR * 1.2;
+              s += k % 5 === 4 ? A.daisy(ad, { x, y, r: small ? 2.4 : 3.2, rot: k * 17, pal: 'lemon' }) : A.sakura(ad, { x, y, r: (small ? 2.6 : 3.4) + r() * 1, pal: P[k % 5], rot: k * 29 }); }
             return s; },
         },
       },
@@ -335,6 +336,21 @@ const KW = (() => {
   };
 })();
 Object.assign(SKINS, KW);
+/* وسن 4.7 · «البستان المرسوم» لكل ثيم: أزهار المرج، وأزهار الشجرة، والطيور والفراشات — وسماء البستان من سماء الثيم */
+(function () {
+  const M = {
+    kbfly: { meadow: ['hyd:blue', 'fmn', 'daisy:white', 'hyd:sky', 'fmn', 'hyd:peri'], bloomArt: ['white', 'lilac', 'white'], birds: ['blue', 'blue', 'canary'], bflyArt: ['morpho', 'sky', 'royal', 'ice'] },
+    krose: { meadow: ['rose:red', 'rtop:pink', 'daisy:white', 'rose:pink', 'bud:red', 'rtop:blush'], bloomArt: ['pink', 'white'], birds: ['rose', 'robin', 'canary'], bflyArt: ['pink', 'lemon', 'pink'] },
+    kstar: { meadow: ['star', 'fmn:lilac', 'sparkle', 'daisy:lilac'], bloomArt: false, birds: ['blue', 'canary', 'rose'], bflyArt: ['gold', 'lemon', 'lilac'] },
+    kberry: { meadow: ['berry', 'blossom', 'berry', 'daisy:white'], bloomArt: ['white'], birds: ['robin', 'rose', 'canary'], bflyArt: ['pink', 'lemon', 'sky'] },
+    kbloom: { meadow: ['tulip:pink', 'daisy:white', 'tulip:yellow', 'fmn:pink', 'tulip:lilac', 'daisy:lemon', 'sakura:pink'], bloomArt: ['pink', 'white', 'deep'], birds: ['canary', 'rose', 'blue'], bflyArt: ['pink', 'lemon', 'lilac', 'sky'] },
+    sakura: { meadow: ['sakura:pink', 'daisy:white', 'fmn:pink', 'tulip:pink', 'daisy:pink'], bloomArt: ['white', 'pink'], birds: ['rose', 'canary', 'blue'], bflyArt: ['pink', 'lemon', 'lilac'] },
+    roses: { meadow: ['rose:red', 'rtop:pink', 'bud:red', 'rose:wine', 'rtop:blush'], bloomArt: ['pink', 'deep'], birds: ['rose', 'robin', 'canary'], bflyArt: ['pink', 'lemon'] },
+    lavender: { meadow: ['lav', 'daisy:white', 'fmn:lilac', 'lav', 'hyd:lilac'], bloomArt: ['lilac', 'white'], birds: ['blue', 'canary', 'rose'], bflyArt: ['lilac', 'lemon', 'pink'] },
+  };
+  Object.keys(M).forEach(k => { const g = SKINS[k] && SKINS[k].garden; if (!g) return; Object.assign(g, M[k]);
+    const sk = SKINS[k].sky; if (sk && KW[k]) g.gsky = { day: sk.day.c, night: sk.night.c, dawn: sk.dawn.c, golden: sk.golden.c, sunset: sk.sunset.c }; });
+})();
 const KW_HUE = { pink: 'hue-rotate(300deg) saturate(1.15)', blue: 'hue-rotate(190deg) saturate(1.1)', purple: 'hue-rotate(245deg)', none: '' };
 /* زينة الثيم على مستوى التطبيق: خلفية الرموز الصغيرة + ملصقات البطاقات + رمز العناوين */
 function applySkinDeco() {
@@ -352,6 +368,7 @@ function applySkinDeco() {
     c += '#h-ctx>.hc:first-child,#h-ctx>.sec:first-child+.hc{overflow:visible}#h-ctx>.hc:first-child::after,#h-ctx>.sec:first-child+.hc::after{content:"";position:absolute;top:-21px;left:2px;width:62px;height:47px;pointer-events:none;background:' + cn + ' center/contain no-repeat}';
     c += '.hdr>.bar{position:relative}.hdr>.bar::after{content:"";position:absolute;bottom:-20px;left:46px;width:78px;height:42px;z-index:2;pointer-events:none;background:' + U(Art.hdrURI(ak)) + ' center/contain no-repeat}';
     c += '.azc .ic.ic-emo,.list .li .ic:has(img.kwi){background:var(--card-2)}';
+    c += '.tab.on::after{width:17px;height:17px;top:-9px;background:' + U(Art.iconURI(ak)) + ' center/contain no-repeat;-webkit-mask:none;mask:none;animation:kwbob 3.2s ease-in-out infinite}';   // وسن 4.7
     st.textContent = c; return;
   }
   if (!kw) { st.textContent = ''; if (wall) wall.remove(); return; }
@@ -394,6 +411,30 @@ function kwHero(sk) {
   }
   const stk = sk.stickers.map(o => '<img class="bob" src="' + emo(o.k) + '" alt="" style="left:' + o.x + '%;top:' + o.y + '%;width:' + o.s + 'px;height:' + o.s + 'px;margin:-' + (o.s / 2) + 'px 0 0 -' + (o.s / 2) + 'px;--r:' + (o.r || 0) + 'deg;animation-delay:-' + (R() * 4).toFixed(1) + 's;' + (o.hue && KW_HUE[o.hue] ? 'filter:' + KW_HUE[o.hue] : '') + '">').join('');
   return '<div class="skin-fx fx-kw" aria-hidden="true">' + fx + '</div><div class="skin-stk" aria-hidden="true">' + stk + '</div>';
+}
+
+/* وسن 4.7 · حركة لطيفة برمز الثيم: رمز يطير من المسبحة مع كل تسبيحة (وباقة عند إتمام الدورة)،
+   ورموز تتساقط احتفالًا حين تختار ثيمًا جديدًا — وتهدأ مع «تقليل الحركة» */
+const reduceMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+function kwPop(th, burst) {
+  if (!th || typeof Art === 'undefined' || !Art.particle || reduceMotion()) return;
+  const b = document.getElementById('t-btn'); if (!b) return;
+  const rc = b.getBoundingClientRect(), cx = rc.left + rc.width / 2, cy = rc.top + rc.height * 0.42, n = burst ? 16 : 1;
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('i'); el.className = 'kwpt'; el.setAttribute('aria-hidden', 'true');
+    const a = burst ? (i / n) * Math.PI * 2 : (-Math.PI / 2 + (Math.random() - 0.5) * 1.3), dist = burst ? 90 + Math.random() * 70 : 70 + Math.random() * 50, z = burst ? 18 + Math.random() * 12 : 16 + Math.random() * 8;
+    el.style.cssText = 'left:' + (cx - z / 2) + 'px;top:' + (cy - z / 2) + 'px;width:' + z + 'px;height:' + z + 'px;--dx:' + Math.round(Math.cos(a) * dist) + 'px;--dy:' + Math.round(Math.sin(a) * dist - (burst ? 20 : 30)) + 'px;--r:' + Math.round((Math.random() - 0.5) * 120) + 'deg;animation-duration:' + (burst ? 1.4 : 1.05 + Math.random() * 0.3).toFixed(2) + 's';
+    el.innerHTML = Art.particle(th); document.body.appendChild(el); setTimeout(() => el.remove(), 1600);
+  }
+}
+function kwCelebrate(th) {
+  if (!th || typeof Art === 'undefined' || !Art.particle || reduceMotion()) return;
+  const W = window.innerWidth || 400;
+  for (let i = 0; i < 20; i++) {
+    const el = document.createElement('i'); el.className = 'kwcel'; el.setAttribute('aria-hidden', 'true'); const z = 18 + Math.random() * 16;
+    el.style.cssText = 'left:' + Math.round(Math.random() * (W - z)) + 'px;width:' + z + 'px;height:' + z + 'px;--dx:' + Math.round((Math.random() - 0.5) * 90) + 'px;--r:' + Math.round((Math.random() - 0.5) * 300) + 'deg;animation-delay:' + (Math.random() * 0.7).toFixed(2) + 's;animation-duration:' + (2.2 + Math.random() * 1.2).toFixed(2) + 's';
+    el.innerHTML = Art.particle(th); document.body.appendChild(el); setTimeout(() => el.remove(), 4400);
+  }
 }
 setTimeout(() => { try { applySkinDeco(); } catch (e) { console.error(e); } }, 0);
 /* أيقونة بصرية: رمز ثلاثي الأبعاد في الثيمات الكاملة، وأيقونة خطية في غيرها */
