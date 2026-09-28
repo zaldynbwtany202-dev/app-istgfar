@@ -55,7 +55,8 @@ const IG = {
   st() { const s = Store.get('ig', { d: '', n: 0 }); if (s.d !== dayKey(new Date())) { s.d = dayKey(new Date()); s.n = 0; s.b = 0; s.sv = 0; } return s; },
   gal() { return Store.get('igGal', []); },
   cfg() {
-    const c = Object.assign({ m: 'photo', s: '', w: IGC_WORDS[0], p: 0, t: 100, o: 'rnd', mine: '' }, Store.get('igCfg', {}));
+    const c = Object.assign({ m: 'photo', s: '', w: IGC_WORDS[0], p: 0, t: 100, o: 'rnd', mine: '', v: 'end' }, Store.get('igCfg', {}));
+    if (!['end', '33', 'off'].includes(c.v)) c.v = 'end';
     if (!IGC_GRID[c.t]) c.t = 100; if (!IGC_PAL[c.p]) c.p = 0; if (!IGC_ORD.find(x => x[0] === c.o)) c.o = 'rnd';
     if (!IGC_MODES.find(x => x[0] === c.m) || (c.m === 'mine' && !c.mine)) c.m = 'photo';
     if (!c.s || !THEMES[c.s] || !THEMES[c.s].ph) c.s = THEMES[uiTheme()] && THEMES[uiTheme()].ph ? uiTheme() : 'kmakkah';
@@ -191,6 +192,7 @@ function igcSheet() {
       '<div class="sh-l">ترتيب التلوين</div><div class="chips" id="igs-o" style="padding:0">' + IGC_ORD.map(([v, t]) => '<button class="chip' + (v === c.o ? ' on' : '') + '" data-v="' + v + '">' + t + '</button>').join('') + '</div>';
     el.innerHTML = '<div class="grab"></div><div class="sh-t">تخصيص لوحة الاستغفار</div><div class="sh-s">كل استغفار يلوّن مربّعًا، حتى تكتمل الصورة</div>' +
       '<div class="chips igs-m" id="igs-m" style="padding:0">' + IGC_MODES.map(([v, t, ic]) => '<button class="chip' + (v === c.m ? ' on' : '') + '" data-v="' + v + '">' + icon(ic) + t + '</button>').join('') + '</div>' + body +
+      '<div class="sh-l">صوت الشيخ فارس عبّاد «أستغفر الله وأتوب إليه»</div><div class="chips" id="igs-v" style="padding:0">' + [['end', 'عند اكتمال اللوحة'], ['33', 'كل ٣٣ وعند الاكتمال'], ['off', 'بلا صوت']].map(([v, t]) => '<button class="chip' + (v === c.v ? ' on' : '') + '" data-v="' + v + '">' + t + '</button>').join('') + '</div>' +
       '<button class="btn gold block" id="igs-ok" style="margin-top:16px;height:50px">تم</button>';
     const on = (sel, fn) => { const n = $(sel, el); if (n) n.onclick = e => { const b = e.target.closest('[data-v],[data-ph],[data-mine],[data-p]'); if (b) fn(b); }; };
     on('#igs-m', b => { const v = b.dataset.v; if (v === 'mine' && !IG.cfg().mine) { igcPickMine(() => { draw(el); Router.refresh(); }); return; } IG.setCfg({ m: v }); draw(el); Router.refresh(); });
@@ -199,6 +201,7 @@ function igcSheet() {
     on('.igs-pal', b => { IG.setCfg({ p: +b.dataset.p }); draw(el); Router.refresh(); });
     on('#igs-t', b => { IG.setCfg({ t: +b.dataset.v }); draw(el); Router.refresh(); });
     on('#igs-o', b => { IG.setCfg({ o: b.dataset.v }); draw(el); Router.refresh(); });
+    on('#igs-v', b => { IG.setCfg({ v: b.dataset.v }); draw(el); if (b.dataset.v !== 'off') DhikrVoice.play('is', .9); });
     const wi = $('#igs-wi', el); if (wi) wi.onchange = () => { const v = wi.value.trim().slice(0, 18); if (v) { IG.setCfg({ w: v }); draw(el); Router.refresh(); } };
     $('#igs-ok', el).onclick = () => Sheet.close();
   };
@@ -243,7 +246,7 @@ SCREENS.istighfar = {
     const spark = i => { const [co, ro] = IGC_GRID[T], sp = document.createElement('i'); sp.className = 'igc-sp';
       sp.style.cssText = 'left:' + (i % co) / co * 100 + '%;top:' + Math.floor(i / co) / ro * 100 + '%;width:' + 100 / co + '%;height:' + 100 / ro + '%';
       $('#ig-g', el).appendChild(sp); setTimeout(() => sp.remove(), 700); };
-    const finish = s => { vibrate(220); try { TasSound.play(null, true); } catch (e) {} const r = $('#ig-g', el).getBoundingClientRect(); FX.burst(r.left + r.width / 2, r.top + r.height / 2); try { kwCelebrate(artKey()); } catch (e) {}
+    const finish = s => { vibrate(220); try { TasSound.play(null, true); } catch (e) {} if (c.v !== 'off') setTimeout(() => { try { DhikrVoice.play('is', 1); } catch (e) {} }, 380); const r = $('#ig-g', el).getBoundingClientRect(); FX.burst(r.left + r.width / 2, r.top + r.height / 2); try { kwCelebrate(artKey()); } catch (e) {}
       toast('اكتملت اللوحة — غفر الله لكِ', 2600); };
     const add = () => {
       const s = IG.st();
@@ -252,6 +255,7 @@ SCREENS.istighfar = {
       s.n++; Store.set('ig', s); Growth.add('ist', 1); if (s.n % 100 === 0) Habits.syncAuto();
       $('#ig-n', el).textContent = N(s.n);
       try { TasSound.play(); } catch (e) {}
+      if (c.v === '33' && s.n % 33 === 0 && s.n < T) try { DhikrVoice.play('is', .9); } catch (e) {}   // وسن 6: «أستغفر الله وأتوب إليه» بصوت الشيخ
       if (ring) { const t = $('.igb .igt[data-k="' + (s.n - 1) + '"]', el), D = igDesign();
         if (t) { const ri = IG_RINGS.findIndex((cc, i) => s.n - 1 < IG_RINGS.slice(0, i + 1).reduce((a, bb) => a + bb, 0)); const j = s.n - 1 - IG_RINGS.slice(0, ri).reduce((a, bb) => a + bb, 0);
           const p = t.children; p[0].setAttribute('fill', D.c[(j + ri) % D.c.length]); p[0].setAttribute('stroke', D.g); p[0].setAttribute('stroke-width', '.8'); p[1].setAttribute('fill', D.g); p[1].setAttribute('stroke', 'none'); p[1].setAttribute('opacity', '.95');

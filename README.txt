@@ -1,3 +1,19 @@
+وسن · Wasan 6.0 — الإصدار النهائي
+=====================================================
+ما الجديد في 6.0 (فوق كل ما في 5.1)
+  - بقية سور القرّاء المدمجين من archive.org: js/xrec.js (WASAN_XREC روابط، WASAN_RTIMES توقيتات [آية، بداية، نهاية] بوحدة ١٠ms: b للمدمج، n للأرشيف، lo للتقريبي).
+    audio.js: offOf يدمج المدمج والأرشيف (خضر ٦٩، الشحات ٦٤، مسعد ١٧، شعبان ٣٠)، srcUrl · rtFor · rtLow، offlineSheet بتنزيل لكل سورة، missSheet + Player.alt (قارئ بديل مؤقت).
+    التوقيتات: محاذاة بالوقفات (DP بأوزان أطوال الآيات من قارئ مرجعي وعلامات الوقف) — ١٥٧ من ١٨٠، والباقي EstT.
+    MainActivity.dlStart يقبل archive.org، و REL_OK = ^m[a-z0-9]{1,16}/\d{3}\.mp3$ (كان يرفض مسارات القرّاء المدمجين).
+  - الفراشات كما في 4.8: قواعد «الهدوء» في wasan5.css محصورة بـ [data-ph]/[data-anim]. ثيم kmorpho (صورة 1457×2024) + PHOTO_CREDITS.
+  - ٤ ثيمات متحرّكة جديدة: astar · alant · asnow · apetal (anim.js SVG مرسومة مسبقًا + anim.css + themes.css + صور img/th/<k>-t.webp).
+    [data-anim] .beads .bd بلون الثيم.
+  - مؤثرات صوتية أصلية: SoundPool في MainActivity (initSfx · sfx(name,vol,rate) · mediaVolume) + res/raw/sfx_*.wav (١١ صوتًا)، و popz.js TasSound/DhikrVoice.
+  - لوحة الاستغفار: صوت حبّة + صوت الشيخ عند الاكتمال (igCfg.v: end/33/off) بدل الرنّة الموسيقية.
+  - المسبحة: tasSeq (٣٣/٣٣/٣٤)، تراجع، setVolumeCount/onVolKey، tasSoundSheet، keepScreenOn، شبكة .tb-tools.
+  - التباين: --tx-3 في ٣٩ ثيمًا ≥ ٤٫٥:١ على البطاقة والخلفية. .ps-note منسّقة.
+  - الإصدار 6.0 (versionCode 15).
+
 وسن · Wasan 5.1 — إصدار «عودة الثيمات والعالم كله»
 =====================================================
 ما الجديد في 5.1 (فوق كل ما في 5.0)

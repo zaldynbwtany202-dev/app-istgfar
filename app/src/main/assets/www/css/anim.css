@@ -74,6 +74,62 @@
 .aa-tw i:nth-child(1){left:14%;top:12%}.aa-tw i:nth-child(2){left:44%;top:7%;animation-delay:-1.2s}.aa-tw i:nth-child(3){left:72%;top:16%;animation-delay:-2s}.aa-tw i:nth-child(4){left:88%;top:6%;animation-delay:-.6s}
 @keyframes aatw{from{opacity:.15}to{opacity:1}}
 .aa-hills{left:0;right:0;bottom:0;height:34%}.aa-hills svg{width:100%;height:100%;display:block}
+/* ═════════ وسن 6 · ثيمات حيّة جديدة ═════════ */
+/* ليلة النجوم */
+.an-star .as-sky{inset:0;background:radial-gradient(120% 72% at 28% 16%,#1C2B5C 0%,#0D1838 46%,#060B1D 100%)}
+.as-st{inset:0;background:url(../img/an/stars.webp) center top/cover no-repeat;opacity:.95;will-change:opacity;animation:astw 7s ease-in-out infinite alternate}
+.as-st2{transform:scaleX(-1);animation-duration:11s;animation-delay:-4s}
+@keyframes astw{from{opacity:.45}to{opacity:1}}
+.an-star .as-glow{left:26%;top:21%;width:230px;height:230px;margin:-115px;border-radius:50%;background:radial-gradient(closest-side,rgba(246,228,172,.30),rgba(246,228,172,.08) 55%,rgba(246,228,172,0));will-change:opacity,transform;animation:asgl 6s ease-in-out infinite alternate}
+@keyframes asgl{from{opacity:.7;transform:scale(.94)}to{opacity:1;transform:scale(1.05)}}
+.an-star .as-moon{left:26%;top:21%;width:76px;height:76px;margin:-38px;border-radius:50%;box-shadow:-16px 9px 0 0 #F4E3AE}
+.as-tw{inset:0}.as-tw i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 7px 2px rgba(255,255,255,.65);will-change:opacity;animation:astw2 3.2s ease-in-out infinite alternate}
+.as-tw i:nth-child(1){left:12%;top:36%}.as-tw i:nth-child(2){left:58%;top:10%;animation-delay:-1s}.as-tw i:nth-child(3){left:76%;top:30%;animation-delay:-2.1s}.as-tw i:nth-child(4){left:90%;top:14%;animation-delay:-.5s}.as-tw i:nth-child(5){left:42%;top:40%;animation-delay:-1.6s}
+@keyframes astw2{from{opacity:.1}to{opacity:1}}
+.as-sh{inset:0}.as-sh i{position:absolute;width:130px;height:2px;border-radius:2px;background:linear-gradient(90deg,#fff,rgba(255,255,255,0));transform-origin:0 50%;opacity:0;will-change:transform,opacity;animation:assh 9s linear infinite}
+.as-sh i:nth-child(1){left:80%;top:9%}.as-sh i:nth-child(2){left:56%;top:5%;animation-delay:-3.4s;animation-duration:11s}.as-sh i:nth-child(3){left:94%;top:27%;animation-delay:-6.6s;animation-duration:13s}
+@keyframes assh{0%{transform:translate3d(0,0,0) rotate(-35deg) scaleX(.3);opacity:0}1.5%{opacity:1}9%{transform:translate3d(-280px,196px,0) rotate(-35deg) scaleX(1);opacity:0}100%{transform:translate3d(-280px,196px,0) rotate(-35deg);opacity:0}}
+.an-star .as-hz{left:0;right:0;bottom:22%;height:40%;background:radial-gradient(55% 60% at 67% 100%,rgba(132,150,232,.38),rgba(132,150,232,.10) 55%,rgba(132,150,232,0))}
+.as-land{left:0;right:0;bottom:15%;height:30%}.as-land svg{width:100%;height:100%;display:block}.as-land::after{content:'';position:absolute;left:0;right:0;top:99%;height:60%;background:#04060F}
+/* فوانيس */
+.an-lant .an2-sky{inset:0;background:linear-gradient(180deg,#140A26 0%,#2A1340 34%,#5A2448 62%,#9E4449 84%,#D46E4C 100%)}
+.an-lant .an2-st{opacity:.5;-webkit-mask:linear-gradient(180deg,#000,transparent 55%);mask:linear-gradient(180deg,#000,transparent 55%)}
+.an-lant .an2-glow{left:0;right:0;bottom:0;height:46%;background:radial-gradient(70% 90% at 50% 100%,rgba(255,170,90,.45),rgba(255,170,90,0));will-change:opacity;animation:an2gl 5s ease-in-out infinite alternate}
+@keyframes an2gl{from{opacity:.65}to{opacity:1}}
+.an2-rise{inset:0}.an2-rise i{position:absolute;left:var(--x);bottom:-10%;width:var(--s);height:calc(var(--s) * 1.12);will-change:transform,opacity;animation:an2up var(--d) linear infinite;animation-delay:var(--dl)}
+.an2-rise i span{display:block;width:100%;height:100%;will-change:transform;animation:an2sw var(--sw) ease-in-out infinite alternate}
+.an2-rise svg{width:100%;height:100%;display:block;overflow:visible}
+@keyframes an2up{0%{transform:translate3d(0,0,0) scale(1);opacity:0}7%{opacity:1}82%{opacity:.9}100%{transform:translate3d(0,-660px,0) scale(.5);opacity:0}}
+@keyframes an2sw{from{transform:translateX(-10px) rotate(-4deg)}to{transform:translateX(12px) rotate(5deg)}}
+.an2-city{left:0;right:0;bottom:0;height:31%}.an2-city svg{width:100%;height:100%;display:block}
+.an2-hang{left:0;right:0;top:34px;height:1px}
+.an2-hang i{position:absolute;top:0;left:var(--x);width:var(--s);margin-left:calc(var(--s) / -2);transform-origin:50% 0;will-change:transform;animation:an2hs var(--d) ease-in-out infinite alternate}
+.an2-hang i::before{content:'';display:block;width:1.6px;height:var(--l);margin:0 auto;background:linear-gradient(rgba(232,184,106,0),#E8B86A)}
+.an2-hang svg{width:100%;height:auto;display:block;overflow:visible}
+@keyframes an2hs{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+/* ثلج */
+.an-snow .sn-sky{inset:0;background:linear-gradient(180deg,#26405F 0%,#43628A 36%,#7896B8 62%,#B6CADE 80%,#E1EAF3 100%)}
+.an-snow .sn-moon{left:72%;top:16%;width:220px;height:220px;margin:-110px;border-radius:50%;background:radial-gradient(closest-side,rgba(236,243,255,.5),rgba(236,243,255,.12) 45%,rgba(236,243,255,0))}
+.sn-land{left:0;right:0;bottom:0;height:40%}.sn-land svg{width:100%;height:100%;display:block}
+.sn-w{inset:0;overflow:hidden;will-change:transform;animation:snx 7s ease-in-out infinite alternate}
+@keyframes snx{from{transform:translate3d(-14px,0,0)}to{transform:translate3d(14px,0,0)}}
+.sn-f{position:absolute;left:-12%;right:-12%;top:-560px;bottom:0;will-change:transform;animation:snf 17s linear infinite}
+.sn-f1{background-image:radial-gradient(circle,rgba(255,255,255,.95) 0 1.6px,rgba(255,255,255,0) 2.6px),radial-gradient(circle,rgba(255,255,255,.85) 0 1.2px,rgba(255,255,255,0) 2.2px),radial-gradient(circle,rgba(255,255,255,.9) 0 1.8px,rgba(255,255,255,0) 2.8px);
+  background-size:131px 140px,97px 112px,173px 280px;background-position:0 0,41px 57px,88px 131px;opacity:.8}
+.sn-f2{background-image:radial-gradient(circle,rgba(255,255,255,.95) 0 2.4px,rgba(255,255,255,0) 3.6px),radial-gradient(circle,rgba(255,255,255,.9) 0 2px,rgba(255,255,255,0) 3.2px);
+  background-size:157px 280px,211px 280px;background-position:23px 40px,120px 170px;animation-duration:12s}
+.sn-f3{background-image:radial-gradient(circle,rgba(255,255,255,.98) 0 3.4px,rgba(255,255,255,.35) 4.6px,rgba(255,255,255,0) 6px);background-size:263px 560px;background-position:70px 90px;animation-duration:8.5s}
+@keyframes snf{to{transform:translate3d(0,560px,0)}}
+/* بتلات الورد */
+.an-petal .ap-sky{inset:0;background:linear-gradient(180deg,#4B2150 0%,#86396B 32%,#C3668C 58%,#E9A1B5 80%,#F7D2DB 100%)}
+.an-petal .ap-sun{left:50%;top:66%;width:300px;height:300px;margin:-150px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,232,220,.75),rgba(255,214,200,.25) 45%,rgba(255,214,200,0));will-change:opacity;animation:apsun 6s ease-in-out infinite alternate}
+@keyframes apsun{from{opacity:.75}to{opacity:1}}
+.ap-hills{left:0;right:0;bottom:0;height:35%}.ap-hills svg{width:100%;height:100%;display:block}
+.ap-br{top:4px;width:50%;will-change:transform;animation:albr ease-in-out infinite alternate}
+.ap-br svg{width:100%;height:auto;display:block}
+.ap-br1{right:-26px;top:-18px;width:44%;transform-origin:100% 0;animation-duration:7.5s;opacity:.92}
+.ap-br2{left:-14px;transform-origin:0 0;animation-duration:9.5s;animation-delay:-3s}.ap-br2 svg{transform:scaleX(-1)}
+.ap-f i{height:calc(var(--s) * 1.4)}
 /* بطاقة «حيّ» في اختيار الثيم */
 .thm-live{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:3px;padding:2px 8px 2px 7px;border-radius:99px;background:rgba(0,0,0,.46);color:#fff;font-size:10.5px;font-weight:700}
 .thm-live .i{width:11px;height:11px}

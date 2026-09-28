@@ -27,9 +27,22 @@ const OFFLINE = [
 ];
 const offOf = id => { const m = /^o:(\w+)$/.exec(id || ''); if (!m) return null; const o = OFFLINE.find(x => x.id === m[1]); if (!o) return null;
   if (!o.lib) { const by = {}; o.f.forEach(e => { if (!by[e[0]]) by[e[0]] = e; });
-    o.lib = { id: 'o:' + o.id, off: true, n: o.n, k: 'مدمج', s: 'recit/' + o.id + '/', t: false, c: Object.keys(by).length, l: Object.keys(by).join(','), by,
+    // وسن 6: بقية سور القارئ من أرشيف الإنترنت (بثّ أو تنزيل)، مع توقيتات آيات محسوبة من التسجيل نفسه
+    const net = ((window.WASAN_XREC || {})[o.id]) || {}, all = new Set(Object.keys(by).concat(Object.keys(net)).map(Number));
+    const rt = (window.WASAN_RTIMES || {})[o.id] || {};
+    o.lib = { id: 'o:' + o.id, off: true, n: o.n, k: 'مدمج', s: 'recit/' + o.id + '/', t: !!(rt.b || rt.n), rt, net, c: all.size, nb: Object.keys(by).length, l: [...all].sort((a, b) => a - b).join(','), by,
       min: Math.round(o.f.reduce((a, e) => a + e[e.length - 1], 0) / 60) }; }
   return o.lib; };
+/** مصدر السورة: ملف مدمج، أو رابط الأرشيف، أو خادم المكتبة */
+const srcUrl = (m, sn) => m.net && m.net[sn] ? m.net[sn] : m.s + pad3(sn) + '.mp3';
+/** توقيتات محسوبة (مدمجة في التطبيق) لقارئ وسورة: ملف مدمج (b) أو ملف الأرشيف (n) */
+function rtFor(m, sn, bundled) {
+  if (!m || !m.rt) return null; const e0 = bundled && m.by && m.by[sn], k = e0 ? e0[1] : String(sn), arr = (e0 ? m.rt.b : m.rt.n) && (e0 ? m.rt.b : m.rt.n)[k];
+  if (!arr || !arr.length) return null;
+  return arr.map(x => ({ ayah: x[0], st: x[1] * 10, en: x[2] * 10 }));
+}
+/** سورة متابعتها تقريبية (تلاوة مجوّدة فيها تكرار)؟ */
+const rtLow = (m, sn, bundled) => { if (!m || !m.rt || !m.rt.lo) return false; const e0 = bundled && m.by && m.by[sn]; return m.rt.lo.includes(e0 ? 'b:' + e0[1] : 'n:' + sn); };
 const offPart = (m, sn) => { const e = m && m.by && m.by[sn]; return e && e.length > 4 ? [e[2], e[3]] : null; };
 const libOf = id => { const o = offOf(id); if (o) return o; const m = /^m:(\d+)$/.exec(id || ''); return m ? LIB().find(x => x.id === +m[1]) || null : null; };
 const libHas = (m, sn) => !m.l || m.l.split(',').includes(String(sn));
@@ -94,8 +107,8 @@ const EstT = {
 const Downloads = {
   st: Store.get('dl', {}),
   ok() { return Native.has('dlStart'); },
-  key: (id, sn) => 'm' + id + '_' + pad3(sn),
-  rel: (id, sn) => 'm' + id + '/' + pad3(sn) + '.mp3',
+  key: (id, sn) => 'm' + String(id).replace(/[^a-z0-9]/gi, '') + '_' + pad3(sn),
+  rel: (id, sn) => 'm' + String(id).replace(/[^a-z0-9]/gi, '') + '/' + pad3(sn) + '.mp3',
   save() { Store.set('dl', this.st); Bus.emit('dl'); },
   state(id, sn) { const x = this.st[this.key(id, sn)]; return x ? x.s : ''; },
   path(id, sn) { if (this.state(id, sn) !== 'done' || !this.ok()) return ''; const p = Native.call('dlPath', this.rel(id, sn)); if (!p) { delete this.st[this.key(id, sn)]; this.save(); } return p || ''; },
@@ -104,8 +117,8 @@ const Downloads = {
     if (!libHas(m, sn)) return;
     const k = this.key(m.id, sn), s = Q.S[sn - 1];
     this.st[k] = { s: 'run', ts: Date.now(), p: 0 }; this.save();
-    Native.call('dlStart', k, m.s + pad3(sn) + '.mp3', this.rel(m.id, sn), 'سورة ' + (s ? s.name : sn) + ' — ' + m.n);
-    if (m.t) Timings.get(m.id, sn).catch(() => {}); else EstT.refFetch(m, sn).catch(() => {});   // لتعمل المتابعة دون إنترنت
+    Native.call('dlStart', k, srcUrl(m, sn), this.rel(m.id, sn), 'سورة ' + (s ? s.name : sn) + ' — ' + m.n);
+    if (m.off) { if (!rtFor(m, sn, false)) EstT.refFetch(m, sn).catch(() => {}); } else if (m.t) Timings.get(m.id, sn).catch(() => {}); else EstT.refFetch(m, sn).catch(() => {});   // لتعمل المتابعة دون إنترنت
     this.watch();
   },
   cancel(id, sn) { const k = this.key(id, sn); Native.call('dlCancel', k, this.rel(id, sn)); delete this.st[k]; this.save(); },
@@ -132,11 +145,11 @@ if (Downloads.running().length) setTimeout(() => Downloads.watch(), 2500);
 window.onDlDone = function (k, ok) { const x = Downloads.st[k]; if (!x) return; if (ok) { Downloads.st[k] = { s: 'done', ts: Date.now() }; } else delete Downloads.st[k]; Downloads.save(); };
 
 const Player = {
-  a: null, pre: null, i: -1, end: -1, left: 1, on: false, playing: false, loading: false, basm: false, el: null,
+  a: null, pre: null, i: -1, end: -1, left: 1, on: false, playing: false, loading: false, basm: false, el: null, alt: null,
   base() { return 'https://everyayah.com/data/' + (Settings.reciter || RECITERS[0][0]) + '/'; },
   file(i) { return this.base() + pad3(Q.s[i]) + pad3(Q.a[i]) + '.mp3'; },
   reps() { return Settings.qRepeat == null ? 1 : Settings.qRepeat; },
-  lib() { return libOf(Settings.reciter); },
+  lib() { return libOf(this.alt || Settings.reciter); },   // alt: قارئ بديل مؤقت لسورة غير متوفرة بصوت القارئ المختار
   start(i, opts) {
     if (!Q.ready) return;
     opts = opts || {};
@@ -152,8 +165,10 @@ const Player = {
   play(i) { this.i = i; this.playUrl(this.file(i), false); this.highlight(); this.preload(); },
   /* ── سورة كاملة من المكتبة ── */
   startLib(i) {
-    const m = this.lib(), sn = Q.s[i], s = surahOf(i);
-    if (!libHas(m, sn)) { toast('سورة ' + s.name + ' غير متوفرة بصوت ' + m.n + (m.off ? ' — اختر من السور المدمجة' : '')); if (m.off) setTimeout(() => offlineSheet(m.id.slice(2)), 400); return; }
+    const sn = Q.s[i], s = surahOf(i), main = libOf(Settings.reciter);
+    if (this.alt && (!main || libHas(main, sn))) this.alt = null;   // العودة إلى القارئ المختار متى توفّرت السورة بصوته
+    const m = this.lib(); if (!m) { this.alt = null; this.start(i); return; }
+    if (!libHas(m, sn)) { missSheet(m, i); return; }
     this.on = true; this.sm = true; this.left = this.reps(); this.ensureUI();
     this.end = Settings.qCont ? Q.t.length - 1 : s.start + s.n - 1;
     this.loadSurah(sn, Q.a[i]);
@@ -162,9 +177,10 @@ const Player = {
   loadSurah(sn, ayah) {
     const m = this.lib(); if (!m) return;
     this.cs = sn; this.tm = null; this.cur = -1; this.basm = false;
-    const pr = m.off ? offPart(m, sn) : null, a = this.audio(); let want = ayah || 1; const local = m.off ? '' : Downloads.path(m.id, sn);
+    const bundled = !!(m.off && m.by && m.by[sn]), pr = bundled ? offPart(m, sn) : null, a = this.audio(); let want = ayah || 1; const local = bundled ? '' : Downloads.path(m.id, sn);
     if (pr) want = pr[0];
-    this.remote = m.off ? m.s + m.by[sn][1] + '.ogg' : m.s + pad3(sn) + '.mp3'; this.local = !!local; this.part = pr;
+    this.remote = bundled ? m.s + m.by[sn][1] + '.ogg' : srcUrl(m, sn); this.local = !!local; this.part = pr; this.adj = false;
+    if (!bundled && !local && navigator.onLine === false) toast('هذه السورة تحتاج اتصالًا — أو نزّليها للاستماع دون إنترنت', 3200);
     this.loading = true; a.src = local || this.remote; a.playbackRate = Settings.qRate || 1;
     const seek = () => { const e = this.tm && this.tm.find(x => x.ayah === want); if (e && want > 1) try { a.currentTime = e.st / 1000; } catch (er) {} };
     this.est = false;
@@ -181,7 +197,13 @@ const Player = {
       if (pr || EstT.refsCached(m, sn).length) { go(); return; }
       let done = false; const fin = () => { if (!done) { done = true; go(); } }; EstT.refFetch(m, sn).then(fin, fin); setTimeout(fin, 3500);
     };
-    if (m.t) Timings.get(m.id, sn).then(tm => { if (this.cs !== sn || !this.on) return; this.tm = tm; if (a.readyState >= 1) seek(); else a.addEventListener('loadedmetadata', seek, { once: true }); }).catch(estSoon);
+    const rt = m.off ? rtFor(m, sn, bundled) : null;
+    if (rt) {   // وسن 6: توقيتات محسوبة من التسجيل نفسه — مع تصحيحات المستمعة إن وُجدت
+      const D = rt[rt.length - 1].en + 1500; this.tmBase = rt; this.tmDur = D; this.tm = EstT.warp(rt, EstT.anchors(m.id, sn), D); this.adj = true;
+      if (rtLow(m, sn, bundled) && !EstT.anchors(m.id, sn).length) setTimeout(() => { if (this.cs === sn && this.on) toast('المتابعة في هذه السورة تقريبية (تلاوة مجوّدة) — إن سبقت أو تأخرت فاضغط الآية التي يقرؤها الشيخ ثم «الشيخ يقرأ هذه الآن»', 4200); }, 1800);
+      if (a.readyState >= 1) seek(); else a.addEventListener('loadedmetadata', seek, { once: true });
+    }
+    else if (m.t && !m.off) Timings.get(m.id, sn).then(tm => { if (this.cs !== sn || !this.on) return; this.tm = tm; if (a.readyState >= 1) seek(); else a.addEventListener('loadedmetadata', seek, { once: true }); }).catch(estSoon);
     else estSoon();
     const p = a.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== 'AbortError') this.fail(); });
     this.i = Q.S[sn - 1].start + (want - 1); this.highlight(); this.sync();
@@ -203,7 +225,9 @@ const Player = {
   libEnded() {
     if (!this.tm) Growth.add('ql', this.part ? this.part[1] - this.part[0] + 1 : Q.S[this.cs - 1].n); else if (this.cur > 0) Growth.add('ql', 1);
     if (this.sleepEnd) { this.sleepDone(); return; }
-    if (Settings.qCont && this.cs < 114) { const m = this.lib(); let n = this.cs + 1; while (n <= 114 && !libHas(m, n)) n++; if (n <= 114) { this.loadSurah(n, 1); return; } }
+    if (Settings.qCont && this.cs < 114) { let n = this.cs + 1; const main = libOf(Settings.reciter);
+      if (this.alt && main && libHas(main, n)) this.alt = null;
+      const m = this.lib(); while (n <= 114 && !libHas(m, n)) n++; if (n <= 114) { this.loadSurah(n, 1); return; } }
     this.stop(); toast('انتهت التلاوة — تقبّل الله');
   },
   libStep(d) {
@@ -213,7 +237,7 @@ const Player = {
   },
   /** وسن 5.1: تصحيح المتابعة التقريبية — «الشيخ يقرأ هذه الآية الآن» */
   resync(ayah) {
-    const m = this.lib(); if (!m || !this.est || !this.a || !this.tmBase) return false;
+    const m = this.lib(); if (!m || !(this.est || this.adj) || !this.a || !this.tmBase) return false;
     const t = Math.max(0, this.a.currentTime * 1000 - 700);   // نطرح زمن ردّ الفعل
     const L = EstT.addAnchor(m.id, this.cs, ayah, t); this.tm = EstT.warp(this.tmBase, L, this.tmDur); this.cur = -1; this.tick(); return true;
   },
@@ -331,9 +355,11 @@ function playerSheet(startI) {
   const m = libOf(Settings.reciter), si = startI != null ? startI : (Player.on ? Player.i : (typeof RS !== 'undefined' && Q.ready ? Q.S[RS.s - 1].start : 0)), sn = Q.ready ? Q.s[si] : 1;
   const dlRow = () => {
     if (!m) return '<div class="ps-note">' + icon('info') + '<span>للاستماع دون إنترنت اختر قارئًا من «مكتبة القرّاء» ثم نزّل السور.</span></div>';
-    if (m.off) { const pr = offPart(m, sn), nm = Q.ready ? Q.S[sn - 1].name : '';
-      return '<div class="ps-dl"><div class="grow"><b>' + (libHas(m, sn) ? 'سورة ' + esc(nm) + (pr ? ' · الآيات ' + N(pr[0]) + '–' + N(pr[1]) : '') : 'السور المدمجة بصوت ' + esc(m.n)) + '</b><span>' + (libHas(m, sn) ? 'مدمجة في التطبيق — تعمل دون إنترنت' : 'سورة ' + esc(nm) + ' غير مدمجة بصوته') + '</span></div><span class="ok">' + icon('check') + '</span></div>' +
-        '<button class="btn ghost block" id="ps-off" style="margin-top:8px">' + icon('layers') + 'كل السور المدمجة (' + N(m.c) + ')</button>'; }
+    if (m.off) { const pr = offPart(m, sn), nm = Q.ready ? Q.S[sn - 1].name : '', bd = !!(m.by && m.by[sn]), av = libHas(m, sn), st = bd ? '' : Downloads.state(m.id, sn);
+      const sub = !av ? 'غير متوفرة بصوته — ' + pSur(m.c) + ' متاحة' : bd ? 'مدمجة في التطبيق — تعمل دون إنترنت' : st === 'done' ? 'منزّلة — تعمل دون إنترنت' : st === 'run' ? 'جارٍ التنزيل…' : 'تُسمَع عبر الإنترنت — نزّلها لتعمل دونه';
+      const end = !av ? '' : bd || st === 'done' ? '<span class="ok">' + icon('check') + '</span>' : st === 'run' ? '<span class="spin"></span>' : '<button class="act" id="ps-dlb">' + icon('save') + 'نزّلها</button>';
+      return '<div class="ps-dl" id="ps-dl"><div class="grow"><b>سورة ' + esc(nm) + (pr ? ' · الآيات ' + N(pr[0]) + '–' + N(pr[1]) : '') + '</b><span>' + sub + '</span></div>' + end + '</div>' +
+        '<button class="btn ghost block" id="ps-off" style="margin-top:8px">' + icon('layers') + 'كل سور ' + esc(m.n) + ' (' + N(m.c) + ')</button>'; }
     const st = Downloads.state(m.id, sn), nm = Q.ready ? Q.S[sn - 1].name : '';
     return '<div class="ps-dl" id="ps-dl"><div class="grow"><b>سورة ' + esc(nm) + '</b><span>' + (st === 'done' ? 'منزّلة — تعمل دون إنترنت' : st === 'run' ? 'جارٍ التنزيل…' : libHas(m, sn) ? 'تُسمَع عبر الإنترنت' : 'غير متوفرة بصوت هذا القارئ') + '</span></div>' +
       (st === 'done' ? '<span class="ok">' + icon('check') + '</span>' : st === 'run' ? '<span class="spin"></span>' : libHas(m, sn) ? '<button class="act" id="ps-dlb">' + icon('save') + 'نزّلها</button>' : '') +
@@ -341,7 +367,7 @@ function playerSheet(startI) {
   };
   const html = '<div class="sh-t">التلاوة</div><div class="sh-s">' + (Q.ready ? esc(ayahRef(si)) : '') + '</div>' +
     '<div class="mx"><b class="lbl2">القارئ</b><button class="li ps-rec" id="ps-rec"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(reciterName(Settings.reciter)) + '</div>' +
-    '<div class="s">' + (m ? (m.off ? 'مدمج في التطبيق · ' + pSur(m.c) + ' · بلا إنترنت · متابعة تقريبية' : (m.t ? 'سورة كاملة مع متابعة الآيات' : 'سورة كاملة مع متابعة تقريبية للآيات') + ' · ' + (m.c < 114 ? pSur(m.c) : 'المصحف كاملًا')) : 'آية بآية · متابعة دقيقة') + '</div></div><span class="link">تغيير</span></button>' +
+    '<div class="s">' + (m ? (m.off ? pSur(m.c) + (m.nb ? ' · منها ' + N(m.nb) + ' مدمجة دون إنترنت' : '') + ' · متابعة الآيات' : (m.t ? 'سورة كاملة مع متابعة الآيات' : 'سورة كاملة مع متابعة تقريبية للآيات') + ' · ' + (m.c < 114 ? pSur(m.c) : 'المصحف كاملًا')) : 'آية بآية · متابعة دقيقة') + '</div></div><span class="link">تغيير</span></button>' +
     dlRow() +
     '<b class="lbl2">تكرار كل آية</b><div class="seg" id="ps-rep">' + reps.map(([v, t]) => '<button data-v="' + v + '" class="' + (Player.reps() === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
     (m && !m.t ? '<div class="faint" style="font-size:11.5px;margin-top:4px">تكرار الآية يحتاج توقيتًا دقيقًا — يعمل مع القرّاء الموسومين «متابعة دقيقة»</div>' : '') +
@@ -361,6 +387,24 @@ function playerSheet(startI) {
   });
 }
 
+/* ── وسن 6: سورة غير متوفرة بصوت القارئ المختار — بديل مؤقت بمتابعة دقيقة، ثم العودة تلقائيًا ── */
+function missSheet(m, i) {
+  const sn = Q.s[i], s = surahOf(i), mj = m.id === 'o:shahat';
+  const alts = (mj ? [[119, 'محمود خليل الحصري', 'مجوّد'], [51, 'عبدالباسط عبدالصمد', 'مجوّد']] : [])
+    .concat([[118, 'محمود خليل الحصري', ''], [123, 'مشاري العفاسي', ''], [112, 'محمد صديق المنشاوي', '']])
+    .filter(a => LIB().some(x => x.id === a[0] && libHas(x, sn))).slice(0, 3);
+  const html = '<div class="sh-t">سورة ' + esc(s.name) + '</div><div class="sh-s">غير متوفرة بصوت ' + esc(m.n) + (m.c ? ' — تتوفّر له ' + pSur(m.c) : '') + '</div>' +
+    '<div class="mx"><div class="ps-note">' + icon('info') + '<span>لم نجد تسجيلًا موثوقًا لهذه السورة بصوته. استمع إليها بصوت قارئ آخر هذه المرة فقط، ويعود «وسن» إلى قارئك المختار تلقائيًا في السورة التالية.</span></div></div>' +
+    '<div class="list mx" style="margin-top:10px">' + alts.map(a => '<button class="li" data-alt="' + a[0] + '"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(a[1]) + (a[2] ? ' <span class="rk">' + esc(a[2]) + '</span>' : '') + '</div><div class="s">متابعة الآيات دقيقة · عبر الإنترنت</div></div>' + icon('play', 'faint') + '</button>').join('') + '</div>' +
+    '<div class="mx">' + (m.off ? '<button class="btn ghost block" id="ms-list" style="margin-top:10px">' + icon('layers') + 'سور ' + esc(m.n) + ' المتاحة (' + N(m.c) + ')</button>' : '') +
+    '<button class="btn ghost block" id="ms-rec" style="margin-top:8px">' + icon('headphones') + 'غيّر القارئ</button></div>';
+  Sheet.open(html, el => {
+    $$('[data-alt]', el).forEach(b => b.onclick = () => Sheet.close(() => { if (navigator.onLine === false) { toast('الاستماع بصوت قارئ آخر يحتاج اتصالًا بالإنترنت'); return; } Player.alt = 'm:' + b.dataset.alt; Player.start(i); }));
+    const l = $('#ms-list', el); if (l) l.onclick = () => Sheet.close(() => offlineSheet(m.id.slice(2)));
+    $('#ms-rec', el).onclick = () => Sheet.close(() => reciterSheet(() => Player.start(i)));
+  });
+}
+
 /* ── اختيار القارئ: آية بآية · مكتبة القرّاء · على يوتيوب ── */
 function reciterSheet(done) {
   const cur = Settings.reciter || RECITERS[0][0];
@@ -370,9 +414,9 @@ function reciterSheet(done) {
       '<div class="s">' + (x.t ? 'متابعة دقيقة' : 'متابعة تقريبية') + ' · ' + (x.c < 114 ? pSur(x.c) : 'المصحف كاملًا') + (dn ? ' · ' + N(dn) + ' منزّلة' : '') + '</div></div><span class="rad"></span></button>'; };
   const html = '<div class="sh-t">القارئ</div><div class="sh-s">' + N(RECITERS.length + LIB().length + OFFLINE.length) + ' تلاوة · ابحث بالاسم</div>' +
     '<div class="mx"><div class="search rs-q">' + icon('search') + '<input id="rq" placeholder="ابحث عن قارئ…" autocomplete="off"></div></div>' +
-    '<div class="rs-g" data-g="o">مدمجة في التطبيق · تعمل دون إنترنت</div><div class="rs-list">' + OFFLINE.map(o => { const m = offOf('o:' + o.id);
+    '<div class="rs-g" data-g="o">قرّاؤك المختارون · سور مدمجة دون إنترنت وبقية تلاواتهم من الإنترنت</div><div class="rs-list">' + OFFLINE.map(o => { const m = offOf('o:' + o.id);
       return '<div class="li-wrap"><button class="li opt ' + (m.id === cur ? 'on' : '') + '" data-r="' + m.id + '" data-q="' + esc(o.n) + '"><div class="ic ic-off">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(o.n) + ' <span class="rk">مدمج</span></div>' +
-        '<div class="s">' + pSur(m.c) + ' · ' + pM(m.min) + ' · بلا إنترنت</div></div><span class="rad"></span></button><button class="act rs-ls" data-ol="' + o.id + '">السور</button></div>'; }).join('') + '</div>' +
+        '<div class="s">' + pSur(m.c) + (m.nb ? ' · ' + N(m.nb) + ' مدمجة دون إنترنت' : '') + ' · متابعة الآيات</div></div><span class="rad"></span></button><button class="act rs-ls" data-ol="' + o.id + '">السور</button></div>'; }).join('') + '</div>' +
     '<div class="rs-g" data-g="a">تلاوة آية بآية</div><div class="rs-list">' + RECITERS.map(rowA).join('') + '</div>' +
     '<div class="rs-g" data-g="l">مكتبة القرّاء · سورة كاملة وتنزيل دون إنترنت</div><div class="rs-list" id="rs-l">' + LIB().map(rowL).join('') + '</div>' +
     '<div class="rs-g" data-g="y">على يوتيوب</div><div class="rs-list">' + YT_RECITERS.map(n => '<button class="li" data-yt="' + esc(n) + '" data-q="' + esc(n) + '"><div class="ic">' + icon('play') + '</div><div class="grow"><div class="t">' + esc(n) + '</div><div class="s">يفتح تلاواته في يوتيوب</div></div>' + icon('chev', 'faint') + '</button>').join('') + '</div>';
@@ -387,7 +431,7 @@ function reciterSheet(done) {
       if (y) { const s = (Router.cur && Router.cur.r === 'reader' && Q.ready) ? 'سورة ' + Q.S[RS.s - 1].name + ' ' : '';
         const u = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(s + y.dataset.yt); if (Native.has('openUrl')) Native.call('openUrl', u); else window.open(u, '_blank'); return; }
       const b = e.target.closest('[data-r]'); if (!b) return;
-      setSetting('reciter', b.dataset.r); vibrate(8);
+      Player.alt = null; setSetting('reciter', b.dataset.r); vibrate(8);
       const wasOn = Player.on, i = Player.i; if (wasOn) Player.stop();
       Sheet.close(() => { if (wasOn) Player.start(i); if (done) done(); else if (Router.cur && Router.cur.r === 'settings') Router.refresh(); });
     });
@@ -399,14 +443,26 @@ function reciterSheet(done) {
 function offlineSheet(rid) {
   const m = offOf('o:' + rid); if (!m) return;
   const go = () => {
-    const o = OFFLINE.find(x => x.id === rid), fm = t => { const mm = Math.floor(t / 60), ss = t % 60; return N(mm) + ':' + String(ss).padStart(2, '0').replace(/\d/g, d => N(+d)); };
-    const rows = o.f.map(e => { const sn = e[0], S = Q.S[sn - 1], part = e.length > 4, dur = e[e.length - 1];
-      return '<button class="li" data-os="' + sn + '"><div class="ic">' + surahBadge(sn) + '</div><div class="grow"><div class="t">سورة ' + esc(S.name) + '</div><div class="s">' + (part ? 'الآيات ' + N(e[2]) + '–' + N(e[3]) : 'السورة كاملة') + ' · ' + fm(dur) + '</div></div>' + icon('play', '', 'width:20px;height:20px;color:var(--gold)') + '</button>'; }).join('');
-    Sheet.open('<div class="sh-t">' + esc(m.n) + '</div><div class="sh-s">' + pSur(m.c) + ' مدمجة في التطبيق · ' + pM(m.min) + ' من التلاوة · تعمل دون إنترنت</div>' +
-      '<div class="list mx" id="os-l">' + rows + '</div><div class="faint" style="font-size:12px;margin:12px 16px;text-align:center">المصدر: أرشيف الإنترنت archive.org — ضُغطت داخل التطبيق بجودة صوتية واضحة</div>', el => {
-      $('#os-l', el).onclick = e => { const b = e.target.closest('[data-os]'); if (!b) return; const sn = +b.dataset.os;
-        setSetting('reciter', m.id); vibrate(8); const wasOn = Player.on; if (wasOn) Player.stop();
-        Sheet.close(() => Player.start(Q.S[sn - 1].start)); };
+    const o = OFFLINE.find(x => x.id === rid), fm = t => { const mm = Math.floor(t / 60), ss = Math.round(t % 60); return N(mm) + ':' + String(ss).padStart(2, '0').replace(/\d/g, d => N(+d)); };
+    const list = m.l.split(',').map(Number);
+    const row = sn => { const S = Q.S[sn - 1], e = m.by[sn], part = e && e.length > 4, st = e ? 'b' : Downloads.state(m.id, sn);
+      const tag = e ? '<span class="rk">مدمجة</span>' : st === 'done' ? '<span class="rk">منزّلة</span>' : '<span class="rk faint">من الإنترنت</span>';
+      const sub = e ? (part ? 'الآيات ' + N(e[2]) + '–' + N(e[3]) : 'السورة كاملة') + ' · ' + fm(e[e.length - 1]) + ' · دون إنترنت' : (st === 'run' ? 'جارٍ التنزيل…' : st === 'done' ? 'تعمل دون إنترنت' : 'بثّ مباشر — أو نزّليها');
+      const dl = !e && Downloads.ok() ? (st === 'done' ? '' : st === 'run' ? '<span class="faint" style="font-size:12px">' + N(Downloads.st[Downloads.key(m.id, sn)].p || 0) + '٪</span>' : '<button class="ibtn plain" data-dl="' + sn + '" aria-label="تنزيل">' + icon('down') + '</button>') : '';
+      return '<div class="li" data-os="' + sn + '"><div class="ic">' + surahBadge(sn) + '</div><div class="grow"><div class="t">سورة ' + esc(S.name) + ' ' + tag + '</div><div class="s">' + sub + '</div></div>' + dl + icon('play', '', 'width:20px;height:20px;color:var(--gold)') + '</div>'; };
+    const html = () => '<div class="sh-t">' + esc(m.n) + '</div><div class="sh-s">' + pSur(m.c) + (m.nb ? ' · منها ' + N(m.nb) + ' مدمجة تعمل دون إنترنت' : '') + ' · مع متابعة الآيات في المصحف</div>' +
+      (m.c > m.nb && Downloads.ok() ? '<div class="mx" style="margin:6px 16px 0"><button class="btn ghost block" id="os-all">' + icon('down') + 'تنزيل كل السور للاستماع دون إنترنت</button></div>' : '') +
+      '<div class="list mx" id="os-l">' + list.map(row).join('') + '</div><div class="faint" style="font-size:12px;margin:12px 16px;text-align:center">المصدر: أرشيف الإنترنت archive.org — كل ما وُجد من تسجيلاته للسور كاملة. توقيت الآيات محسوب من التسجيل نفسه، ويمكنك تصحيحه بلمسة: «الشيخ يقرأ هذه الآن»</div>';
+    Sheet.open(html(), el => {
+      const refresh = () => { const l = $('#os-l', el); if (l) l.outerHTML = '<div class="list mx" id="os-l">' + list.map(row).join('') + '</div>'; bind(); };
+      const bind = () => { const l = $('#os-l', el); if (!l) return; l.onclick = e => {
+        const d = e.target.closest('[data-dl]'); if (d) { e.stopPropagation(); Downloads.start(m, +d.dataset.dl); toast('بدأ تنزيل السورة'); setTimeout(refresh, 400); return; }
+        const b = e.target.closest('[data-os]'); if (!b) return; const sn = +b.dataset.os;
+        Player.alt = null; setSetting('reciter', m.id); vibrate(8); const wasOn = Player.on; if (wasOn) Player.stop();
+        Sheet.close(() => Player.start(Q.S[sn - 1].start)); }; };
+      bind();
+      const all = $('#os-all', el); if (all) all.onclick = () => { let n = 0; list.forEach(sn => { if (!m.by[sn] && !Downloads.state(m.id, sn)) { Downloads.start(m, sn); n++; } }); toast(n ? 'بدأ تنزيل ' + pSur(n) + ' — تجدين التقدّم في الإشعارات' : 'كل السور منزّلة'); setTimeout(refresh, 500); };
+      const onDl = () => refresh(); Bus.on('dlp', onDl); Bus.on('dl', onDl);
     });
   };
   if (Q.ready) go(); else loadQuran().then(go).catch(() => toast('تعذّر تحميل المصحف'));
@@ -523,8 +579,8 @@ SCREENS.downloads = {
     const used = ok ? +(Native.call('dlUsage') || 0) : 0;
     let h = hdr('تنزيلات التلاوة', 'استمع دون إنترنت', { back: true, compact: true });
     // وسن 4.8: قرّاء مدمجون لا يحتاجون تنزيلًا
-    h += sec('مدمجة في التطبيق · بلا إنترنت') + '<div class="list mx" id="dl-off">' + OFFLINE.map(o => { const x = offOf('o:' + o.id);
-      return '<button class="li" data-ol="' + o.id + '"><div class="ic ic-off">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(o.n) + '</div><div class="s">' + pSur(x.c) + ' · ' + pM(x.min) + '</div></div>' + icon('chev', 'faint') + '</button>'; }).join('') + '</div>';
+    h += sec('قرّاؤك المختارون') + '<div class="list mx" id="dl-off">' + OFFLINE.map(o => { const x = offOf('o:' + o.id);
+      return '<button class="li" data-ol="' + o.id + '"><div class="ic ic-off">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(o.n) + '</div><div class="s">' + pSur(x.c) + ' · منها ' + N(x.nb) + ' مدمجة · ' + N(Downloads.count(x.id)) + ' منزّلة</div></div>' + icon('chev', 'faint') + '</button>'; }).join('') + '</div>';
     if (!ok) h += '<div class="ps-note mx mt">' + icon('info') + '<span>التنزيل يعمل في التطبيق على الهاتف؛ هنا معاينة فقط.</span></div>';
     h += '<div class="hc mt dl-hero"><div class="row" style="gap:12px"><div class="dua-ic">' + icon('headphones') + '</div><div class="grow"><div class="t">' + (m ? esc(reciterName(Settings.reciter)) : 'اختر قارئًا من المكتبة') + '</div>' +
       '<div class="s">' + (m ? dlCountTxt(Downloads.count(m.id)) + (used ? ' · المساحة ' + fmtMB(used) : '') : 'قرّاء «آية بآية» يُسمَعون عبر الإنترنت فقط') + '</div></div>' +
@@ -550,7 +606,7 @@ SCREENS.downloads = {
     const del = $('#dl-del', el); if (del) del.onclick = () => confirmSheet('حذف تنزيلات هذا القارئ؟', 'ستُحذف السور المنزّلة من هاتفك، ويمكنك تنزيلها مجددًا متى شئت.', 'احذف', () => {
       Q.S.forEach(s => { const st = Downloads.state(m.id, s.id); if (st === 'done') Downloads.remove(m.id, s.id); else if (st === 'run') Downloads.cancel(m.id, s.id); }); Router.refresh(); }, { danger: true });
     el.addEventListener('click', e => {
-      const sw = e.target.closest('[data-sw]'); if (sw) { setSetting('reciter', 'm:' + sw.dataset.sw); Router.refresh(); return; }
+      const sw = e.target.closest('[data-sw]'); if (sw) { Player.alt = null; setSetting('reciter', 'm:' + sw.dataset.sw); Router.refresh(); return; }
       const d = e.target.closest('[data-dl]'); if (d) { Downloads.start(m, +d.dataset.dl); Router.refresh(); return; }
       const r = e.target.closest('[data-rm]'); if (r) { Downloads.remove(m.id, +r.dataset.rm); Router.refresh(); return; }
       const c = e.target.closest('[data-cn]'); if (c) { Downloads.cancel(m.id, +c.dataset.cn); Router.refresh(); }

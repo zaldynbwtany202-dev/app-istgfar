@@ -211,40 +211,62 @@ function bindRemindVoice(el) {
 }
 setTimeout(() => { try { if (Native.has('setRemindVoice')) Native.call('setRemindVoice', !!Settings.remVoice); } catch (e) {} }, 1600);
 
-/* ═══ أصوات المسبحة (تُولَّد في الجهاز، بلا ملفات) — وسن 4.8: أصوات أهدأ مع صدى ناعم ═══
-   نغمة هادئة: نقرة وتر ناعمة تمشي على سلّم خماسي فتصنع لحنًا هادئًا مع كل تسبيحة
-   جرس بلّوري · خشب العود · حبّتان · حبّة خشبية · قطرة ماء · نقرة ناعمة */
-const TAS_PENTA = [293.66, 329.63, 369.99, 440, 493.88, 587.33, 493.88, 440, 369.99, 329.63];
+/* ═══ وسن 6 · أصوات المسبحة: طبيعية غير موسيقية (حبّات، خشب، ماء) ═══
+   تُشغَّل بالمشغّل الأصلي في أندرويد (SoundPool) فتعمل دائمًا وبلا تأخير، وفي المتصفح تُولَّد بديلًا.
+   وعند تمام الدورة: صوت الشيخ فارس عبّاد بالذكر نفسه إن توفّر، وإلا طقطقة حبّتين والإمام. */
+const Sfx = {
+  play(name, vol, rate) {
+    if (!Native.has('sfx')) return false;
+    try { return Native.call('sfx', name, Math.max(0, Math.min(1, +vol || 0.7)), rate || 1) === true; } catch (e) { return false; }
+  },
+};
+window.Sfx = Sfx;
+const SFX_OF = { bead: 'bead_wood', clack: 'clack', knock: 'knock', stone: 'bead_stone', drop: 'drop', soft: 'tick' };
 const TasSound = {
-  ctx: null, step: 0, rev: null,
-  ac() { if (!this.ctx) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; try { this.ctx = new A(); } catch (e) { return null; } }
-    if (this.ctx.state === 'suspended') try { this.ctx.resume(); } catch (e) {} return this.ctx; },
-  // صدى ناعم قصير (استجابة مولَّدة) يجعل الصوت أهدأ وأنعم
-  reverb(c) { if (this.rev) return this.rev; try { const L = Math.floor(c.sampleRate * 1.6), b = c.createBuffer(2, L, c.sampleRate);
-      for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < L; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / L, 3.2) * .6; }
-      const cv = c.createConvolver(); cv.buffer = b; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3200; const g = c.createGain(); g.gain.value = .32;
-      cv.connect(lp); lp.connect(g); g.connect(c.destination); this.rev = cv; } catch (e) { this.rev = null; } return this.rev; },
+  ctx: null,
+  ac() {
+    const A = window.AudioContext || window.webkitAudioContext; if (!A) return null;
+    if (this.ctx && this.ctx.state === 'closed') this.ctx = null;
+    if (!this.ctx) { try { this.ctx = new A(); } catch (e) { return null; } }
+    if (this.ctx.state !== 'running') try { this.ctx.resume(); } catch (e) {}
+    return this.ctx;
+  },
+  reverb() { return null; },   // لم يعد هناك صدى موسيقي
   play(kind, done) {
     kind = kind || tasSnd(); if (kind === 'off') return;
-    const c = this.ac(); if (!c) return; const t = c.currentTime, out = c.createGain(); out.gain.value = (+Settings.tasVol || 0.7) * 0.8; out.connect(c.destination);
-    const wet = (kind === 'harp' || kind === 'bell' || kind === 'wood' || done) ? this.reverb(c) : null; if (wet) out.connect(wet);
-    const tone = (f, a, d, type, f2, at) => { const o = c.createOscillator(), g = c.createGain(), t0 = t + (at || 0); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + d * 0.6);
-      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(a, t0 + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d); o.connect(g); g.connect(out); o.start(t0); o.stop(t0 + d + 0.02); };
+    const vol = (+Settings.tasVol || 0.7);
+    if (Sfx.play(done ? 'done' : (SFX_OF[kind] || 'bead_wood'), vol, done ? 1 : 0.95 + Math.random() * 0.1)) return;
+    // بديل المتصفح: نقرات مولَّدة (ضوضاء مرشَّحة ورنين قصير غير موسيقي)
+    const c = this.ac(); if (!c) return; const t = c.currentTime, out = c.createGain(); out.gain.value = vol * 0.8; out.connect(c.destination);
     const click = (fq, q, a, at, len) => { const n = Math.floor(c.sampleRate * (len || 0.03)), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
       for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 6);
       const src = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(); src.buffer = buf; bp.type = 'bandpass'; bp.frequency.value = fq; bp.Q.value = q; g.gain.value = a;
       src.connect(bp); bp.connect(g); g.connect(out); src.start(t + (at || 0)); };
-    if (done) { [[587.33, 0], [739.99, 0.14], [880, 0.28], [1174.66, 0.44]].forEach(([f, dl]) => tone(f, 0.075, 1.4, 'sine', 0, dl)); return; }
-    if (kind === 'harp') {   // نقرة وتر ناعمة: أساس + توافقيات خافتة، ولحن خماسي يتقدّم مع كل ضغطة
-      const f = TAS_PENTA[this.step++ % TAS_PENTA.length]; tone(f, 0.11, 1.1, 'sine'); tone(f * 2, 0.028, 0.6, 'sine'); tone(f * 3, 0.01, 0.35, 'triangle'); click(2600, 1.2, 0.02, 0, 0.008);
-    } else if (kind === 'bell') { const f = 1046.5; tone(f, 0.05, 1.3, 'sine'); tone(f * 2.76, 0.018, 0.7, 'sine'); tone(f * 5.4, 0.008, 0.35, 'sine'); }
-    else if (kind === 'wood') { const f = [392, 440, 523.25][this.step++ % 3]; tone(f, 0.12, 0.32, 'sine'); tone(f * 4, 0.02, 0.08, 'sine'); click(1400, 1.6, 0.05, 0, 0.012); }
-    else if (kind === 'clack') { click(2300, 2.6, 0.2, 0, 0.018); click(2000, 2.4, 0.13, 0.045, 0.016); tone(620, 0.03, 0.06, 'triangle'); }
-    else if (kind === 'bead') { click(1900, 2.2, 0.22); tone(520, 0.07, 0.09, 'triangle'); tone(1040, 0.018, 0.05, 'sine'); }
-    else if (kind === 'drop') { tone(780, 0.06, 0.16, 'sine', 1320); }
-    else if (kind === 'soft') { tone(440, 0.05, 0.22, 'sine'); tone(880, 0.012, 0.12, 'sine'); }
+    const thud = (f, a, d, at) => { const o = c.createOscillator(), g = c.createGain(), t0 = t + (at || 0); o.type = 'sine'; o.frequency.setValueAtTime(f, t0); o.frequency.exponentialRampToValueAtTime(f * 0.6, t0 + d);
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(a, t0 + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d); o.connect(g); g.connect(out); o.start(t0); o.stop(t0 + d + 0.02); };
+    if (done) { click(2200, 2.4, 0.2, 0, 0.02); click(2000, 2.4, 0.15, 0.07, 0.02); thud(300, 0.12, 0.25, 0.16); return; }
+    if (kind === 'clack') { click(2300, 2.6, 0.2, 0, 0.018); click(2000, 2.4, 0.13, 0.045, 0.016); }
+    else if (kind === 'knock') { click(900, 1.5, 0.18, 0, 0.02); thud(245, 0.14, 0.12); }
+    else if (kind === 'stone') { click(3100, 7, 0.25, 0, 0.02); }
+    else if (kind === 'drop') { const o = c.createOscillator(), g = c.createGain(); o.frequency.setValueAtTime(850, t); o.frequency.exponentialRampToValueAtTime(2100, t + 0.03);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.12); }
+    else if (kind === 'soft') { click(1100, 1.2, 0.12, 0, 0.008); }
+    else { click(1900, 2.2, 0.22, 0, 0.03); thud(820, 0.05, 0.06); }
   },
 };
-// الافتراضي «نغمة هادئة» (يمكن إيقافه من المسبحة)
-function tasSnd() { return Settings.tasSnd == null ? 'harp' : Settings.tasSnd; }
+// إيقاظ الصوت عند أول لمسة، وبعد العودة من الخلفية (أندرويد يعلّق سياق الصوت أحيانًا)
+document.addEventListener('pointerdown', () => { const c = TasSound.ctx; if (c && c.state !== 'running') try { c.resume(); } catch (e) {} }, { passive: true, capture: true });
+Bus.on('resume', () => { const c = TasSound.ctx; if (!c) return; if (c.state !== 'running') { try { c.resume().catch(() => { TasSound.ctx = null; }); } catch (e) { TasSound.ctx = null; } } });
+// الافتراضي: حبّة خشبية (لا موسيقى)
+function tasSnd() { const v = Settings.tasSnd; return v == null || v === 'harp' || v === 'bell' || v === 'wood' ? 'bead' : v; }
 window.TasSound = TasSound;
+/* صوت الذكر بصوت الشيخ فارس عبّاد (مقطع واحد في كل مرة) */
+const DhikrVoice = {
+  a: null,
+  play(key, vol) { if (!/^[a-z]{2}$/.test(key || '')) return false;
+    try { if (this.a) { this.a.pause(); this.a = null; } const a = this.a = new Audio('snd/dhikr/' + key + '.ogg'); a.volume = Math.max(0.2, Math.min(1, vol || 1)); const p = a.play(); if (p && p.catch) p.catch(() => {}); return true; } catch (e) { return false; } },
+};
+window.DhikrVoice = DhikrVoice;
+/** مفتاح صوت الذكر من نصّه (للمقاطع المتوفّرة) */
+function voiceKeyOf(t) { const n = typeof normAr === 'function' ? normAr(String(t || '')) : String(t || '');
+  if (/استغفر/.test(n)) return 'is'; if (/سبحان الله وبحمده/.test(n)) return 'sh'; if (/الحمد لله/.test(n)) return 'hm'; if (/الله اكبر/.test(n)) return 'tk'; if (/صل/.test(n) && /محمد|النبي|نبينا/.test(n)) return 'sl'; return ''; }

@@ -17,6 +17,8 @@ import android.hardware.SensorManager
 import android.location.Geocoder
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.SoundPool
+import android.media.AudioManager
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
@@ -96,6 +98,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         private val HTTP_ALLOW = listOf("https://api.alquran.cloud/", "https://www.mp3quran.net/api/", "https://mp3quran.net/api/")
     }
 
+    // ── وسن 6 · مؤثرات صوتية أصلية (SoundPool): حبّات المسبحة ونقرات العدّاد — تعمل دائمًا مهما كانت حالة صوت الواجهة ──
+    private var sfxPool: SoundPool? = null
+    private val sfxIds = java.util.concurrent.ConcurrentHashMap<String, Int>()
+    private val sfxReady = java.util.concurrent.ConcurrentHashMap<Int, Boolean>()
+    private fun initSfx() {
+        try {
+            val p = SoundPool.Builder().setMaxStreams(8).setAudioAttributes(
+                AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()).build()
+            p.setOnLoadCompleteListener { _, id, status -> if (status == 0) sfxReady[id] = true }
+            val list = listOf("bead_wood" to R.raw.sfx_bead_wood, "bead_resin" to R.raw.sfx_bead_resin, "bead_pearl" to R.raw.sfx_bead_pearl, "bead_stone" to R.raw.sfx_bead_stone, "bead_onyx" to R.raw.sfx_bead_onyx, "bead_metal" to R.raw.sfx_bead_metal, "clack" to R.raw.sfx_clack, "knock" to R.raw.sfx_knock, "drop" to R.raw.sfx_drop, "tick" to R.raw.sfx_tick, "done" to R.raw.sfx_done)
+            for ((n, res) in list) sfxIds[n] = p.load(this, res, 1)
+            sfxPool = p
+        } catch (e: Exception) { Log.w("NoorSfx", "init", e) }
+    }
     private var pendingRoute: String? = null
     private var pageReady = false
     @Volatile private var audioActive = false
@@ -144,6 +160,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
     /** لكل استعمال خانته: bg للصفحة الرئيسية، ig للوحة الاستغفار — فلا تحذف صورةٌ الأخرى */
     @Volatile private var pickSlot = "bg"
+    @Volatile private var volCount = false
 
     private fun savePickedImage(uri: Uri, slot: String) {
         try {
@@ -331,10 +348,24 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         accel = sensorMgr?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         magnet = sensorMgr?.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
+        volumeControlStream = AudioManager.STREAM_MUSIC   // أزرار الصوت تضبط صوت التطبيق
+        initSfx()
         // لا نطلب الإذن عند الإقلاع — تطلبه الواجهة بعد شرح السبب (جولة الترحيب)
         if (NoorLocation.hasPermission(this)) refreshLocation()
         AdhanScheduler.ensureChannels(this)
         AdhanScheduler.scheduleNext(this)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        if (volCount && (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP || keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN)) {
+            if (event == null || event.repeatCount == 0) js("try{window.onVolKey&&onVolKey()}catch(e){}")
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+    override fun onKeyUp(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        if (volCount && (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP || keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN)) return true
+        return super.onKeyUp(keyCode, event)
     }
 
     override fun onResume() {
@@ -346,6 +377,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onPause() {
+        volCount = false
         unregisterSensors()
         releasePreview(false)
         // أثناء التلاوة لا نوقف الواجهة كي يستمر الصوت عند إطفاء الشاشة (خدمة التلاوة تُبقي التطبيق حيًّا)
@@ -354,6 +386,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onDestroy() {
+        try { sfxPool?.release() } catch (_: Exception) { }; sfxPool = null
         RecitationService.listener = null
         AdhanService.listener = null
         if (audioActive) RecitationService.stop(this)
@@ -542,7 +575,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     // ────────────────── تنزيلات التلاوة (وسن 4.5) ──────────────────
     private val dlPrefs by lazy { getSharedPreferences("wasan_dl", MODE_PRIVATE) }
-    private val REL_OK = Regex("^m\\d{1,6}/\\d{3}\\.mp3$")
+    private val REL_OK = Regex("^m[a-z0-9]{1,16}/\\d{3}\\.mp3$")
     private fun recitBase(): File? = getExternalFilesDir("recit")
     private fun recitFile(rel: String): File? = if (REL_OK.matches(rel)) recitBase()?.let { File(it, rel) } else null
     private fun dlForget(k: String) { dlPrefs.edit().remove(k).remove("$k.rel").apply() }
@@ -600,6 +633,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         @JavascriptInterface fun detectLocation() = requestLocation()
+        /** وسن 6: العدّ بأزرار الصوت في المسبحة (يُفعَّل من الواجهة ويُلغى عند مغادرتها) */
+        @JavascriptInterface fun setVolumeCount(on: Boolean) { volCount = on }
+        /** وسن 6: تشغيل مؤثّر قصير (يعيد false إن لم يجهز بعد فتستعمل الواجهة بديلها) */
+        @JavascriptInterface fun sfx(name: String, vol: Double, rate: Double): Boolean {
+            val p = sfxPool ?: return false; val id = sfxIds[name] ?: return false
+            if (sfxReady[id] != true) return false
+            val v = vol.toFloat().coerceIn(0f, 1f)
+            return try { p.play(id, v, v, 1, 0, rate.toFloat().coerceIn(0.5f, 2f)) != 0 } catch (_: Exception) { false }
+        }
+        /** مستوى صوت الوسائط الحالي (٠–١) لتنبيه المستخدمة إن كان مكتومًا */
+        @JavascriptInterface fun mediaVolume(): Double = try { val am = getSystemService(AUDIO_SERVICE) as AudioManager
+            am.getStreamVolume(AudioManager.STREAM_MUSIC).toDouble() / am.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1) } catch (_: Exception) { -1.0 }
         @JavascriptInterface fun requestPrayers() = sendPrayers()
         @JavascriptInterface fun requestHijri() {
             val h = HijriCalendar.fromCalendar(Calendar.getInstance())
@@ -846,7 +891,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // ── وسن 4.5 · تنزيل التلاوات (مدير التنزيلات ← مجلد التطبيق الخاص، بلا أذونات) ──
         @JavascriptInterface fun dlStart(k: String, url: String, rel: String, title: String) {
             try {
-                if (!url.startsWith("https://") || !url.contains("mp3quran.net/")) { dlFail(k); return }
+                val host = try { Uri.parse(url).host ?: "" } catch (_: Exception) { "" }
+                if (!url.startsWith("https://") || !(host.endsWith("mp3quran.net") || host == "archive.org" || host.endsWith(".archive.org"))) { dlFail(k); return }
                 val f = recitFile(rel) ?: run { dlFail(k); return }
                 f.parentFile?.mkdirs()
                 if (f.exists()) f.delete()
@@ -860,7 +906,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/5.1 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/6.0 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }

@@ -343,6 +343,7 @@ const THEMES = {
   violet: { n: 'بنفسجي حالم', base: 'dark', tone: 'violet', g: 'girls', acc: 'lilac', bar: '#110E1F', sw: ['#110E1F', '#211B38', '#7E63B8', '#C9B3F2'] },
   // وسن 4.6 · «ثيمات كاملة» برسوم «ريشة وسن» (art.js): لكل ثيم مشهده المرسوم وألوانه وزينة بطاقاته ومسبحته — skins.js
   kbfly: { n: 'الفراشات الزرقاء', base: 'light', tone: 'bfly', g: 'kawaii', acc: 'morpho', skin: 'kbfly', rt: 'sky', bar: '#EEF5FF', sw: ['#EEF5FF', '#A9D2FF', '#2D6FE0', '#7FC6FF'] },
+  kmorpho: { n: 'فراشة المورفو', base: 'dark', g: 'kawaii', acc: 'kmorpho', bar: '#08110F', sw: ['#08110F', '#172120', '#3D82D6', '#A0D4F7'], ph: 1, ink: 'w', top: '#141906', hb: '#202D21' },   // وسن 6: فراشة 5.0 بصورتها الحقيقية
   krose: { n: 'الورد', base: 'light', tone: 'rosy', g: 'kawaii', acc: 'rosered', skin: 'krose', rt: 'pink', bar: '#FFF0F3', sw: ['#FFF0F3', '#F8CFDC', '#D6336C', '#8FC89A'] },
   kstar: { n: 'النجمة', base: 'dark', tone: 'starry', g: 'kawaii', acc: 'starry', skin: 'kstar', rt: 'blue', bar: '#0E1130', sw: ['#0E1130', '#1F2454', '#5B4FC4', '#F5C94E'] },
   kberry: { n: 'الفراولة', base: 'light', tone: 'berry', g: 'kawaii', acc: 'berry', skin: 'kberry', rt: 'pink', bar: '#FFF6F1', sw: ['#FFF6F1', '#FFD2DB', '#E5485F', '#6CC070'] },
@@ -374,7 +375,12 @@ const THEMES = {
   acloud: { n: 'غيم', base: 'light', g: 'anim', anim: 'cloud', acc: 'acloud', bar: '#EEF3FA', sw: ['#EEF3FA', '#3F73B4', '#4879BF', '#EDB977'], ink: 'w', top: '#3F73B4' },
   aleaf: { n: 'أوراق الشجر', base: 'light', g: 'anim', anim: 'leaf', acc: 'aleaf', bar: '#F1F6EC', sw: ['#F1F6EC', '#1F3F1C', '#3C7835', '#D4AA4A'], ink: 'w', top: '#1F3F1C' },
   arain: { n: 'مطر', base: 'dark', g: 'anim', anim: 'rain', acc: 'arain', bar: '#0C141D', sw: ['#0C141D', '#0A1320', '#4C7EAA', '#A9C7E2'], ink: 'w', top: '#0A1320' },
-  aaurora: { n: 'شفق', base: 'dark', g: 'anim', anim: 'aurora', acc: 'aaurora', bar: '#060B16', sw: ['#060B16', '#050A16', '#22A07F', '#B39AF0'], ink: 'w', top: '#050A16' }
+  aaurora: { n: 'شفق', base: 'dark', g: 'anim', anim: 'aurora', acc: 'aaurora', bar: '#060B16', sw: ['#060B16', '#050A16', '#22A07F', '#B39AF0'], ink: 'w', top: '#050A16' },
+  // وسن 6 · ثيمات حيّة جديدة
+  astar: { n: 'ليلة النجوم', base: 'dark', g: 'anim', anim: 'star', acc: 'astar', bar: '#070B18', sw: ['#070B18', '#0D1838', '#4F63C9', '#E8C66A'], ink: 'w', top: '#0D1838' },
+  alant: { n: 'فوانيس', base: 'dark', g: 'anim', anim: 'lant', acc: 'alant', bar: '#120A10', sw: ['#120A10', '#2A1340', '#B8472F', '#F2B45A'], ink: 'w', top: '#2A1340' },
+  asnow: { n: 'ثلج', base: 'light', g: 'anim', anim: 'snow', acc: 'asnow', bar: '#EEF3F8', sw: ['#EEF3F8', '#26405F', '#3E6E9E', '#D9A45E'], ink: 'w', top: '#26405F' },
+  apetal: { n: 'بتلات الورد', base: 'light', g: 'anim', anim: 'petal', acc: 'apetal', bar: '#FBF1F4', sw: ['#FBF1F4', '#4B2150', '#B84C78', '#D79A6B'], ink: 'w', top: '#4B2150' }
 };
 /* المفتاح الفعلي للسمة الآن (auto/prayer يختاران بين الداكن والفاتح) */
 function uiTheme() {
