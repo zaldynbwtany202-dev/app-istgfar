@@ -399,7 +399,7 @@ function setHifz(on) {
 /* ───────── وسن 4.5 · إعدادات القراءة الموسّعة ───────── */
 const READ_BGS = [['night', 'ليلي', '#08120F', '#EEF1EB'], ['black', 'حالك', '#000000', '#E8ECE9'], ['blue', 'كحلي', '#0D1628', '#E3E9F5'],
   ['paper', 'ورقي', '#F8F1E1', '#2B2215'], ['sand', 'رملي', '#EAD8B3', '#2E2210'], ['white', 'أبيض', '#FFFFFF', '#141414'],
-  ['green', 'عشبي', '#E7F0E4', '#1D2A1D'], ['pink', 'وردي', '#FCEEF3', '#3B1F2B'], ['lavender', 'لافندر', '#F1ECFA', '#261F3D']];
+  ['green', 'عشبي', '#E7F0E4', '#1D2A1D'], ['pink', 'وردي', '#FCEEF3', '#3B1F2B'], ['lavender', 'لافندر', '#F1ECFA', '#261F3D'], ['plum', 'ورد الليل', '#1A0F18', '#F3E6EC'], ['cream', 'كريمي', '#FFF8EE', '#3A2A1E'], ['sky', 'سماوي', '#EEF5FF', '#14264D']];
 const READ_BG_NAMES = Object.fromEntries(READ_BGS.map(b => [b[0], b[1]]));
 const READ_DEF = { qfs: 27, qfont: 'hafs', qlh: 2.3, qalign: 'justify', readTheme: 'night', readDim: 0, readFull: false, hifzMode: 'all', asSpeed: 4 };
 const rsSeg = (title, key, opts) => '<b class="rs-h">' + title + '</b><div class="seg" data-k="' + key + '">' +

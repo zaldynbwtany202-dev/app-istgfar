@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   وسن 4.0 · «بستانك» — مولّد المشهد الإجرائي (1000 مستوى)
+   وسن 4.0 · «بستانك» — مولّد المشهد الإجرائي (1000 مستوى) · 4.5: ألوان المشهد وأشكاله من السمة
    كل مستوى يغيّر المشهد: يطول الجذع ويتفرّع، تكثر الأوراق، ثم تظهر الأزهار
    والثمار والطيور، وتنضمّ أشجار ونخيل وجدول ماء حتى تكتمل «الواحة الغنّاء».
    التوليد حتمي (بذرة ثابتة) فيبقى المشهد نفسه وينمو فقط مع كل مستوى.
@@ -31,12 +31,16 @@ const Garden = (() => {
   // درجات الأوراق المعروفة ← تدرّجات شعاعية (ضوء من الأعلى يمينًا)
   const LEAVES = ['#3A9A62', '#4BAE6E', '#62C07C', '#35915A', '#3B9A62', '#4DAE70', '#2F8455'];
   const LEAF_IX = {}; LEAVES.forEach((c, i) => { LEAF_IX[c] = i; });
-  function leafDefs(id) {
-    let d = LEAVES.map((c, i) => '<radialGradient id="' + id + 'L' + i + '" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="' + mix(c, '#FFFFFF', 0.26) + '"/>' +
-      '<stop offset=".62" stop-color="' + c + '"/><stop offset="1" stop-color="' + mix(c, '#0B2A1A', 0.28) + '"/></radialGradient>').join('');
-    d += '<radialGradient id="' + id + 'B" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#2F7D4E"/><stop offset="1" stop-color="#1E5A38"/></radialGradient>';
+  /* وسن 4.5 · «المشاهد»: G = ألوان المشهد وأشكاله من السمة (skins.js)؛ دونه يُرسم البستان كما كان حرفيًا */
+  function leafDefs(id, G) {
+    const lv = (G && G.leaves) || LEAVES, shade = (G && G.shade) || '#0B2A1A', lite = (G && G.light) || '#FFFFFF', b = (G && G.base) || ['#2F7D4E', '#1E5A38'];
+    let d = lv.map((c, i) => '<radialGradient id="' + id + 'L' + i + '" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="' + mix(c, lite, 0.26) + '"/>' +
+      '<stop offset=".62" stop-color="' + c + '"/><stop offset="1" stop-color="' + mix(c, shade, 0.28) + '"/></radialGradient>').join('');
+    d += '<radialGradient id="' + id + 'B" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="' + b[0] + '"/><stop offset="1" stop-color="' + b[1] + '"/></radialGradient>';
     return d;
   }
+  const leafIx = G => { if (!G || !G.leaves) return LEAF_IX; const m = {}; G.leaves.forEach((c, i) => { m[c] = i; }); return m; };
+  const curG = () => { try { const k = typeof curSkin === 'function' ? curSkin() : null; return k && k.garden ? k.garden : null; } catch (e) { return null; } };
   function vgrad(id, c, top, bot) {
     return '<linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + mix(c, '#FFFFFF', top) + '"/><stop offset="1" stop-color="' + mix(c, '#0B1F14', bot) + '"/></linearGradient>';
   }
@@ -74,7 +78,8 @@ const Garden = (() => {
     const leafR = (6.5 + 16 * gg) * scale;
     const greens = opts.greens || ['#3A9A62', '#4BAE6E', '#62C07C', '#35915A'];
     const base = opts.base || '#2A7447';
-    const lf = c => (opts.gid && LEAF_IX[c] != null) ? 'url(#' + opts.gid + 'L' + LEAF_IX[c] + ')' : c;   // تظليل حجمي للأوراق
+    const LX = opts.lix || LEAF_IX, hiC = opts.hi || '#C8F0B4';
+    const lf = c => (opts.gid && LX[c] != null) ? 'url(#' + opts.gid + 'L' + LX[c] + ')' : c;   // تظليل حجمي للأوراق
     let under = '', leaves = '', hi = '';
     const lr = rng(seed + 99);
     out.tips.forEach((t, i) => {
@@ -85,7 +90,7 @@ const Garden = (() => {
         const r = leafR * (0.5 + lr() * 0.45) * k0;
         const ox = (lr() - 0.5) * leafR * 1.4, oy = (lr() - 0.65) * leafR * 1.1;
         leaves += '<circle cx="' + f1(t.x + ox) + '" cy="' + f1(t.y + oy) + '" r="' + f1(r) + '" fill="' + lf(greens[(i + k) % greens.length]) + '"/>';
-        if (k === 0 && lr() < (opts.gid ? 0.3 : 0.55)) hi += '<circle cx="' + f1(t.x + ox - r * 0.3) + '" cy="' + f1(t.y + oy - r * 0.35) + '" r="' + f1(r * 0.34) + '" fill="#C8F0B4" opacity="' + (opts.gid ? '.28' : '.45') + '"/>';
+        if (k === 0 && lr() < (opts.gid ? 0.3 : 0.55)) hi += '<circle cx="' + f1(t.x + ox - r * 0.3) + '" cy="' + f1(t.y + oy - r * 0.35) + '" r="' + f1(r * 0.34) + '" fill="' + hiC + '" opacity="' + (opts.gid ? '.28' : '.45') + '"/>';
       }
     });
     return { svg: trunk, leaves: under + leaves + hi, tips: out.tips, leafR, H };
@@ -106,10 +111,10 @@ const Garden = (() => {
     return s;
   }
 
-  function flower(x, y, r, c) {
+  function flower(x, y, r, c, mid) {
     let s = '';
     for (let k = 0; k < 5; k++) { const a = k * 1.2566; s += '<circle cx="' + f1(x + Math.cos(a) * r) + '" cy="' + f1(y + Math.sin(a) * r) + '" r="' + f1(r * 0.85) + '" fill="' + c + '"/>'; }
-    return s + '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r * 0.7) + '" fill="#F6D36B"/>';
+    return s + '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r * 0.7) + '" fill="' + (mid || '#F6D36B') + '"/>';
   }
 
   /** يرسم مشهد المستوى L. opts: {phase:'day|night|dawn|golden|sunset', w, h, id} */
@@ -118,11 +123,13 @@ const Garden = (() => {
     L = cl(Math.round(L) || 1, 1, MAX);
     const W = 360, H = 300, id = opts.id || 'g' + L, ph = opts.phase || 'day', bare = !!opts.bare;
     const st = stageOf(L), R = rng(4242), sky = SKY[ph] || SKY.day, night = ph === 'night';
+    const G = opts.skin !== undefined ? (opts.skin && opts.skin.garden) || null : curG(), gx = G && G.fx || {};
+    const lix = leafIx(G), tOpts = G ? { greens: G.leaves.slice(0, 4), lix, bark: G.bark, hi: G.hi } : {};
     const lush = cl((L - 1) / 400, 0, 1);                                   // من أرض جافة إلى خضرة
-    const hillA = mix('#B9A27A', '#5BA86E', lush), hillB = mix('#A58E66', '#3F8F5A', lush), ground = mix('#9C7B52', '#3E8A55', cl((L - 5) / 250, 0, 1));
+    const hillA = mix('#B9A27A', G ? G.hillA : '#5BA86E', lush), hillB = mix('#A58E66', G ? G.hillB : '#3F8F5A', lush), ground = mix('#9C7B52', G ? G.ground : '#3E8A55', cl((L - 5) / 250, 0, 1));
     const zoom = 1 + 1.55 * Math.pow(1 - cl((L - 1) / 160, 0, 1), 1.4), vw = W / zoom, vh = H / zoom;
     // الشجرة الرئيسية تُحسب مرة واحدة (حتمية) — ويُستفاد منها لضبط «الكاميرا» في المشهد الحي
-    const mainTree = L >= 10 ? tree(L, 180, 246, 1, 7, { gid: id }) : null;
+    const mainTree = L >= 10 ? tree(L, 180, 246, 1, 7, Object.assign({ gid: id }, tOpts)) : null;
     let vb = f1(180 - vw / 2) + ' ' + f1(Math.min(H - vh, 262 - vh * 0.84)) + ' ' + f1(vw) + ' ' + f1(vh);
     if (bare) {
       // لقطة واسعة كلما طالت الشجرة حتى لا تغطي النصوص فوقها (room = المساحة المتاحة بالبكسل)
@@ -131,11 +138,12 @@ const Garden = (() => {
       const vw2 = W * z, vh2 = H * z;
       vb = f1(180 - vw2 / 2) + ' ' + f1(336 - vh2) + ' ' + f1(vw2) + ' ' + f1(vh2);
     }
+    const SK = (G && G.gsky && G.gsky[ph]) || sky;
     let s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '" preserveAspectRatio="' + (opts.par || 'xMidYMid slice') + '" class="garden-svg' + (bare ? ' bare' : '') + '">' +
-      '<defs><linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + sky[0] + '"/><stop offset=".6" stop-color="' + sky[1] + '"/><stop offset="1" stop-color="' + sky[2] + '"/></linearGradient>' +
+      '<defs><linearGradient id="' + id + 's" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + SK[0] + '"/><stop offset=".6" stop-color="' + SK[1] + '"/><stop offset="1" stop-color="' + SK[2] + '"/></linearGradient>' +
       '<radialGradient id="' + id + 'glow"><stop offset="0" stop-color="#FFE9A8" stop-opacity=".75"/><stop offset="1" stop-color="#FFE9A8" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="' + id + 'w" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6FC3E0"/><stop offset=".5" stop-color="#9EDCF0"/><stop offset="1" stop-color="#5DB2D2"/></linearGradient>' +
-      leafDefs(id) + vgrad(id + 'hA', hillA, 0.16, 0.04) + vgrad(id + 'hB', hillB, 0.12, 0.08) + vgrad(id + 'gr', ground, 0.1, 0.14) + '</defs>' +
+      leafDefs(id, G) + (G && G.defs ? G.defs(id) : '') + vgrad(id + 'hA', hillA, 0.16, 0.04) + vgrad(id + 'hB', hillB, 0.12, 0.08) + vgrad(id + 'gr', ground, 0.1, 0.14) + '</defs>' +
       (bare ? '' : '<rect width="' + W + '" height="' + H + '" fill="url(#' + id + 's)"/>');
     // النجوم والقمر ليلًا · الشمس نهارًا (في وضع «المشهد الحي» ترسمها السماء الحيّة)
     if (bare) { /* سماء شفافة */ }
@@ -150,6 +158,7 @@ const Garden = (() => {
     // التلال البعيدة
     s += '<path d="M-120 188 Q-40 170 0 196 Q60 150 130 178 T260 168 T360 180 Q420 166 480 186 V340 H-120Z" fill="url(#' + id + 'hA)" opacity=".8"/>';
     s += '<path d="M-120 210 Q-50 196 0 214 Q90 186 170 206 T360 198 Q420 190 480 206 V340 H-120Z" fill="url(#' + id + 'hB)" opacity=".92"/>';
+    if (gx.hills) s += gx.hills({ L, id, rng, f1, mix, lush, night });
     // الأرض
     const GY = 246;
     s += '<path d="M-120 236 Q-60 228 0 232 Q180 214 360 232 Q420 228 480 236 V340 H-120Z" fill="url(#' + id + 'gr)"/>';
@@ -164,7 +173,7 @@ const Garden = (() => {
     for (let k = 0; k < grassN; k++) {
       const x = gr() * W, y = 234 + gr() * 50, h = 4 + gr() * 6;
       if (L >= 650 && y > 266) continue;
-      s += '<path d="M' + f1(x) + ' ' + f1(y) + 'l-2 ' + f1(-h) + 'M' + f1(x) + ' ' + f1(y) + 'l2 ' + f1(-h * 0.8) + 'M' + f1(x) + ' ' + f1(y) + 'l0 ' + f1(-h * 1.1) + '" stroke="' + mix('#6E8F4E', '#2F7A45', lush) + '" stroke-width="1.2" stroke-linecap="round"/>';
+      s += '<path d="M' + f1(x) + ' ' + f1(y) + 'l-2 ' + f1(-h) + 'M' + f1(x) + ' ' + f1(y) + 'l2 ' + f1(-h * 0.8) + 'M' + f1(x) + ' ' + f1(y) + 'l0 ' + f1(-h * 1.1) + '" stroke="' + mix('#6E8F4E', G ? G.grass : '#2F7A45', lush) + '" stroke-width="1.2" stroke-linecap="round"/>';
     }
     // أشجار ونخيل البستان (450+)
     const extra = [[450, 70, 0.55, 'tree'], [500, 300, 0.62, 'palm'], [560, 38, 0.5, 'palm'], [620, 318, 0.48, 'tree'], [700, 112, 0.42, 'palm'], [760, 250, 0.44, 'tree'], [880, 18, 0.46, 'tree'], [940, 342, 0.5, 'palm']];
@@ -172,8 +181,9 @@ const Garden = (() => {
     extra.forEach(([lv, x, sc, kind], k) => {
       if (L < lv) return;
       const age = cl((L - lv) / 150, 0.35, 1);
-      if (kind === 'palm') back.push(palm(x, GY - 6 + k % 2 * 4, 70 * sc * age + 20, (k % 2 ? -1 : 1) * 10, rng(500 + k)));
-      else { const t = tree(Math.min(600, 150 + (L - lv) * 2), x, GY - 4, sc * (0.6 + 0.4 * age), 900 + k, { greens: ['#3B9A62', '#4DAE70', '#2F8455'], gid: id }); back.push(t.svg + t.leaves); }
+      if (kind === 'palm' && !(G && G.palm === false)) back.push(palm(x, GY - 6 + k % 2 * 4, 70 * sc * age + 20, (k % 2 ? -1 : 1) * 10, rng(500 + k)));
+      else { const t = tree(Math.min(600, 150 + (L - lv) * 2), x, GY - 4, sc * (0.6 + 0.4 * age) * (kind === 'palm' ? 0.85 : 1), 900 + k, G ? Object.assign({ gid: id }, tOpts, { greens: G.leaves.slice(2, 5) }) : { greens: ['#3B9A62', '#4DAE70', '#2F8455'], gid: id });
+        back.push(t.svg + t.leaves + (gx.tree ? gx.tree({ L: Math.min(600, 150 + (L - lv) * 2), tree: t, rng: rng, seed: 900 + k, f1, mix, night, id, small: true }) : '')); }
     });
     s += back.join('');
     // الشجرة الرئيسية
@@ -197,16 +207,17 @@ const Garden = (() => {
       if (L >= 1000) s += '<circle cx="' + cx + '" cy="' + f1(GY - bigTree.H * 0.72) + '" r="' + f1(bigTree.H * 0.95) + '" fill="url(#' + id + 'glow)" opacity=".75"/>';
       s += bigTree.svg + bigTree.leaves;
       const tips = bigTree.tips;
+      if (gx.tree) s += gx.tree({ L, tree: bigTree, rng, seed: 7, f1, mix, night, id });
       // الأزهار (200+)
       if (L >= 200 && tips.length) {
-        const n = cl(Math.floor((L - 200) / 2.5), 0, 60), fr = rng(333), cols = ['#FFD1DC', '#FFFFFF', '#FFC4D6', '#FFE3EC'];
-        for (let k = 0; k < n; k++) { const t = tips[Math.floor(fr() * tips.length)]; s += flower(t.x + (fr() - 0.5) * bigTree.leafR * 1.6, t.y + (fr() - 0.5) * bigTree.leafR * 1.2, 1.6 + fr() * 1.2, cols[k % 4]); }
+        const n = cl(Math.floor((L - 200) / 2.5), 0, 60), fr = rng(333), cols = (G && G.bloom) || ['#FFD1DC', '#FFFFFF', '#FFC4D6', '#FFE3EC'];
+        for (let k = 0; k < n; k++) { const t = tips[Math.floor(fr() * tips.length)]; s += flower(t.x + (fr() - 0.5) * bigTree.leafR * 1.6, t.y + (fr() - 0.5) * bigTree.leafR * 1.2, 1.6 + fr() * 1.2, cols[k % cols.length], G && G.bloomMid); }
       }
       // الثمار (300+)
-      if (L >= 300 && tips.length) {
-        const n = cl(Math.floor((L - 300) / 4), 0, 42), fr = rng(555);
+      if (L >= 300 && tips.length && !(G && G.fruit === false)) {
+        const n = cl(Math.floor((L - 300) / 4), 0, 42), fr = rng(555), fc = (G && G.fruit) || ['#D9483B', '#E88A2A'];
         for (let k = 0; k < n; k++) { const t = tips[Math.floor(fr() * tips.length)], x = t.x + (fr() - 0.5) * bigTree.leafR * 1.5, y = t.y + (fr() - 0.2) * bigTree.leafR;
-          s += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="3.1" fill="' + (k % 3 ? '#D9483B' : '#E88A2A') + '"/><circle cx="' + f1(x - 1) + '" cy="' + f1(y - 1) + '" r="1" fill="#fff" opacity=".6"/>'; }
+          s += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="3.1" fill="' + (k % 3 ? fc[0] : fc[1]) + '"/><circle cx="' + f1(x - 1) + '" cy="' + f1(y - 1) + '" r="1" fill="#fff" opacity=".6"/>'; }
       }
       // فانوس معلّق (150+)
       if (L >= 150 && tips.length > 3) {
@@ -216,24 +227,25 @@ const Garden = (() => {
       }
     }
     // الأزهار الأرضية (40+)
-    const fl = cl(Math.floor((L - 40) / 7), 0, 46), frr = rng(88), fcol = ['#F7A6B5', '#F6D36B', '#B9A7F2', '#FFFFFF', '#F59C7A'];
+    const fl = cl(Math.floor((L - 40) / 7), 0, 46), frr = rng(88), fcol = (G && G.flowers) || ['#F7A6B5', '#F6D36B', '#B9A7F2', '#FFFFFF', '#F59C7A'];
     for (let k = 0; k < fl; k++) {
       const x = 8 + frr() * 344, y = 238 + frr() * 38;
       if (Math.abs(x - cx) < 26 || (L >= 650 && y > 262)) continue;
-      s += '<path d="M' + f1(x) + ' ' + f1(y) + 'v-6" stroke="#3E8A55" stroke-width="1"/>' + flower(x, y - 6, 1.7, fcol[k % fcol.length]);
+      s += '<path d="M' + f1(x) + ' ' + f1(y) + 'v-6" stroke="' + (G && G.stem || '#3E8A55') + '" stroke-width="1"/>' + flower(x, y - 6, 1.7, fcol[k % fcol.length], G && G.flowerMid);
     }
+    if (gx.ground) s += gx.ground({ L, id, rng, f1, mix, night, cx, GY, W });
     // سياج خشبي (250+) ومقعد (400+)
     if (L >= 250) { let fx = ''; for (let k = 0; k < 7; k++) fx += '<rect x="' + (14 + k * 9) + '" y="222" width="3" height="16" rx="1" fill="#A07A4E"/>'; s += fx + '<rect x="12" y="227" width="66" height="2.5" fill="#A07A4E"/><rect x="12" y="233" width="66" height="2.5" fill="#A07A4E"/>'; }
     if (L >= 400) s += '<g fill="#8A6440"><rect x="262" y="236" width="44" height="4" rx="1.5"/><rect x="264" y="240" width="3" height="9"/><rect x="301" y="240" width="3" height="9"/><rect x="262" y="228" width="44" height="3" rx="1.5"/></g>';
     // فراشات (120+) وطيور (320+)
-    const bf = cl(Math.floor((L - 110) / 90), 0, 5), br2 = rng(64);
-    for (let k = 0; k < bf; k++) { const x = 40 + br2() * 280, y = 120 + br2() * 90, c = ['#F59C7A', '#B9A7F2', '#F6D36B', '#7FD3E6', '#F7A6B5'][k];
+    const bf = cl(Math.max(Math.floor((L - 110) / 90), G && G.bfMin || 0), 0, 5), br2 = rng(64), bfc = (G && G.bfly) || ['#F59C7A', '#B9A7F2', '#F6D36B', '#7FD3E6', '#F7A6B5'];
+    for (let k = 0; k < bf; k++) { const x = 40 + br2() * 280, y = 120 + br2() * 90, c = bfc[k % bfc.length];
       s += '<g transform="translate(' + f1(x) + ' ' + f1(y) + ')" class="gbf"><ellipse cx="-3" cy="0" rx="3.4" ry="2.4" fill="' + c + '"/><ellipse cx="3" cy="0" rx="3.4" ry="2.4" fill="' + c + '"/><rect x="-.5" y="-2.4" width="1" height="4.8" fill="#3B2F23"/></g>'; }
     const birds = cl(Math.floor((L - 300) / 80), 0, 6), bb = rng(91);
     for (let k = 0; k < birds; k++) { const x = 30 + bb() * 300, y = 40 + bb() * 60; s += '<path d="M' + f1(x) + ' ' + f1(y) + 'q4 -4 8 0 q4 -4 8 0" stroke="' + (night ? '#C9D6E2' : '#3D4A55') + '" stroke-width="1.4" fill="none" stroke-linecap="round"/>'; }
     // يراعات ليلية (600+)
     if (night && L >= 600) { const ff = rng(17); for (let k = 0; k < 14; k++) s += '<circle cx="' + f1(ff() * W) + '" cy="' + f1(150 + ff() * 110) + '" r="1.4" fill="#FFF3A8" opacity="' + f1(0.5 + ff() * 0.5) + '"/>'; }
-    if (night && !bare) s += '<rect width="' + W + '" height="' + H + '" fill="#0A1A2A" opacity=".18"/>';
+    if (night && !bare) s += '<rect width="' + W + '" height="' + H + '" fill="' + (G && G.nightTint || '#0A1A2A') + '" opacity=".18"/>';
     return s + '</svg>';
   }
   return { render, STAGES, MAX, stageOf };

@@ -60,7 +60,9 @@ SCREENS.home = {
       '<div class="cd num" id="h-cd">' + icon('clock') + '<span></span></div></div>' +
       '<div class="dates"><span>' + weekday(now) + '</span><i class="dot"></i><span class="hj">' + moonIcon(mn) + fmtH(h) + '</span><i class="dot"></i><span>' + fmtG(now) + '</span></div>' +
       (occ ? '<div class="dates"><span class="occ">' + icon('sparkle', '', 'width:14px;height:14px;display:inline-block;vertical-align:-2px') + ' ' + esc(occ.t) + '</span></div>' : '') +
-      '<div class="land" data-go="garden" aria-label="بستانك">' + Garden.render(g.L, { bare: true, phase: gardenPhase(now), id: 'hl', par: 'xMidYMax slice' }) + '</div>' +
+      (artKey() ? '<div class="kw-artw" aria-hidden="true"><img class="kw-art" src="' + Art.heroURI(artKey(), g.L) + '" alt="" draggable="false"></div><div class="land kw-hit" data-go="garden" aria-label="بستانك"></div>'
+        : '<div class="land" data-go="garden" aria-label="بستانك">' + Garden.render(g.L, { bare: true, phase: gardenPhase(now), id: 'hl', par: 'xMidYMax slice' }) + '</div>') +
+      (curSkin() ? (curSkin().stickers ? kwHero(curSkin()) : '<div class="skin-fx fx-' + curSkin().fx + '" aria-hidden="true">' + skinFX(curSkin()) + '</div>') : '') +
       '<button class="lvchip" data-go="garden"><svg viewBox="0 0 24 24"><path d="' + starD(12, 12, 11, 0.76, Math.PI / 8) + '"/></svg><b class="num">' + N(g.L) + '</b><span>' + esc(gst.name) + '</span></button>' +
       '</section>';
     const strip = '<div class="pstrip" id="h-strip">' + FIVE.map((k, i) =>
@@ -71,7 +73,7 @@ SCREENS.home = {
   mount(el) {
     this.paintSky(new Date(), true);
     // عمق المشهد: الأرض والسماء تتحرّكان أبطأ من المحتوى عند التمرير
-    const hero = $('#hero', el), land = hero && hero.querySelector('.land'), np = hero && hero.querySelector('.np'), sky = hero && hero.querySelector('.sky-stars');
+    const hero = $('#hero', el), land = hero && (hero.querySelector('.kw-artw') || hero.querySelector('.land')), np = hero && hero.querySelector('.np'), sky = hero && hero.querySelector('.sky-stars');
     let raf = 0;
     this._par = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; const y = Math.max(0, Math.min(window.scrollY, 520));
       if (land) land.style.transform = 'translate3d(0,' + (y * 0.28).toFixed(1) + 'px,0)';
@@ -116,7 +118,8 @@ SCREENS.home = {
     frac = clamp((now - a) / (b - a), 0, 1);
     if (now >= t.fajr && now < t.sunrise) frac = 0.02 + frac * 0.05;
     const [x, y] = bez(frac);
-    $('#h-body').innerHTML = sun
+    const ak = artKey();
+    $('#h-body').innerHTML = ak ? '<g class="kw-mk" transform="translate(' + (+x).toFixed(1) + ' ' + (+y).toFixed(1) + ')">' + Art.marker(ak) + '</g>' : sun
       ? '<circle cx="' + x + '" cy="' + y + '" r="18" fill="#FFE6A6" opacity=".5" filter="url(#sunF)"/><circle cx="' + x + '" cy="' + y + '" r="9.5" fill="url(#sunG)"/>'
       : LivingSky.moonSVG(+x.toFixed(1), +y.toFixed(1), 9, LivingSky.moon(now));
     const steps = 24; let d = 'M' + ARC.p0; for (let k = 1; k <= steps; k++) { const p = bez(frac * k / steps); d += ' L' + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }
@@ -140,7 +143,7 @@ SCREENS.home = {
     let html = '<div class="sec"><h2>وقتك الآن</h2></div>';
     const rc = typeof ramadanCard === 'function' ? ramadanCard(now).replace('class="hc mt rmd', 'class="hc rmd') : '';
     html += rc + '<button class="hc' + (rc ? ' mt' : '') + '" style="display:block;width:calc(100% - 32px);text-align:right" data-go="azkarList" data-a=\'{"id":"' + cat + '"}\'>' +
-      '<div class="row"><div class="q" style="flex:none"><div class="qi" style="' + hueVars(A.hue) + ';width:52px;height:52px;border-radius:18px">' + icon(A.icon) + '</div></div>' +
+      '<div class="row"><div class="q" style="flex:none"><div class="qi' + (curSkin() && curSkin().stickers ? ' qi-emo' : '') + '" style="' + hueVars(A.hue) + ';width:52px;height:52px;border-radius:18px">' + kwIcon(A.icon, A.id === 'prayer' ? 'prayer' : null, 32) + '</div></div>' +
       '<div class="grow"><div style="font-weight:700;font-size:16px">' + esc(A.title) + '</div><div class="faint" style="font-size:12.5px">' + (pr.done ? 'أتممت ' + N(pr.done) + ' من ' + N(pr.total) : A.sub + ' · ' + N(pr.total) + ' ذكرًا') + '</div>' +
       '<div class="progress g" style="margin-top:9px"><i style="width:' + Math.round(pr.done / pr.total * 100) + '%"></i></div></div>' + icon('chev', 'faint') + '</div></button>';
     const dow = now.getDay(), t = Times.forDay(now);
@@ -225,7 +228,9 @@ function quickGrid() {
   const items = [['القرآن', 'book', 'emerald', 'data-tab="quran"'], ['الأذكار', 'moonstar', 'teal', 'data-tab="azkar"'], ['القبلة', 'kaaba', 'gold', 'data-go="qibla"'],
     ['المسبحة', 'beads', 'indigo', 'data-go="tasbih"'], ['الأدعية', 'hands', 'plum', 'data-go="azkarList" data-a=\'{"id":"qduas"}\''], ['الأسماء الحسنى', 'star8', 'amber', 'data-go="names"'],
     ['التقويم', 'calendar', 'slate', 'data-go="calendar"'], ['المزيد', 'grid', 'neutral', 'data-tab="more"']];
-  return '<div class="qgrid stagger">' + items.map(([t, ic, hu, at]) => '<button class="q" ' + at + '><div class="qi" style="' + hueVars(hu) + '">' + icon(ic) + '</div>' + t + '</button>').join('') + '</div>';
+  const sk = curSkin(), qe = sk && sk.quick;   // وسن 4.5: رموز ثلاثية الأبعاد في الثيمات الكاملة
+  return '<div class="qgrid stagger">' + items.map(([t, ic, hu, at], i) => '<button class="q" ' + at + '>' +
+    (qe && qe[i] ? '<div class="qi qi-emo">' + emoImg(qe[i], i === 7 && sk.quickHue && KW_HUE[sk.quickHue] ? 'filter:' + KW_HUE[sk.quickHue] : '') + '</div>' : '<div class="qi" style="' + hueVars(hu) + '">' + icon(ic) + '</div>') + t + '</button>').join('') + '</div>';
 }
 const shortDay = d => ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'][d.getDay()];
 function trackerCard(now) {
@@ -264,18 +269,18 @@ SCREENS.azkar = {
     const big = cats.find(c => c.id === cur), pr = Azkar.progress(big);
     return hdr('الأذكار والأدعية', 'من الكتاب والسنّة الصحيحة — حصن المسلم') +
       '<button class="hc feature-hc" style="display:block;width:calc(100% - 32px);text-align:right;margin-top:16px" data-go="azkarList" data-a=\'{"id":"' + big.id + '"}\'>' +
-      '<div class="cr"><div class="ico">' + icon(big.icon) + '</div><div class="grow"><div class="muted" style="font-size:12px">المناسب لوقتك الآن</div>' +
+      '<div class="cr"><div class="ico">' + kwIcon(big.icon, big.id === 'prayer' ? 'prayer' : null, 30) + '</div><div class="grow"><div class="muted" style="font-size:12px">المناسب لوقتك الآن</div>' +
       '<div style="font-weight:700;font-size:19px">' + esc(big.title) + '</div><div class="muted" style="font-size:12.5px">' + esc(big.sub) + '</div></div>' + icon('chev') + '</div>' +
       '<div class="row" style="margin-top:12px;gap:10px"><div class="progress grow"><i style="width:' + Math.round(pr.done / pr.total * 100) + '%"></i></div><span class="num" style="font-size:12px;color:var(--gold-2)">' + N(pr.done) + '/' + N(pr.total) + '</span></div></button>' +
       sec('جميع الأقسام') + '<div class="azc-grid stagger">' + cats.map(c => {
         const p = Azkar.progress(c);
-        return '<button class="azc" data-go="azkarList" data-a=\'{"id":"' + c.id + '"}\' style="' + hueVars(c.hue) + '"><div class="ic">' + icon(c.icon) + '</div>' +
+        return '<button class="azc" data-go="azkarList" data-a=\'{"id":"' + c.id + '"}\' style="' + hueVars(c.hue) + '"><div class="ic' + (curSkin() && curSkin().stickers ? ' ic-emo' : '') + '">' + kwIcon(c.icon, c.id === 'prayer' ? 'prayer' : null, 28) + '</div>' +
           (p.done ? '<span class="prog num">' + N(p.done) + '/' + N(p.total) + '</span>' : '') + '<div><div class="t">' + esc(c.title) + '</div><div class="s">' + esc(c.sub) + '</div></div></button>';
       }).join('') + '</div>' +
       sec('أدوات الذكر') + '<div class="list mx">' +
-      '<button class="li" data-go="tasbih"><div class="ic">' + icon('beads') + '</div><div class="grow"><div class="t">المسبحة الإلكترونية</div><div class="s">عدّاد مع أهداف وإحصاءات يومية</div></div><div class="end">' + icon('chev') + '</div></button>' +
-      '<button class="li" data-go="istighfar"><div class="ic g">' + icon('heart') + '</div><div class="grow"><div class="t">وِرد الاستغفار</div><div class="s">مئة استغفار يوميًا</div></div><div class="end">' + icon('chev') + '</div></button>' +
-      '<button class="li" data-go="names"><div class="ic">' + icon('star8') + '</div><div class="grow"><div class="t">أسماء الله الحسنى</div><div class="s">تسعة وتسعون اسمًا مع معانيها</div></div><div class="end">' + icon('chev') + '</div></button></div>';
+      '<button class="li" data-go="tasbih"><div class="ic">' + kwIcon('beads') + '</div><div class="grow"><div class="t">المسبحة الإلكترونية</div><div class="s">عدّاد مع أهداف وإحصاءات يومية</div></div><div class="end">' + icon('chev') + '</div></button>' +
+      '<button class="li" data-go="istighfar"><div class="ic g">' + kwIcon('heart') + '</div><div class="grow"><div class="t">وِرد الاستغفار</div><div class="s">مئة استغفار يوميًا</div></div><div class="end">' + icon('chev') + '</div></button>' +
+      '<button class="li" data-go="names"><div class="ic">' + kwIcon('star8') + '</div><div class="grow"><div class="t">أسماء الله الحسنى</div><div class="s">تسعة وتسعون اسمًا مع معانيها</div></div><div class="end">' + icon('chev') + '</div></button></div>';
   },
 };
 SCREENS.azkarList = {
@@ -349,7 +354,7 @@ SCREENS.tasbih = {
       '<div class="chips" id="t-chips" style="margin-top:14px">' + L.map((x, i) => '<button class="chip ' + (i === TB.sel ? 'on' : '') + '" data-i="' + i + '">' + esc(x.t) + '</button>').join('') +
       '<button class="chip" id="t-add">' + icon('plus', '', 'width:16px;height:16px') + 'ذكر خاص</button></div>' +
       '<div class="tb-wrap"><div class="tb-dhikr" id="t-d">' + esc(d.t) + '</div>' +
-      '<button class="counter" id="t-btn" aria-label="تسبيح">' + beadsSVG(tbBeads(tg)) +
+      '<button class="counter" id="t-btn" aria-label="تسبيح">' + (artKey() ? '<img class="kw-tb" src="' + Art.tbURI(artKey()) + '" alt="" aria-hidden="true" draggable="false">' : '') + beadsSVG(tbBeads(tg)) +
       '<span class="ripple" id="t-rip"></span><span class="cn" id="t-n">' + N(TB.count) + '</span><span class="ct" id="t-t">' + (tg ? 'من ' + N(tg) : 'بلا حدّ') + '</span><span class="lp" id="t-loop"></span></button></div>' +
       '<div class="stat3 mx" style="margin-top:26px"><div class="stat"><b class="num" id="t-cy">' + N(TB.cycles) + '</b><span>الدورات</span></div>' +
       '<div class="stat"><b class="num" id="t-td">' + fmtInt(TB.today) + '</b><span>اليوم</span></div><div class="stat"><b class="num" id="t-tt">' + fmtInt(TB.total) + '</b><span>الإجمالي</span></div></div>' +
@@ -396,11 +401,22 @@ function tbBeads(tg) { if (tg && tg <= 40) return tg; if (tg && tg % 33 === 0) r
 /* حبّات المسبحة حول الدائرة، تبدأ من «نجمة وسن» في الأعلى وتدور عكس عقارب الساعة */
 function beadsSVG(n) {
   const R = 141, slots = n + 1, r = Math.min(8.4, Math.PI * R / slots * 0.62);
-  let s = '<svg class="ringsvg beads" viewBox="0 0 300 300"><defs><radialGradient id="bdG" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FFF4CF"/><stop offset=".55" stop-color="#E6C274"/><stop offset="1" stop-color="#A97E30"/></radialGradient></defs>';
-  s += '<path class="bd-star" d="' + starD(150, 150 - R, 11.5, 0.76, Math.PI / 8) + '"/>';
+  const bc = (curSkin() && curSkin().beads) || ['#FFF4CF', '#E6C274', '#A97E30'];   // وسن 4.5: حبّات بلون المشهد (لؤلؤ وردي، ذهب وردي، جمشت)
+  let s = '<svg class="ringsvg beads" viewBox="0 0 300 300"><defs><radialGradient id="bdG" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="' + bc[0] + '"/><stop offset=".55" stop-color="' + bc[1] + '"/><stop offset="1" stop-color="' + bc[2] + '"/></radialGradient></defs>';
+  const ak = artKey();   // وسن 4.6: حبّات مرسومة — لؤلؤ أزرق، لؤلؤ وردي، نجوم ذهبية، فراولات صغيرة، لؤلؤ ملوّن
+  if (ak) {
+    if (ak === 'kbloom') s = s.replace('</defs>', [['#FFFBE6', '#FFE08A', '#F2B53A'], ['#F7F1FF', '#D6C2FF', '#9E7BE6'], ['#F0FFF6', '#B5EBCB', '#5FBF8A']].map((c, j) => '<radialGradient id="bdG' + (j + 1) + '" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="' + c[0] + '"/><stop offset=".55" stop-color="' + c[1] + '"/><stop offset="1" stop-color="' + c[2] + '"/></radialGradient>').join('') + '</defs>');
+    const pos = []; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 - (i + 1) * 2 * Math.PI / slots; pos.push([150 + R * Math.cos(a), 150 + R * Math.sin(a)]); }
+    return s + Art.beads(ak, pos, r) + Art.beadTop(ak, 150, 150 - R, ak === 'kstar' ? 26 : 31) + '</svg>';
+  }
+  const sk = curSkin(), be = sk && sk.beadEmo;   // وسن 4.5: حبّات على هيئة رمز الثيم (فراولة، نجوم، ورود، أزهار، فراشات)
+  if (be) { const z = 30; s += '<image class="bd-top" href="' + emo(sk.beadTop || be[0]) + '" x="' + (150 - z / 2) + '" y="' + (150 - R - z / 2) + '" width="' + z + '" height="' + z + '"/>'; }
+  else s += '<path class="bd-star" d="' + starD(150, 150 - R, 11.5, 0.76, Math.PI / 8) + '"/>';
   for (let i = 0; i < n; i++) {
     const a = -Math.PI / 2 - (i + 1) * 2 * Math.PI / slots, x = 150 + R * Math.cos(a), y = 150 + R * Math.sin(a);
-    s += '<circle class="bd" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(2) + '"/>';
+    if (be) { const z = Math.min(24, r * 2.9), hu = sk.beadHue ? KW_HUE[sk.beadHue[i % sk.beadHue.length]] : '';
+      s += '<image class="bd" href="' + emo(be[i % be.length]) + '" x="' + (x - z / 2).toFixed(1) + '" y="' + (y - z / 2).toFixed(1) + '" width="' + z.toFixed(1) + '" height="' + z.toFixed(1) + '"' + (hu ? ' style="--hf:' + hu + '"' : '') + '/>'; }
+    else s += '<circle class="bd" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(2) + '"/>';
   }
   return s + '</svg>';
 }
@@ -685,10 +701,19 @@ function segRow(title, sub, key, opts) {
     '<div class="seg" data-seg="' + key + '" style="flex:1 1 170px">' + opts.map(([v, t]) => '<button data-v="' + v + '" class="' + (String(Settings[key]) === String(v) ? 'on' : '') + '">' + t + '</button>').join('') + '</div></div>';
 }
 const THEME_NAMES = Object.assign({ auto: 'حسب النظام', prayer: 'تلقائي حسب المواقيت' }, Object.fromEntries(Object.entries(THEMES).map(([k, v]) => [k, v.n])));
-const THEME_GROUPS = [['calm', 'هادئة'], ['girls', 'ناعمة وردية'], ['more', 'مختلفة']];
+const THEME_GROUPS = [['kawaii', 'ثيمات كاملة للبنات'], ['scene', 'مشاهد'], ['girls', 'ناعمة وردية'], ['calm', 'هادئة'], ['more', 'مختلفة']];
 /* وسن 4.5 · اختيار السمة بمعاينة ألوانها */
 function themeSheet() {
   const card = k => { const T = THEMES[k], sw = T.sw;
+    if (T.skin && typeof Art !== 'undefined' && Art.has(T.skin)) return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-kw thm-art"><img src="' + Art.thumbURI(T.skin) + '" alt="" draggable="false">' +
+      '<i style="position:absolute;left:0;right:0;bottom:0;height:5px;background:' + sw[2] + '"></i></span><span class="thm-n">' + T.n + '</span></button>';
+    if (T.skin && SKINS[T.skin] && SKINS[T.skin].stickers) { const K = SKINS[T.skin], w = K.wall || [K.e];
+      return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-kw" style="background:linear-gradient(160deg,' + sw[0] + ',' + sw[1] + ')">' +
+        emoImg(K.e, 'left:50%;top:50%;width:46%;margin:-23% 0 0 -23%;filter:drop-shadow(0 3px 5px rgba(0,0,0,.18))' + (K.bulletHue ? ' ' + KW_HUE[K.bulletHue] : '')) +
+        emoImg(w[1] || K.e, 'left:8%;top:10%;width:22%;transform:rotate(-14deg);opacity:.9') + emoImg(w[2] || K.e, 'right:8%;bottom:9%;width:20%;transform:rotate(12deg);opacity:.9') +
+        '<i style="position:absolute;left:0;right:0;bottom:0;height:5px;background:' + sw[2] + '"></i></span><span class="thm-n">' + T.n + '</span></button>'; }
+    if (T.skin && SKINS[T.skin]) return '<button class="thm thm-scene' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-sc">' +
+      Garden.render(260, { skin: SKINS[T.skin], phase: T.base === 'dark' ? 'night' : 'day', id: 'ts' + k, par: 'xMidYMax slice' }) + '</span><span class="thm-n">' + T.n + '</span></button>';
     return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-sw" style="background:' + sw[0] + '"><i style="background:' + sw[1] + '"></i><b style="background:' + sw[2] + '"></b><s style="background:' + sw[3] + '"></s></span><span class="thm-n">' + T.n + '</span></button>'; };
   const html = '<div class="sh-t">السمة</div><div class="sh-s">اختر ما يريح عينيك ويناسب ذوقك</div>' +
     THEME_GROUPS.map(([g, t]) => '<div class="thm-g">' + t + '</div><div class="thm-grid">' + Object.keys(THEMES).filter(k => THEMES[k].g === g).map(card).join('') + '</div>').join('') +
@@ -701,6 +726,7 @@ function themeSheet() {
       if (T && T.acc) { setSetting('accent', T.acc); setSetting('accentAuto', true); }
       else if (Settings.accentAuto) { setSetting('accent', 'emerald'); setSetting('accentAuto', false); }
     }
+    if (T && T.skin && T.rt) setSetting('readTheme', T.rt);   // المشهد الكامل يأتي بخلفية مصحف تناسبه (ويمكن تغييرها)
     applyTheme(); $$('[data-th]', el).forEach(x => x.classList.toggle('on', x === b)); vibrate(8);
   }), () => Router.refresh());
 }
@@ -724,7 +750,7 @@ function accentSheet() {
   });
 }
 const ACCENTS = [['emerald', '#0B5D4B', 'زمردي'], ['teal', '#12707E', 'فيروزي'], ['ocean', '#1F6F8B', 'بحري'], ['indigo', '#3A4B8A', 'أزرق ليلي'], ['plum', '#7A3F71', 'بنفسجي'], ['lilac', '#7E63B8', 'ليلكي'],
-  ['pink', '#C2587A', 'وردي'], ['rosegold', '#B06A74', 'ذهبي وردي'], ['rose', '#9A4658', 'عنّابي'], ['coral', '#D0694E', 'مرجاني'], ['amber', '#8A6224', 'عسلي'], ['coffee', '#7A5236', 'قهوة'], ['olive', '#5E6B2E', 'زيتوني']];
+  ['pink', '#C2587A', 'وردي'], ['rosegold', '#B06A74', 'ذهبي وردي'], ['rose', '#9A4658', 'عنّابي'], ['coral', '#D0694E', 'مرجاني'], ['amber', '#8A6224', 'عسلي'], ['coffee', '#7A5236', 'قهوة'], ['olive', '#5E6B2E', 'زيتوني'], ['morpho', '#2D6FE0', 'أزرق']];
 const SOUND_NAMES = { adhan: 'الأذان كاملًا', takbir: 'التكبير فقط', system: 'نغمة الإشعارات الافتراضية', chime: 'نغمة وسن', custom: 'نغمة من هاتفك', silent: 'اهتزاز فقط' };
 SCREENS.settings = {
   parent: 'more',
@@ -734,7 +760,7 @@ SCREENS.settings = {
     return hdr('الإعدادات', 'خصّص وسن كما تحب', { back: true, compact: true }) +
       sec('المظهر') + '<div class="list mx">' +
       '<button class="li" id="s-th"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">السمة</div><div class="s">' + THEME_NAMES[Settings.theme] + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
-      '<div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:120px"><div class="t">لون التطبيق</div><div class="s">' + (Settings.accent === 'custom' ? 'لون من اختيارك' : (ACCENTS.find(a => a[0] === Settings.accent) || ACCENTS[0])[2]) + '</div></div>' +
+      '<div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:120px"><div class="t">لون التطبيق</div><div class="s">' + (Settings.accent === 'custom' ? 'لون من اختيارك' : (ACCENTS.find(a => a[0] === Settings.accent) || [0, 0, 'لون الثيم'])[2]) + '</div></div>' +
       '<div class="accents" id="s-acc">' + ACCENTS.map(([k, c]) => '<button class="' + (Settings.accent === k ? 'on' : '') + '" data-acc="' + k + '" style="background:' + c + '" aria-label="' + k + '"></button>').join('') +
       '<button class="acc-any' + (Settings.accent === 'custom' ? ' on' : '') + '" id="s-acc-c" aria-label="لون من اختيارك"' + (Settings.accent === 'custom' ? ' style="--c:' + Settings.accentHex + '"' : '') + '>' + icon('plus') + '</button></div></div>' +
       segRow('حجم خط التطبيق', 'يكبّر كل النصوص — مريح للعين', 'uiScale', [['0.9', 'صغير'], ['1', 'عادي'], ['1.12', 'كبير'], ['1.25', 'أكبر']]) +
@@ -866,6 +892,10 @@ window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.tex
 /* ═══════════════ عن التطبيق ═══════════════ */
 const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '4.4';
 const WHATS_NEW = [
+  ['4.6', [['palette', 'خمسة ثيمات كاملة برسوم خاصة', 'الفراشات الزرقاء، الورد، النجمة، الفراولة، الأزهار — لكل ثيم مشهده المرسوم وألوانه وزينة بطاقاته'],
+    ['beads', 'مسبحة بطابع كل ثيم', 'لؤلؤ أزرق ووردي، نجوم ذهبية، فراولات صغيرة، ولؤلؤ ملوّن حول الدائرة'],
+    ['sparkle', 'زينة متحرّكة هادئة', 'فراشات ترفرف، بتلات تتساقط، نجوم معلّقة، وقلوب صغيرة — وتهدأ ليلًا'],
+    ['book', 'المصحف بلا زينة', 'تتغيّر ألوان الصفحة فقط احترامًا لكلام الله']]],
   ['4.5', [['palette', 'سمات جديدة ناعمة ومختلفة', 'وردي ناعم، ليل وردي، لافندر، خوخي، ذهبي وردي، بنفسجي حالم وغيرها — مع لون من اختيارك'],
     ['headphones', 'أكثر من ٢٣٠ قارئًا', 'سورة كاملة مع متابعة الآيات، وتنزيل السور للاستماع دون إنترنت'],
     ['leaf', 'أصوات الطبيعة أثناء القراءة', 'أمواج ومطر وعصافير ونسيم وجدول وليل هادئ، تهدأ وحدها عند التلاوة'],
@@ -887,6 +917,7 @@ SCREENS.about = {
       sec('المصادر والتراخيص') + '<div class="list mx">' +
       '<div class="li"><div class="ic">' + icon('book') + '</div><div class="grow"><div class="t">نص القرآن الكريم</div><div class="s">الرسم العثماني برواية حفص عن عاصم، بخط مجمّع الملك فهد (KFGQPC Uthmanic Hafs)</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('text') + '</div><div class="grow"><div class="t">الخطوط</div><div class="s">IBM Plex Sans Arabic وReem Kufi وAmiri وAmiri Quran — رخصة SIL Open Font License 1.1</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">الرسوم والرموز</div><div class="s">رسوم الثيمات مرسومة خصيصًا لوسن، والرموز ثلاثية الأبعاد من Fluent Emoji (مايكروسوفت) برخصة MIT</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">بيانات المدن</div><div class="s">إحداثيات من GeoNames.org برخصة CC BY 4.0</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('hands') + '</div><div class="grow"><div class="t">الأذكار والأدعية</div><div class="s">من كتاب «حصن المسلم» وكتب السنة مع ذكر المصدر لكل ذكر</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('clock') + '</div><div class="grow"><div class="t">المواقيت والتقويم</div><div class="s">حساب فلكي محلي، والتاريخ الهجري وفق تقويم أم القرى مع إمكانية التعديل</div></div></div>' +

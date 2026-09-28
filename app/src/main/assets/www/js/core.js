@@ -338,6 +338,16 @@ const THEMES = {
   peach: { n: 'خوخي', base: 'light', tone: 'peach', g: 'girls', acc: 'coral', bar: '#FFF2EB', sw: ['#FFF2EB', '#FFFFFF', '#D0694E', '#EFA07E'] },
   rosegold: { n: 'ذهبي وردي', base: 'light', tone: 'rosegold', g: 'girls', acc: 'rosegold', bar: '#F8EEEA', sw: ['#F8EEEA', '#FFFCFA', '#B06A74', '#D3A08E'] },
   violet: { n: 'بنفسجي حالم', base: 'dark', tone: 'violet', g: 'girls', acc: 'lilac', bar: '#110E1F', sw: ['#110E1F', '#211B38', '#7E63B8', '#C9B3F2'] },
+  // وسن 4.6 · «ثيمات كاملة» برسوم «ريشة وسن» (art.js): لكل ثيم مشهده المرسوم وألوانه وزينة بطاقاته ومسبحته — skins.js
+  kbfly: { n: 'الفراشات الزرقاء', base: 'light', tone: 'bfly', g: 'kawaii', acc: 'morpho', skin: 'kbfly', rt: 'sky', bar: '#EEF5FF', sw: ['#EEF5FF', '#A9D2FF', '#2D6FE0', '#7FC6FF'] },
+  krose: { n: 'الورد', base: 'light', tone: 'rosy', g: 'kawaii', acc: 'rosered', skin: 'krose', rt: 'pink', bar: '#FFF0F3', sw: ['#FFF0F3', '#F8CFDC', '#D6336C', '#8FC89A'] },
+  kstar: { n: 'النجمة', base: 'dark', tone: 'starry', g: 'kawaii', acc: 'starry', skin: 'kstar', rt: 'blue', bar: '#0E1130', sw: ['#0E1130', '#1F2454', '#5B4FC4', '#F5C94E'] },
+  kberry: { n: 'الفراولة', base: 'light', tone: 'berry', g: 'kawaii', acc: 'berry', skin: 'kberry', rt: 'pink', bar: '#FFF6F1', sw: ['#FFF6F1', '#FFD2DB', '#E5485F', '#6CC070'] },
+  kbloom: { n: 'الأزهار', base: 'light', tone: 'bloom', g: 'kawaii', acc: 'bloom', skin: 'kbloom', rt: 'cream', bar: '#FFF8EF', sw: ['#FFF8EF', '#FFDDE6', '#EC7FA9', '#F5BE3F'] },
+  // وسن 4.5 · «المشاهد»: سمات كاملة (السماء والبستان والزينة والمسبحة) — skins.js
+  sakura: { n: 'أزهار الكرز', base: 'light', tone: 'blush', g: 'scene', acc: 'pink', skin: 'sakura', rt: 'pink', bar: '#FBEFF3', sw: ['#FDE6EF', '#F7C1D3', '#C2587A', '#9BCB8E'] },
+  roses: { n: 'حديقة الورود', base: 'dark', tone: 'rosenight', g: 'scene', acc: 'pink', skin: 'roses', rt: 'plum', bar: '#170D13', sw: ['#170B1C', '#4D2142', '#D6336C', '#E6A996'] },
+  lavfield: { n: 'حقل الخزامى', base: 'light', tone: 'lavender', g: 'scene', acc: 'lilac', skin: 'lavender', rt: 'lavender', bar: '#F3EFFA', sw: ['#EEE6FA', '#C6BDF1', '#7E63B8', '#9FC79A'] },
   amoled: { n: 'ليل حالك', base: 'dark', tone: 'amoled', g: 'more', bar: '#000000', sw: ['#000000', '#111614', '#0B5D4B', '#D4AF63'] },
   dawn: { n: 'فجر', base: 'dark', tone: 'dawn', g: 'more', acc: 'indigo', bar: '#0A1020', sw: ['#0A1020', '#16213B', '#3A4B8A', '#E4C98A'] },
   ocean: { n: 'بحري', base: 'dark', tone: 'ocean', g: 'more', acc: 'teal', bar: '#06141A', sw: ['#06141A', '#102832', '#12707E', '#D4AF63'] },
@@ -381,6 +391,8 @@ function applyTheme() {
   de.setAttribute('data-theme', T.base);
   if (T.tone) de.setAttribute('data-tone', T.tone); else de.removeAttribute('data-tone');
   de.setAttribute('data-tkey', k);
+  if (T.skin) de.setAttribute('data-skin', T.skin); else de.removeAttribute('data-skin');
+  if (typeof applySkinDeco === 'function') try { applySkinDeco(); } catch (e) { console.error(e); }
   const acc = Settings.accent || 'emerald';
   de.setAttribute('data-accent', acc);
   CUSTOM_VARS.forEach(v => de.style.removeProperty(v));

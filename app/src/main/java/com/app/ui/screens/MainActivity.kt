@@ -722,7 +722,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/4.5 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/4.6 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }

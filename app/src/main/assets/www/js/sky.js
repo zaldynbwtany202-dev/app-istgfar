@@ -24,6 +24,8 @@ const LivingSky = (() => {
   const mixC = (a, b, t) => { const x = hex(a), y = hex(b); return toHex(x.map((v, i) => v + (y[i] - v) * t)); };
   const lum = h => { const [r, g, b] = hex(h).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
   const M = 60000;
+  /* وسن 4.5 · «المشاهد»: ألوان السماء من السمة إن كان لها مشهد خاص (skins.js) */
+  const skyP = () => { try { const k = typeof curSkin === 'function' ? curSkin() : null; return k && k.sky ? k.sky : P; } catch (e) { return P; } };
   function frames(now) {
     const t = Times.forDay(now), d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), d1 = new Date(d0.getTime() + 864e5);
     const at = (base, min) => base && !isNaN(base) ? new Date(base.getTime() + min * M) : null;
@@ -43,7 +45,7 @@ const LivingSky = (() => {
     if (!fr || fr.length < 2) { const h = now.getHours(); const k = h < 5 || h >= 20 ? 'night' : h < 7 ? 'dawn' : h < 16 ? 'day' : h < 18 ? 'golden' : 'sunset'; a = b = [now, k]; }
     else { for (let i = 0; i < fr.length - 1; i++) if (now >= fr[i][0] && now < fr[i + 1][0]) { a = fr[i]; b = fr[i + 1]; break; } if (!a) { a = b = fr[fr.length - 1]; } }
     const u = a === b ? 0 : (now - a[0]) / (b[0] - a[0]), s = u * u * (3 - 2 * u);   // انتقال ناعم
-    const A = P[a[1]], B = P[b[1]];
+    const SP = skyP(), A = SP[a[1]] || P[a[1]], B = SP[b[1]] || P[b[1]];
     const c = A.c.map((x, i) => mixC(x, B.c[i], s));
     const stars = A.st + (B.st - A.st) * s;
     const ink = (lum(c[1]) * 0.6 + lum(c[0]) * 0.4) > 0.3 ? 'dark' : 'light';

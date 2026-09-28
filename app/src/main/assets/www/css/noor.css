@@ -1188,3 +1188,162 @@ body:has(.pbar.show):has(.hzbar.on) .asbar{bottom:calc(136px + env(safe-area-ins
 @keyframes ambp{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--gold) 45%,transparent)}50%{box-shadow:0 0 0 8px transparent}}
 .btn[disabled]{opacity:.45;pointer-events:none}
 
+/* ══════════ وسن 4.5 · «المشاهد»: زينة متحرّكة ناعمة فوق السماء والبستان ══════════ */
+.skin-fx{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.skin-fx .pt{position:absolute;top:-18px;width:10px;height:8px;border-radius:0 80% 0 80%;background:linear-gradient(135deg,#FFEEF3,#F4A3BF);
+  box-shadow:0 1px 2px rgba(150,40,80,.12);opacity:0;animation:ptfall 13s linear infinite;will-change:transform}
+.fx-roses .pt{width:11px;height:9px;background:linear-gradient(135deg,#FF9DB8,#C2255C);border-radius:70% 10% 70% 10%}
+@keyframes ptfall{0%{transform:translate3d(0,0,0) rotate(0deg) scale(var(--s,1));opacity:0}
+  8%{opacity:.95}
+  50%{transform:translate3d(var(--dx,30px),255px,0) rotate(calc(var(--r,180deg) * .5)) scale(var(--s,1))}
+  92%{opacity:.85}
+  100%{transform:translate3d(calc(var(--dx,30px) * -.4),520px,0) rotate(var(--r,180deg)) scale(var(--s,1));opacity:0}}
+.skin-fx .sp{position:absolute;width:3px;height:3px;border-radius:50%;background:#FFE7B0;box-shadow:0 0 6px 1px rgba(255,214,140,.8);--o:.9;animation:twk 3.2s ease-in-out infinite}
+.skin-fx .sp.lv{background:#fff;box-shadow:0 0 6px 1px rgba(230,215,255,.9)}
+.skin-fx .bf{position:absolute;left:-30px;width:24px;height:20px;animation:bffly 26s linear infinite}
+.skin-fx .bf svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 1px 1.5px rgba(60,40,100,.25))}
+.skin-fx .bf .w{transform-box:fill-box;animation:flap .3s ease-in-out infinite alternate}
+.skin-fx .bf .w.l{transform-origin:100% 50%}
+.skin-fx .bf .w.r{transform-origin:0% 50%}
+@keyframes flap{from{transform:scaleX(1)}to{transform:scaleX(.3)}}
+@keyframes bffly{0%{transform:translate(0,0) rotate(8deg)}20%{transform:translate(90px,-30px) rotate(-6deg)}40%{transform:translate(180px,6px) rotate(10deg)}
+  60%{transform:translate(270px,-22px) rotate(-8deg)}80%{transform:translate(350px,10px) rotate(6deg)}100%{transform:translate(460px,-10px) rotate(0)}}
+@media (prefers-reduced-motion:reduce){.skin-fx{display:none}}
+/* حبر النص فوق السماء الفاتحة بلون المشهد */
+[data-skin=sakura] .scene.lite{--ink:#4A2140;--ink-2:rgba(74,33,64,.72);--arc:rgba(74,33,64,.24)}
+[data-skin=roses] .scene.lite{--ink:#3E1530;--ink-2:rgba(62,21,48,.72);--arc:rgba(62,21,48,.24)}
+[data-skin=lavender] .scene.lite{--ink:#2E2350;--ink-2:rgba(46,35,80,.72);--arc:rgba(46,35,80,.24)}
+/* ليل المشاهد أنعم من ليل البستان الأخضر */
+[data-skin] .scene[data-ph=night] .land svg{filter:brightness(.64) saturate(.86)}
+[data-skin] .scene[data-ph=predawn] .land svg,[data-skin] .scene[data-ph=dusk] .land svg{filter:brightness(.74) saturate(.9)}
+/* بطاقة المشهد في اختيار السمة */
+.thm-scene .thm-sc{display:block;width:100%;aspect-ratio:1.35;border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.thm-scene .thm-sc svg{width:100%;height:100%;display:block}
+.reader[data-rt=plum]{--rbg:#1A0F18;--rtx:#F3E6EC;--rmark:#E6A996;--rsel:rgba(230,169,150,.2);--rframe:rgba(230,169,150,.4)}
+/* المسبحة بلون المشهد */
+[data-skin=sakura] .counter{background:radial-gradient(circle at 50% 38%,#F4A6C2 0%,#DC7C9F 55%,#BC5B82 100%);box-shadow:0 22px 50px rgba(194,88,122,.34),inset 0 2px 0 rgba(255,255,255,.3),inset 0 -12px 30px rgba(120,30,70,.22)}
+[data-skin=lavender] .counter{background:radial-gradient(circle at 50% 38%,#B59AE8 0%,#8C6FD2 55%,#6B50B2 100%);box-shadow:0 22px 50px rgba(110,82,180,.34),inset 0 2px 0 rgba(255,255,255,.28),inset 0 -12px 30px rgba(50,30,110,.24)}
+[data-skin=roses] .counter{background:radial-gradient(circle at 50% 38%,#9A3560 0%,#651D3E 55%,#43122A 100%);box-shadow:0 22px 50px rgba(40,6,24,.6),inset 0 2px 0 rgba(255,255,255,.12),inset 0 -12px 30px rgba(0,0,0,.3)}
+[data-skin=roses] .beads .bd{fill:#3A1B2F}
+[data-skin=sakura] .beads .bd{fill:#F6DCE6}
+[data-skin=lavender] .beads .bd{fill:#E4DCF5}
+
+/* ══════════ وسن 4.5 · «ثيمات كاملة»: الفراشات · الورد · النجمة · الفراولة · الأزهار ══════════ */
+[data-tone=bfly]{--bg:#EEF5FF;--bg-2:#E3EEFD;--card:#FFFFFF;--card-2:#F5F9FF;--card-3:#E1ECFB;--line:rgba(30,90,200,.1);--line-2:rgba(30,90,200,.18);--tx:#12264F;--tx-2:#4A628F;--tx-3:#8497BC;
+  --gold:#4FA3F7;--gold-2:#BFE0FF;--gold-3:#2F7FD8;--gold-tx:#2A6FC9;--glass:rgba(246,250,255,.9);--scrim:rgba(10,25,60,.4);--field:#F2F7FF;--soft:rgba(79,163,247,.14);--soft-2:rgba(45,111,224,.1);
+  --shadow:0 14px 34px rgba(30,80,170,.14);--shadow-sm:0 4px 14px rgba(30,80,170,.08)}
+[data-tone=rosy]{--bg:#FFF0F3;--bg-2:#FBE3E9;--card:#FFFFFF;--card-2:#FFF6F8;--card-3:#FBE4EA;--line:rgba(150,20,60,.09);--line-2:rgba(150,20,60,.16);--tx:#3D1624;--tx-2:#7A4456;--tx-3:#AE8090;
+  --gold:#E36A8E;--gold-2:#F7C3D2;--gold-3:#C24B70;--gold-tx:#C23A63;--glass:rgba(255,248,250,.9);--scrim:rgba(60,15,30,.4);--field:#FFF4F6;--soft:rgba(227,106,142,.13);--soft-2:rgba(214,51,108,.09);
+  --shadow:0 14px 34px rgba(160,40,80,.13);--shadow-sm:0 4px 14px rgba(160,40,80,.08)}
+[data-tone=starry]{--bg:#0E1130;--bg-2:#121538;--card:#181C46;--card-2:#1F2454;--card-3:#2A2F66;--line:rgba(200,200,255,.08);--line-2:rgba(200,200,255,.14);--tx:#F4F2FF;--tx-2:#B8B5E2;--tx-3:#8784B6;
+  --gold:#F5C94E;--gold-2:#FFE59A;--gold-3:#D9A72A;--gold-tx:#FFD76A;--glass:rgba(20,23,60,.86);--field:#1A1E4A;--soft:rgba(245,201,78,.13);--soft-2:rgba(141,131,228,.14);
+  --shadow:0 14px 34px rgba(0,0,0,.45);--shadow-sm:0 4px 16px rgba(0,0,0,.32);--scrim:rgba(0,0,10,.6)}
+[data-tone=berry]{--bg:#FFF6F1;--bg-2:#FCEAE3;--card:#FFFFFF;--card-2:#FFF8F5;--card-3:#FBE7E2;--line:rgba(160,40,50,.09);--line-2:rgba(160,40,50,.16);--tx:#3A1A1E;--tx-2:#7A4A4E;--tx-3:#AE8A8C;
+  --gold:#6CC070;--gold-2:#C9ECC8;--gold-3:#4E9E52;--gold-tx:#3F9A48;--glass:rgba(255,250,247,.9);--scrim:rgba(60,20,25,.4);--field:#FFF4F0;--soft:rgba(108,192,112,.14);--soft-2:rgba(229,72,95,.1);
+  --shadow:0 14px 34px rgba(170,50,60,.12);--shadow-sm:0 4px 14px rgba(170,50,60,.08)}
+[data-tone=bloom]{--bg:#FFF8EF;--bg-2:#FBEFE2;--card:#FFFFFF;--card-2:#FFFAF4;--card-3:#F9EBDD;--line:rgba(120,80,40,.09);--line-2:rgba(120,80,40,.16);--tx:#3A2A1E;--tx-2:#7A6450;--tx-3:#AE9A88;
+  --gold:#F5BE3F;--gold-2:#FCE4A2;--gold-3:#D69A1E;--gold-tx:#C1860F;--glass:rgba(255,251,245,.9);--scrim:rgba(50,30,15,.4);--field:#FFF6EC;--soft:rgba(245,190,63,.16);--soft-2:rgba(236,127,169,.1);
+  --shadow:0 14px 34px rgba(150,100,50,.12);--shadow-sm:0 4px 14px rgba(150,100,50,.08)}
+[data-accent=peri]{--brand:#6C7BE8;--brand-2:#7F8CEE;--brand-3:#9CA7F4;--brand-deep:#4A56B8;--brand-tx:#5563D6}
+[data-accent=rosered]{--brand:#D6336C;--brand-2:#E04C80;--brand-3:#EB7AA0;--brand-deep:#9E1F4D;--brand-tx:#C22A5E}
+[data-accent=starry]{--brand:#5B4FC4;--brand-2:#6D61D2;--brand-3:#8D83E4;--brand-deep:#3A3190;--brand-tx:#BDB4FF}
+[data-accent=berry]{--brand:#E5485F;--brand-2:#EC6275;--brand-3:#F28C9A;--brand-deep:#B02A40;--brand-tx:#D23A52}
+[data-accent=bloom]{--brand:#EC7FA9;--brand-2:#F092B6;--brand-3:#F5B0CA;--brand-deep:#C4557F;--brand-tx:#D45F8C}
+.reader[data-rt=cream]{--rbg:#FFF8EE;--rtx:#3A2A1E;--rmark:#C1860F;--rsel:rgba(193,134,15,.16);--rframe:rgba(193,134,15,.4)}
+/* المسبحة بلون الثيم */
+[data-skin=kbfly] .counter{background:radial-gradient(circle at 50% 38%,#7FB6FF 0%,#3B7BEA 55%,#1D4FB8 100%);box-shadow:0 22px 50px rgba(29,79,184,.36),inset 0 2px 0 rgba(255,255,255,.3),inset 0 -12px 30px rgba(10,30,100,.26)}
+[data-skin=krose] .counter{background:radial-gradient(circle at 50% 38%,#F4819F 0%,#D6336C 55%,#A11F4E 100%);box-shadow:0 22px 50px rgba(161,31,78,.34),inset 0 2px 0 rgba(255,255,255,.3),inset 0 -12px 30px rgba(90,10,40,.26)}
+[data-skin=kstar] .counter{background:radial-gradient(circle at 50% 38%,#43409C 0%,#29256E 55%,#171446 100%);box-shadow:0 22px 50px rgba(0,0,0,.55),0 0 0 3px rgba(245,201,78,.35),inset 0 2px 0 rgba(255,255,255,.12),inset 0 -12px 30px rgba(0,0,0,.3)}
+[data-skin=kberry] .counter{background:radial-gradient(circle at 50% 38%,#FF7F8F 0%,#E5485F 55%,#B82A40 100%);box-shadow:0 22px 50px rgba(184,42,64,.34),inset 0 2px 0 rgba(255,255,255,.3),inset 0 -12px 30px rgba(110,10,25,.26)}
+[data-skin=kberry] .counter::before{background-image:radial-gradient(ellipse 1.6px 2.4px,#FFE89A 70%,transparent 75%);background-size:22px 22px;background-position:0 0;opacity:.75}
+[data-skin=kbloom] .counter{background:radial-gradient(circle at 50% 38%,#F8AECB 0%,#EC7FA9 55%,#C85A86 100%);box-shadow:0 22px 50px rgba(200,90,134,.34),inset 0 2px 0 rgba(255,255,255,.3),inset 0 -12px 30px rgba(120,30,70,.22)}
+[data-skin^=k] .beads .bd{fill:var(--card-3)}
+.beads image.bd{opacity:.3;filter:saturate(.35);transition:opacity .25s,filter .25s}
+.beads image.bd.on{opacity:1;filter:none}
+.beads image.bd-top{filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
+/* الوصول السريع بأيقونات ثلاثية الأبعاد */
+.qi.qi-emo{background:var(--card)!important;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.qi.qi-emo img{width:34px;height:34px;display:block;-webkit-user-drag:none}
+/* خلفية الرموز الصغيرة */
+#skin-wall{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#skin-wall img{position:absolute;display:block}
+body:has(.reader) #skin-wall{display:none}
+/* ملصقات المشهد والزينة */
+.skin-stk{position:absolute;inset:0;z-index:1;pointer-events:none}
+.skin-stk img,.skin-fx img{position:absolute;display:block;-webkit-user-drag:none}
+.skin-stk .bob{animation:bob 4.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-7px) rotate(calc(var(--r,0deg) + 4deg))}}
+.skin-fx img.ef{top:-30px;opacity:0;animation:ptfall 14s linear infinite}
+.skin-fx img.tw{animation:twk2 3.4s ease-in-out infinite}
+@keyframes twk2{0%,100%{opacity:.25;transform:scale(.7) rotate(0)}50%{opacity:1;transform:scale(1) rotate(12deg)}}
+.skin-fx img.fly{left:-40px;animation:bffly 24s linear infinite}
+.skin-fx img.fly.fl2{animation-name:bffly2}
+@keyframes bffly2{0%{transform:translate(0,0) rotate(-6deg)}25%{transform:translate(120px,24px) rotate(8deg)}50%{transform:translate(230px,-14px) rotate(-8deg)}75%{transform:translate(340px,18px) rotate(6deg)}100%{transform:translate(470px,-6px) rotate(0)}}
+.gemo.fl{animation:gfl 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes gfl{0%,100%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(2px,-3px) rotate(6deg)}}
+.gemo.tw{animation:gtw 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes gtw{0%,100%{opacity:.75;transform:scale(.88)}50%{opacity:1;transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.skin-stk .bob,.skin-fx,.gemo{animation:none!important}}
+/* بطاقة الثيم في اختيار السمة */
+.thm-kw{position:relative;display:block;width:100%;aspect-ratio:1.35;border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.thm-kw img{position:absolute;display:block}
+[data-skin=krose] .skin-fx .pt{background:linear-gradient(135deg,#FFA4BD,#D6336C);border-radius:70% 10% 70% 10%}
+.beads image.bd[style*='--hf']{filter:var(--hf) saturate(.35)}
+.beads image.bd.on[style*='--hf']{filter:var(--hf)}
+
+/* ══════════ وسن 4.6 · «ريشة وسن»: رسوم الثيمات الكاملة (art.js) ══════════ */
+[data-accent=morpho]{--brand:#2D6FE0;--brand-2:#3F80EC;--brand-3:#6FA2F2;--brand-deep:#1B4BB0;--brand-tx:#2462D2}
+.reader[data-rt=sky]{--rbg:#EEF5FF;--rtx:#14264D;--rmark:#2D6FE0;--rsel:rgba(45,111,224,.16);--rframe:rgba(45,111,224,.36)}
+/* المشهد المرسوم مكان شجرة البستان (البستان نفسه بلمسة في الأسفل) */
+[data-skin^=k] .scene .clouds{display:none}
+.scene .kw-artw{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.scene .kw-art{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-user-drag:none;user-select:none;transition:filter 1.5s}
+[data-skin^=k]:not([data-skin=kstar]) .scene[data-ph=night] .kw-art{filter:brightness(.6) saturate(.8)}
+[data-skin^=k]:not([data-skin=kstar]) .scene[data-ph=predawn] .kw-art,[data-skin^=k]:not([data-skin=kstar]) .scene[data-ph=dusk] .kw-art{filter:brightness(.74) saturate(.88)}
+[data-skin^=k]:not([data-skin=kstar]) .scene[data-ph=sunset] .kw-art{filter:brightness(.9) saturate(1.04)}
+[data-skin=kbfly] .scene.lite{--ink:#10264F;--ink-2:rgba(16,38,79,.72);--arc:rgba(16,38,79,.26);--arc-on:rgba(255,255,255,.95)}
+[data-skin=krose] .scene.lite{--ink:#3D1624;--ink-2:rgba(61,22,36,.72);--arc:rgba(61,22,36,.24)}
+[data-skin=kberry] .scene.lite{--ink:#3A1519;--ink-2:rgba(58,21,25,.72);--arc:rgba(58,21,25,.24)}
+[data-skin=kbloom] .scene.lite{--ink:#3A2A1E;--ink-2:rgba(58,42,30,.72);--arc:rgba(58,42,30,.24)}
+/* الزينة المتحرّكة */
+.fx-art .kf{position:absolute;left:0;width:34px;height:26px;animation:kwf1 24s linear infinite;will-change:transform}
+.fx-art .kf.k2{animation-name:kwf2;width:28px;height:22px}
+.fx-art .kf.k3{animation-name:kwf3;width:24px;height:18px}
+.fx-art svg{display:block;width:100%;height:100%;overflow:visible}
+.fx-art .kf svg{filter:drop-shadow(0 2px 3px rgba(20,50,120,.25))}
+.wg{animation:kwflap .26s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 50%}
+@keyframes kwflap{from{transform:scaleX(1)}to{transform:scaleX(.26)}}
+@keyframes kwf1{0%{transform:translate(12px,0) rotate(-8deg)}25%{transform:translate(64px,-26px) rotate(10deg)}50%{transform:translate(92px,8px) rotate(-6deg)}75%{transform:translate(40px,30px) rotate(12deg)}100%{transform:translate(12px,0) rotate(-8deg)}}
+@keyframes kwf2{0%{transform:translate(300px,0) rotate(8deg)}25%{transform:translate(340px,26px) rotate(-10deg)}50%{transform:translate(310px,52px) rotate(6deg)}75%{transform:translate(276px,20px) rotate(-12deg)}100%{transform:translate(300px,0) rotate(8deg)}}
+@keyframes kwf3{0%{transform:translate(-40px,0) rotate(6deg)}20%{transform:translate(60px,-18px) rotate(-8deg)}40%{transform:translate(150px,6px) rotate(8deg)}60%{transform:translate(240px,-14px) rotate(-6deg)}80%{transform:translate(330px,4px) rotate(6deg)}100%{transform:translate(430px,-10px) rotate(0)}}
+.fx-art .kt{position:absolute;aspect-ratio:1;opacity:.2;animation:kwtw 3s ease-in-out infinite}
+@keyframes kwtw{0%,100%{opacity:.15;transform:scale(.55) rotate(0)}50%{opacity:1;transform:scale(1) rotate(20deg)}}
+.fx-art .kh{position:absolute;top:0;display:flex;flex-direction:column;align-items:center;transform-origin:50% 0;animation:kwsw 3.6s ease-in-out infinite alternate}
+.fx-art .kh b{display:block;width:1px;background:linear-gradient(rgba(255,230,160,.15),rgba(255,230,160,.85))}
+.fx-art .kh svg{margin-top:-4px;filter:drop-shadow(0 0 6px rgba(255,214,107,.7))}
+@keyframes kwsw{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.fx-art .kr{position:absolute;bottom:24%;aspect-ratio:1;opacity:0;animation:kwrise 11s ease-in infinite}
+@keyframes kwrise{0%{transform:translate(0,0) scale(.5);opacity:0}12%{opacity:.95}70%{opacity:.75}100%{transform:translate(16px,-210px) scale(1.05) rotate(14deg);opacity:0}}
+.fx-art .kb{position:absolute;top:-24px;aspect-ratio:1;opacity:0;animation:kwfall 14s linear infinite}
+@keyframes kwfall{0%{transform:translate(0,0) rotate(0);opacity:0}8%{opacity:.95}85%{opacity:.85}100%{transform:translate(var(--dx),520px) rotate(var(--r));opacity:0}}
+.fx-krose .pt{width:11px;height:9px}
+.kw-mk .spin{animation:kwspin 16s linear infinite;transform-box:fill-box;transform-origin:50% 50%}
+@keyframes kwspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.fx-art{display:none}.wg,.kw-mk .spin{animation:none!important}}
+/* المسبحة: زينة حول الدائرة وحبّات مرسومة */
+.counter .kw-tb{position:absolute;inset:-34px;width:calc(100% + 68px);height:calc(100% + 68px);max-width:none;pointer-events:none;z-index:0;-webkit-user-drag:none;user-select:none}
+.beads svg.bd-top{overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,.22))}
+.beads use.bd{opacity:.32;filter:saturate(.3);transition:opacity .25s,filter .25s}
+.beads use.bd.on{opacity:1;filter:none}
+[data-skin^=k] .beads .bd.on{fill:url(#bdG)}
+[data-skin=kstar] .beads .bd{fill:#2E3470}
+[data-skin=kstar] .beads .bd.on{fill:url(#bdG);filter:drop-shadow(0 0 3px rgba(255,214,107,.7))}
+[data-skin=kbloom] .beads .bd.b1.on{fill:url(#bdG1)}[data-skin=kbloom] .beads .bd.b2.on{fill:url(#bdG2)}[data-skin=kbloom] .beads .bd.b3.on{fill:url(#bdG3)}
+/* بطاقات بطابع كل ثيم */
+[data-skin=kbfly] .hc,[data-skin=kbfly] .card,[data-skin=kbfly] .azc,[data-skin=kbfly] .pstrip{border-color:rgba(45,111,224,.14)}
+[data-skin=krose] .hc,[data-skin=krose] .card,[data-skin=krose] .azc,[data-skin=krose] .pstrip{border-color:rgba(214,51,108,.14)}
+[data-skin=kbloom] .hc,[data-skin=kbloom] .card,[data-skin=kbloom] .azc,[data-skin=kbloom] .pstrip{border-color:rgba(236,127,169,.18)}
+[data-skin=kstar] .hc,[data-skin=kstar] .card,[data-skin=kstar] .azc,[data-skin=kstar] .pstrip{background:linear-gradient(160deg,#1C2156,#141840);border-color:rgba(255,214,107,.2);box-shadow:0 0 0 1px rgba(255,214,107,.05),0 14px 34px rgba(0,0,0,.45)}
+[data-skin=kberry] .hc,[data-skin=kberry] .azc{outline:1.5px dashed rgba(226,52,79,.22);outline-offset:-7px}
+/* صورة الثيم المرسومة في اختيار السمة */
+.thm-kw.thm-art img{inset:0;width:100%;height:100%;object-fit:cover}
