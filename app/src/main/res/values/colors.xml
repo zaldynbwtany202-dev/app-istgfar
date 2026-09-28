@@ -57,9 +57,9 @@
     <color name="quran_ink">#FF14261F</color>
 
     <!-- وسن · ألوان الافتتاح والخلفية الليلية (مطابقة لشاشة الافتتاح داخل الواجهة) -->
-    <color name="wasan_splash_top">#FF0E6B56</color>
-    <color name="wasan_splash">#FF0A4A3C</color>
-    <color name="wasan_splash_bottom">#FF062E26</color>
+    <color name="wasan_splash_top">#FF155E52</color>
+    <color name="wasan_splash">#FF0B2E36</color>
+    <color name="wasan_splash_bottom">#FF060F1E</color>
     <color name="wasan_night">#FF07110E</color>
 
 </resources>

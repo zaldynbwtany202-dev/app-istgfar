@@ -28,6 +28,11 @@ import android.os.Vibrator
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.util.Base64
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
+import androidx.activity.result.PickVisualMediaRequest
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -129,6 +134,51 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private val notifPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
+    /** وسن 5 · صورة الصفحة الرئيسية من معرض الهاتف (منتقي الصور الآمن — دون أي إذن إضافي) */
+    private val photoPicker = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri == null) js("window.onPickedImage&&onPickedImage(null)") else Thread { savePickedImage(uri) }.start()
+    }
+
+    private fun savePickedImage(uri: Uri) {
+        try {
+            val cr = contentResolver
+            val bo = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            cr.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bo) }
+            if (bo.outWidth <= 0 || bo.outHeight <= 0) { js("window.onPickedImage&&onPickedImage(null)"); return }
+            var sample = 1
+            while (minOf(bo.outWidth, bo.outHeight) / (sample * 2) >= 1440) sample *= 2
+            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+            var bmp: Bitmap = cr.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, opts) } ?: run { js("window.onPickedImage&&onPickedImage(null)"); return }
+            try {
+                if (Build.VERSION.SDK_INT >= 24) {
+                    val o = cr.openInputStream(uri)?.use { ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL) } ?: ExifInterface.ORIENTATION_NORMAL
+                    val deg = when (o) { ExifInterface.ORIENTATION_ROTATE_90 -> 90f; ExifInterface.ORIENTATION_ROTATE_180 -> 180f; ExifInterface.ORIENTATION_ROTATE_270 -> 270f; else -> 0f }
+                    if (deg != 0f) { val m = Matrix(); m.postRotate(deg); val r = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true); if (r !== bmp) bmp.recycle(); bmp = r }
+                }
+            } catch (_: Exception) { }
+            val sc = minOf(1f, 1440f / minOf(bmp.width, bmp.height), 2560f / maxOf(bmp.width, bmp.height))
+            if (sc < 0.999f) { val r = Bitmap.createScaledBitmap(bmp, (bmp.width * sc).toInt().coerceAtLeast(1), (bmp.height * sc).toInt().coerceAtLeast(1), true); if (r !== bmp) bmp.recycle(); bmp = r }
+            val w = bmp.width; val h = bmp.height; val band = (h * 0.12f).toInt().coerceAtLeast(1)
+            var rs = 0L; var gs = 0L; var bs = 0L; var n = 0L
+            var y = 0
+            while (y < band) { var x = 0; while (x < w) { val c = bmp.getPixel(x, y); rs += (c shr 16) and 255; gs += (c shr 8) and 255; bs += c and 255; n++; x += 12 }; y += 6 }
+            if (n == 0L) n = 1
+            val ra = (rs / n).toInt(); val ga = (gs / n).toInt(); val ba = (bs / n).toInt()
+            val lum = (0.2126 * ra + 0.7152 * ga + 0.0722 * ba) / 255.0
+            val dir = File(filesDir, "userbg").apply { mkdirs() }
+            dir.listFiles()?.forEach { it.delete() }
+            val f = File(dir, "bg_" + System.currentTimeMillis() + ".jpg")
+            f.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 88, it) }
+            val ratio = w.toDouble() / h
+            bmp.recycle()
+            val top = String.format(java.util.Locale.US, "#%02X%02X%02X", ra, ga, ba)
+            js("window.onPickedImage&&onPickedImage({url:'file://" + f.absolutePath + "',top:'" + top + "',lum:" + String.format(java.util.Locale.US, "%.3f", lum) + ",ratio:" + String.format(java.util.Locale.US, "%.4f", ratio) + "})")
+        } catch (e: Throwable) {
+            Log.e("NoorWeb", "pick image failed", e)
+            js("window.onPickedImage&&onPickedImage(null)")
+        }
+    }
 
     /** اختيار نغمة الأذان من نغمات الهاتف */
     private val ringtonePicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
@@ -490,6 +540,29 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             assets.open(path).use { it.readBytes().toString(Charsets.UTF_8) }
         } catch (e: Exception) { Log.e("NoorWeb", "asset read failed: $path", e); "" }
 
+        /** وسن 5 · اختيار صورة من الهاتف للصفحة الرئيسية */
+        @JavascriptInterface fun pickImage() {
+            runOnUiThread {
+                try { photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                catch (e: Exception) { js("window.onPickedImage&&onPickedImage(null)") }
+            }
+        }
+        @JavascriptInterface fun clearPickedImage() { try { File(filesDir, "userbg").listFiles()?.forEach { it.delete() } } catch (_: Exception) { } }
+        /** صورة من مجلد صور التطبيق كرابط data: لرسمها على لوحة مشاركة (مجلد img فقط) */
+        @JavascriptInterface fun assetB64(path: String): String = try {
+            val p = path.trimStart('/')
+            if (!p.startsWith("img/") || p.contains("..")) "" else {
+                val bytes = assets.open("www/$p").use { it.readBytes() }
+                val mime = if (p.endsWith(".webp")) "image/webp" else if (p.endsWith(".png")) "image/png" else "image/jpeg"
+                "data:$mime;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)
+            }
+        } catch (e: Exception) { "" }
+        /** صورتك المختارة كرابط data: (من مجلد صور المستخدمة فقط) */
+        @JavascriptInterface fun fileB64(url: String): String = try {
+            val f = File(url.removePrefix("file://")); val dir = File(filesDir, "userbg")
+            if (f.exists() && f.canonicalPath.startsWith(dir.canonicalPath)) "data:image/jpeg;base64," + Base64.encodeToString(f.readBytes(), Base64.NO_WRAP) else ""
+        } catch (e: Exception) { "" }
+
         @JavascriptInterface fun getSurahs(): String = readAsset("db/Surah.json")
         @JavascriptInterface fun getAyahs(): String = readAsset("db/Ayah.json")
         @JavascriptInterface fun getJuz(): String = readAsset("db/Juz.json")
@@ -770,7 +843,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/4.8 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/5.0 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }

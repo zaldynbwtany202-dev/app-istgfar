@@ -63,13 +63,24 @@ SCREENS.istighfar = {
         toast('اكتملت لوحة اليوم — غفر الله لكِ'); setTimeout(() => Router.refresh(), 2200); } };
     $('#ig-b', el).onclick = add; $('#ig-g', el).addEventListener('pointerdown', e => { e.preventDefault(); add(); });
     $('#ig-r', el).onclick = () => confirmSheet('إعادة لوحة اليوم؟', 'سيُصفَّر عدّاد استغفار اليوم.', 'نعم، أعيديها', () => { Store.set('ig', { d: dayKey(new Date()), n: 0 }); Router.refresh(); });
-    $('#ig-sh', el).onclick = () => { const s = IG.st(); Gift.share({ art: artKey() || 'ktazhib', name: '', rel: 'self', what: 'ist', n: s.n, board: true }); };
+    $('#ig-sh', el).onclick = () => { const s = IG.st(); Gift.share({ art: giftArtKey(), name: '', rel: 'self', what: 'ist', n: s.n, board: true }); };
   },
 };
 
 /* ═══════════════ لوحة الهدية ═══════════════ */
-const GIFT_ART = [['kmakkah', 'ليل مكة'], ['kmadinah', 'المدينة المنوّرة'], ['kaqsa', 'قبّة الصخرة'], ['kalham', 'قصر الحمراء'], ['kiznik', 'إزنيك'], ['klapis', 'أصفهان'],
-  ['kfanous', 'فوانيس رمضان'], ['ktazhib', 'التذهيب'], ['kmamluk', 'المماليك'], ['krose', 'الورد'], ['kbloom', 'الأزهار'], ['kstar', 'النجمة'], ['kbfly', 'الفراشات']];
+/* وسن 5: لوحة الهدية بصور الثيمات الحقيقية عالية الدقة */
+const GIFT_ART = Object.keys(THEMES).filter(k => THEMES[k].ph && THEMES[k].g !== 'calm').map(k => [k, THEMES[k].n]);
+const giftArtKey = () => THEMES[uiTheme()] && THEMES[uiTheme()].ph && THEMES[uiTheme()].g !== 'calm' ? uiTheme() : 'kmadinah';
+/** صورة صالحة للرسم على لوحة (على الهاتف تُمرَّر عبر الجسر كي لا تتلوّث اللوحة فيتعذّر حفظها) */
+function canvasSrc(src) {
+  try { if (/^img\//.test(src) && Native.has('assetB64')) { const d = Native.call('assetB64', src); if (d) return d; }
+    if (/^file:/.test(src) && Native.has('fileB64')) { const d = Native.call('fileB64', src); if (d) return d; } } catch (e) {}
+  return src;
+}
+function drawCover(x, im, dx, dy, dw, dh, fy) {
+  const r = Math.max(dw / im.width, dh / im.height), sw = dw / r, sh = dh / r, sx = (im.width - sw) / 2, sy = Math.max(0, Math.min(im.height - sh, (im.height - sh) * (fy == null ? 0.5 : fy)));
+  x.drawImage(im, sx, sy, sw, sh, dx, dy, dw, dh);
+}
 const GIFT_REL = [
   ['dead_m', 'لروحه', 'اللهمّ اغفر له وارحمه، وعافِه واعفُ عنه، وأكرِم نُزُله، ووسّع مدخله', 'رواه مسلم'],
   ['dead_f', 'لروحها', 'اللهمّ اغفر لها وارحمها، وعافِها واعفُ عنها، وأكرِم نُزُلها، ووسّع مدخلها', 'رواه مسلم'],
@@ -88,10 +99,10 @@ const Gift = {
     const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
     try { await Promise.all([document.fonts.load('60px Amiri'), document.fonts.load('700 40px Plex'), document.fonts.load('700 60px Display')]); } catch (e) {}
     const img = s => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = s; });
-    const T = THEMES[Object.keys(THEMES).find(k => THEMES[k].skin === o.art)] || THEMES.kmadinah, dark = T.base === 'dark', sw = T.sw;
+    const T = THEMES[o.art] || THEMES.kmadinah, dark = T.base === 'dark', sw = T.sw;
     const sky = (SKINS[o.art] && SKINS[o.art].sky && SKINS[o.art].sky[dark ? 'night' : 'day']) || { c: ['#0B3B3A', '#12544A', '#1D6A5A'] };
     let g = x.createLinearGradient(0, 0, 0, 700); g.addColorStop(0, sky.c[0]); g.addColorStop(.6, sky.c[1]); g.addColorStop(1, sky.c[2]); x.fillStyle = g; x.fillRect(0, 0, W, 700);
-    try { const h = await img(Art.heroURI(o.art, 900)); const hh = W * 492 / 390; x.drawImage(h, 0, 690 - hh, W, hh); } catch (e) {}
+    try { const h = await img(canvasSrc('img/th/' + (THEMES[o.art] ? o.art : 'kmadinah') + '.webp')); drawCover(x, h, 0, 0, W, 700, 0.42); } catch (e) {}
     // لوحة النص
     const panel = dark ? ['#0E0E14', sw[0]] : ['#FFFDF6', sw[0]];
     g = x.createLinearGradient(0, 640, 0, H); g.addColorStop(0, panel[0]); g.addColorStop(1, panel[1]); x.fillStyle = g;
@@ -132,13 +143,14 @@ SCREENS.gift = {
   parent: 'more',
   render() {
     const o = Gift.st, R = GIFT_REL.find(r => r[0] === o.rel) || GIFT_REL[0];
+    if (!o.artPick || !THEMES[o.art]) o.art = giftArtKey();   // وسن 5: تتبع صورة ثيمك ما لم تختاري غيرها
     return hdr('لوحة الهدية', 'أهدي دعاءك وذكرك بلوحة جميلة', { back: true, compact: true }) +
       '<div class="gf-pv mx mt"><canvas id="gf-c" width="1080" height="1350"></canvas></div>' +
       '<div class="mx form" style="margin-top:14px"><label>لمن الهدية؟</label><input id="gf-n" maxlength="40" value="' + esc(o.name) + '" placeholder="الاسم (اختياري) — مثال: أمي الحبيبة">' +
       '<label>المناسبة والدعاء</label><div class="chips" id="gf-r" style="padding:0">' + GIFT_REL.map(r => '<button class="chip ' + (r[0] === o.rel ? 'on' : '') + '" data-v="' + r[0] + '">' + r[1] + '</button>').join('') + '</div>' +
       '<textarea id="gf-d" rows="3" maxlength="240" placeholder="' + esc(R[2]) + '">' + esc(o.dua || '') + '</textarea>' +
       '<label>ما أهديه</label><div class="chips" id="gf-w" style="padding:0">' + GIFT_WHAT.map(([v, t]) => { const n = Gift.count(v); return '<button class="chip ' + (v === o.what ? 'on' : '') + '" data-v="' + v + '">' + t + (v !== 'dua' ? ' · ' + N(n) : '') + '</button>'; }).join('') + '</div>' +
-      '<label>اللوحة</label><div class="gf-arts" id="gf-a">' + GIFT_ART.filter(([k]) => Art.has(k)).map(([k, t]) => '<button class="gf-art ' + (k === o.art ? 'on' : '') + '" data-v="' + k + '"><img src="' + Art.thumbURI(k) + '" alt=""><span>' + t + '</span></button>').join('') + '</div>' +
+      '<label>اللوحة</label><div class="gf-arts" id="gf-a">' + GIFT_ART.map(([k, t]) => '<button class="gf-art ' + (k === o.art ? 'on' : '') + '" data-v="' + k + '"><img src="img/th/' + k + '-t.webp" alt="" loading="lazy"><span>' + t + '</span></button>').join('') + '</div>' +
       '<button class="btn gold block" id="gf-s" style="margin-top:16px;height:54px">' + icon('share') + 'شاركي اللوحة</button>' +
       '<div class="faint" style="font-size:12px;margin-top:8px;text-align:center">الأدعية من السنّة الصحيحة والقرآن الكريم · يمكنك كتابة دعائك الخاص</div></div>';
   },
@@ -149,7 +161,7 @@ SCREENS.gift = {
     $('#gf-d', el).oninput = e => { Gift.st.dua = e.target.value.trim(); save(); };
     const chips = (id, key) => { $(id, el).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; Gift.st[key] = b.dataset.v; $$(id + ' [data-v]', el).forEach(x => x.classList.toggle('on', x === b));
       if (key === 'rel') { const R = GIFT_REL.find(r => r[0] === b.dataset.v); $('#gf-d', el).placeholder = R[2]; } save(); }; };
-    chips('#gf-r', 'rel'); chips('#gf-w', 'what'); chips('#gf-a', 'art');
+    chips('#gf-r', 'rel'); chips('#gf-w', 'what'); chips('#gf-a', 'art'); $('#gf-a', el).addEventListener('click', e => { if (e.target.closest('[data-v]')) { Gift.st.artPick = 1; Store.set('gift', Gift.st); } });
     $('#gf-s', el).onclick = () => Gift.share(Gift.st);
     draw();
   },

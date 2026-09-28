@@ -139,7 +139,8 @@ function toast(msg, ms) {
 
 
 /* ───────── الشعار الكتابي «وسن»: خط كوفي هندسي، ونقطة النون نجمة وسن ───────── */
-const WM = { vb: '5 490 1495 734', d: 'M364.0 1000.0V860.0H510.0V1000.0H364.0ZM223.0 1204.0Q186.0 1204.0 150.5 1191.5Q115.0 1179.0 86.5 1153.5Q58.0 1128.0 41.5 1090.0Q25.0 1052.0 25.0 1000.0Q25.0 956.0 43.5 916.0Q62.0 876.0 91.0 844.5Q120.0 813.0 151.0 793.0Q153.0 812.0 148.0 830.5Q143.0 849.0 131.0 865.0Q142.0 870.0 149.5 885.0Q157.0 900.0 160.0 916.0Q163.0 932.0 160.0 942.0Q150.0 934.0 140.0 930.0Q130.0 926.0 120.0 926.0Q98.0 926.0 82.0 947.5Q66.0 969.0 66.0 1000.0Q66.0 1044.0 83.0 1073.5Q100.0 1103.0 127.0 1117.0Q154.0 1131.0 184.0 1131.0Q216.0 1131.0 245.0 1115.5Q274.0 1100.0 292.5 1069.5Q311.0 1039.0 311.0 994.0Q311.0 972.0 304.5 950.5Q298.0 929.0 288.5 909.0Q279.0 889.0 269.0 874.0L337.0 738.0Q375.0 784.0 405.0 845.5Q435.0 907.0 435.0 995.0Q435.0 1063.0 404.0 1110.0Q373.0 1157.0 324.5 1180.5Q276.0 1204.0 223.0 1204.0Z M470.0 1000.0V860.0H550.0V691.0L690.0 660.0V860.0H750.0V691.0L890.0 660.0V860.0H950.0V691.0L1090.0 660.0V977.0Q1090.0 989.0 1080.0 994.0Q1070.0 999.0 1060.0 999.5Q1050.0 1000.0 1050.0 1000.0H470.0Z M1175.0 1132.0Q1232.0 1147.0 1265.5 1140.5Q1299.0 1134.0 1315.0 1116.0Q1331.0 1098.0 1335.5 1079.5Q1340.0 1061.0 1340.0 1052.0V872.0L1480.0 830.0V1022.0Q1480.0 1081.183334350586 1455.0 1118.591667175293Q1430.0 1156.0 1391.5 1173.5Q1353.0 1191.0 1310.5 1191.0Q1268.0 1191.0 1231.5 1175.5Q1195.0 1160.0 1175.0 1132.0ZM1480.0 830.0 1311.0 660.0Q1324.0 660.0 1348.0 658.5Q1372.0 657.0 1398.5 651.5Q1425.0 646.0 1447.5 634.5Q1470.0 623.0 1480.0 604.0V830.0ZM1311.259994506836 1000.0Q1264.520004272461 1000.0 1225.7600021362305 977.0Q1187.0 954.0 1163.5 915.1875Q1140.0 876.375 1140.0 830.25Q1140.0 783.0 1163.5091743469238 744.2777709960938Q1187.0183486938477 705.5555419921875 1226.0091705322266 682.7777709960938Q1265.0 660.0 1311.5 660.0Q1358.0 660.0 1396.0 683.0Q1434.0 706.0 1457.0 744.3272705078125Q1480.0 782.654541015625 1480.0 830.0Q1480.0 877.0 1457.0 915.5Q1434.0 954.0 1396.0 977.0Q1358.0 1000.0 1311.259994506836 1000.0ZM1310.9859161376953 860.0Q1324.0 860.0 1332.0 851.3000030517578Q1340.0 842.6000061035156 1340.0 830.0Q1340.0 817.3999938964844 1332.0 808.6999969482422Q1324.0 800.0 1310.9859161376953 800.0Q1297.9718322753906 800.0 1288.9859161376953 808.6999969482422Q1280.0 817.3999938964844 1280.0 830.0Q1280.0 842.6000061035156 1288.9859161376953 851.3000030517578Q1297.9718322753906 860.0 1310.9859161376953 860.0Z', star: 'M264.6 516.4 L279.0 551.0 L313.6 565.4 L299.3 600.0 L313.6 634.6 L279.0 649.0 L264.6 683.6 L230.0 669.3 L195.4 683.6 L181.0 649.0 L146.4 634.6 L160.7 600.0 L146.4 565.4 L181.0 551.0 L195.4 516.4 L230.0 530.7Z' };
+/* وسن 5 · الشعار: «وسن» بخط النستعليق (Noto Nastaliq Urdu — رخصة OFL) وقد صارت نقطة النون نجمة ثمانية يحضنها قوس النون كالهلال */
+const WM = { vb: '-6 -831 1917 1226', d: 'M280 371Q200 371 141.0 337.5Q82 304 50.0 239.5Q18 175 18 83Q18 -11 42.5 -113.0Q67 -215 122 -321L156 -310Q126 -239 114.0 -180.5Q102 -122 102 -75Q102 -18 118.5 22.5Q135 63 166.0 88.0Q197 113 240.5 124.5Q284 136 338 136Q428 136 494.0 106.0Q560 76 604.5 23.0Q649 -30 673 -98Q693 -154 703.5 -250.0Q714 -346 716 -482L739 -488Q766 -480 800 -480Q822 -480 831.0 -457.5Q840 -435 840 -400Q840 -348 821.5 -319.0Q803 -290 771 -290H763Q759 -215 745.0 -136.0Q731 -57 706.0 18.5Q681 94 643.5 158.5Q606 223 553 270Q498 319 430.0 345.0Q362 371 280 371ZM766 -290Q745 -290 735.5 -314.5Q726 -339 726 -370Q726 -426 748.0 -453.0Q770 -480 800 -480Q853 -480 898.5 -508.0Q944 -536 978 -590Q988 -605 995.0 -616.0Q1002 -627 1007.5 -635.0Q1013 -643 1017 -648Q1025 -658 1032.0 -660.5Q1039 -663 1049 -663Q1064 -663 1083 -654Q1093 -650 1103.5 -647.5Q1114 -645 1125 -645Q1157 -645 1181.0 -662.5Q1205 -680 1222 -711L1236 -714Q1245 -707 1261.0 -703.5Q1277 -700 1294 -700Q1327 -700 1350.0 -728.5Q1373 -757 1385 -807L1421 -803Q1404 -702 1380.5 -641.0Q1357 -580 1326.5 -553.5Q1296 -527 1258 -527Q1248 -527 1234.0 -529.5Q1220 -532 1203 -538Q1175 -487 1143.0 -471.0Q1111 -455 1088 -455Q1055 -455 1028 -474Q1003 -492 991 -492Q977 -492 948 -439Q931 -408 912.5 -381.5Q894 -355 873 -335Q851 -314 824.5 -302.0Q798 -290 766 -290ZM1486 99 1478 74Q1525 51 1578.0 19.0Q1631 -13 1689 -53Q1747 -93 1778.5 -132.5Q1810 -172 1816 -210Q1815 -210 1814.0 -210.5Q1813 -211 1811 -211Q1796 -203 1774.5 -197.5Q1753 -192 1724 -192Q1697 -192 1672.0 -203.5Q1647 -215 1631.0 -237.0Q1615 -259 1615 -288Q1615 -306 1621.0 -330.0Q1627 -354 1640 -382L1680 -463Q1710 -524 1767 -524Q1811 -524 1837.5 -493.0Q1864 -462 1875.5 -413.5Q1887 -365 1887 -311Q1887 -259 1873.5 -208.0Q1860 -157 1840.5 -114.5Q1821 -72 1802.5 -43.5Q1784 -15 1773 -6Q1760 4 1724.5 19.5Q1689 35 1644.0 51.0Q1599 67 1556.5 80.0Q1514 93 1486 99Z', star: 'M457.8 -337.6 L476.0 -285.5 L528.1 -267.3 L504.2 -217.5 L528.1 -167.7 L476.0 -149.5 L457.8 -97.4 L408.0 -121.3 L358.2 -97.4 L340.0 -149.5 L287.9 -167.7 L311.8 -217.5 L287.9 -267.3 L340.0 -285.5 L358.2 -337.6 L408.0 -313.7 Z' };
 let _wmN = 0;
 function wordmark(cls, ink) {
   const id = 'wmg' + (++_wmN);
@@ -328,33 +329,49 @@ function isNightNow() {
   try { const now = new Date(), t = Times.forDay(now); return now < t.sunrise || now >= t.maghrib; } catch (e) { const h = new Date().getHours(); return h < 6 || h >= 19; }
 }
 /* ═══ وسن 4.5 · السمات: كل سمة = أساس (داكن/فاتح) + نغمة ألوان + لون مقترح ═══ */
+/* وسن 5 · كل ثيم = صورة حقيقية عالية الدقة + ألوان مشتقة منها (css/themes.css مولَّد آليًّا)
+   ph: صورة الثيم في img/th/<key>.webp · ink: لون الكتابة فوق الصورة (w أبيض / d داكن) · top: لون شريط الحالة فوق الصورة · hb: لونه فوق رأس الصفحات */
 const THEMES = {
-  dark: { n: 'داكن هادئ', base: 'dark', g: 'calm', bar: '#0C1513', sw: ['#0C1513', '#182724', '#0B5D4B', '#D4AF63'] },
-  light: { n: 'فاتح', base: 'light', g: 'calm', bar: '#F4F1EA', sw: ['#F4F1EA', '#FFFFFF', '#0B5D4B', '#B08738'] },
-  sepia: { n: 'دافئ مريح للعين', base: 'light', tone: 'sepia', g: 'calm', bar: '#EFE6D6', sw: ['#EFE6D6', '#F8F1E4', '#2F6B55', '#8A6424'] },
-  blush: { n: 'وردي ناعم', base: 'light', tone: 'blush', g: 'girls', acc: 'pink', bar: '#FBEFF3', sw: ['#FBEFF3', '#FFFFFF', '#C2587A', '#D4879B'] },
-  rosenight: { n: 'ليل وردي', base: 'dark', tone: 'rosenight', g: 'girls', acc: 'pink', bar: '#170D13', sw: ['#170D13', '#2A1822', '#C2587A', '#E8A3B7'] },
-  lavender: { n: 'لافندر', base: 'light', tone: 'lavender', g: 'girls', acc: 'lilac', bar: '#F3EFFA', sw: ['#F3EFFA', '#FFFFFF', '#7E63B8', '#B79BE0'] },
-  peach: { n: 'خوخي', base: 'light', tone: 'peach', g: 'girls', acc: 'coral', bar: '#FFF2EB', sw: ['#FFF2EB', '#FFFFFF', '#D0694E', '#EFA07E'] },
-  rosegold: { n: 'ذهبي وردي', base: 'light', tone: 'rosegold', g: 'girls', acc: 'rosegold', bar: '#F8EEEA', sw: ['#F8EEEA', '#FFFCFA', '#B06A74', '#D3A08E'] },
-  violet: { n: 'بنفسجي حالم', base: 'dark', tone: 'violet', g: 'girls', acc: 'lilac', bar: '#110E1F', sw: ['#110E1F', '#211B38', '#7E63B8', '#C9B3F2'] },
-  // وسن 4.6 · «ثيمات كاملة» برسوم «ريشة وسن» (art.js): لكل ثيم مشهده المرسوم وألوانه وزينة بطاقاته ومسبحته — skins.js
-  kbfly: { n: 'الفراشات الزرقاء', base: 'light', tone: 'bfly', g: 'kawaii', acc: 'morpho', skin: 'kbfly', rt: 'sky', bar: '#EEF5FF', sw: ['#EEF5FF', '#A9D2FF', '#2D6FE0', '#7FC6FF'] },
-  krose: { n: 'الورد', base: 'light', tone: 'rosy', g: 'kawaii', acc: 'rosered', skin: 'krose', rt: 'pink', bar: '#FFF0F3', sw: ['#FFF0F3', '#F8CFDC', '#D6336C', '#8FC89A'] },
-  kstar: { n: 'النجمة', base: 'dark', tone: 'starry', g: 'kawaii', acc: 'starry', skin: 'kstar', rt: 'blue', bar: '#0E1130', sw: ['#0E1130', '#1F2454', '#5B4FC4', '#F5C94E'] },
-  kberry: { n: 'الفراولة', base: 'light', tone: 'berry', g: 'kawaii', acc: 'berry', skin: 'kberry', rt: 'pink', bar: '#FFF6F1', sw: ['#FFF6F1', '#FFD2DB', '#E5485F', '#6CC070'] },
-  kbloom: { n: 'الأزهار', base: 'light', tone: 'bloom', g: 'kawaii', acc: 'bloom', skin: 'kbloom', rt: 'cream', bar: '#FFF8EF', sw: ['#FFF8EF', '#FFDDE6', '#EC7FA9', '#F5BE3F'] },
-  // وسن 4.5 · «المشاهد»: سمات كاملة (السماء والبستان والزينة والمسبحة) — skins.js
-  sakura: { n: 'أزهار الكرز', base: 'light', tone: 'blush', g: 'scene', acc: 'pink', skin: 'sakura', rt: 'pink', bar: '#FBEFF3', sw: ['#FDE6EF', '#F7C1D3', '#C2587A', '#9BCB8E'] },
-  roses: { n: 'حديقة الورود', base: 'dark', tone: 'rosenight', g: 'scene', acc: 'pink', skin: 'roses', rt: 'plum', bar: '#170D13', sw: ['#170B1C', '#4D2142', '#D6336C', '#E6A996'] },
-  lavfield: { n: 'حقل الخزامى', base: 'light', tone: 'lavender', g: 'scene', acc: 'lilac', skin: 'lavender', rt: 'lavender', bar: '#F3EFFA', sw: ['#EEE6FA', '#C6BDF1', '#7E63B8', '#9FC79A'] },
-  amoled: { n: 'ليل حالك', base: 'dark', tone: 'amoled', g: 'more', bar: '#000000', sw: ['#000000', '#111614', '#0B5D4B', '#D4AF63'] },
-  dawn: { n: 'فجر', base: 'dark', tone: 'dawn', g: 'more', acc: 'indigo', bar: '#0A1020', sw: ['#0A1020', '#16213B', '#3A4B8A', '#E4C98A'] },
-  ocean: { n: 'بحري', base: 'dark', tone: 'ocean', g: 'more', acc: 'teal', bar: '#06141A', sw: ['#06141A', '#102832', '#12707E', '#D4AF63'] },
-  olive: { n: 'زيتوني', base: 'dark', tone: 'olive', g: 'more', acc: 'olive', bar: '#0F120B', sw: ['#0F120B', '#1E2517', '#5E6B2E', '#DCC784'] },
-  coffee: { n: 'قهوة', base: 'dark', tone: 'coffee', g: 'more', acc: 'coffee', bar: '#14100C', sw: ['#14100C', '#261E18', '#7A5236', '#E2C18A'] },
-  sand: { n: 'رمال', base: 'light', tone: 'sand', g: 'more', acc: 'amber', bar: '#EFDFC3', sw: ['#EFDFC3', '#FAF0DE', '#8A6224', '#8A5F1C'] },
-  bright: { n: 'ناصع', base: 'light', tone: 'bright', g: 'more', bar: '#FFFFFF', sw: ['#FFFFFF', '#F3F5F4', '#0B5D4B', '#7A5A14'] },
+  // فخامة إسلامية — صور عالية الدقة للحرمين والمساجد والفنون الإسلامية
+  kmakkah: { n: 'مكة المكرمة', base: 'dark', g: 'islamic', acc: 'kmakkah', bar: '#0A0A0D', sw: ['#0A0A0D', '#1B1A1B', '#A8843F', '#E3C27A'], ph: 1, ink: 'w', top: '#3C3836', hb: '#06070E' },
+  kmadinah: { n: 'المدينة المنوّرة', base: 'light', g: 'islamic', acc: 'kmadinah', bar: '#F3F0E8', sw: ['#F3F0E8', '#FCFCFA', '#1E6B4A', '#B08A3E'], ph: 1, ink: 'w', top: '#323E4D', hb: '#2E6C5B' },
+  kaqsa: { n: 'المسجد الأقصى', base: 'dark', g: 'islamic', acc: 'kaqsa', bar: '#0A1322', sw: ['#0A1322', '#1A212E', '#3C66AA', '#DDB45E'], ph: 1, ink: 'w', top: '#141F2F', hb: '#1C2B42' },
+  kalham: { n: 'قصر الحمراء', base: 'dark', g: 'islamic', acc: 'kalham', bar: '#110B07', sw: ['#110B07', '#211B16', '#A8743A', '#E4C08A'], ph: 1, ink: 'w', top: '#372C1D', hb: '#332517' },
+  kiznik: { n: 'غروب إسطنبول', base: 'dark', g: 'islamic', acc: 'kiznik', bar: '#130908', sw: ['#130908', '#231816', '#C25A2C', '#F0A860'], ph: 1, ink: 'w', top: '#623016', hb: '#713619' },
+  kmamluk: { n: 'القاهرة المملوكية', base: 'dark', g: 'islamic', acc: 'kmamluk', bar: '#140F0E', sw: ['#140F0E', '#231F1D', '#A0674C', '#E3C29C'], ph: 1, ink: 'w', top: '#65574D', hb: '#675448' },
+  klapis: { n: 'قبّة أصفهان', base: 'dark', g: 'islamic', acc: 'klapis', bar: '#0E0C08', sw: ['#0E0C08', '#1F1C17', '#B08D3E', '#E9D18E'], ph: 1, ink: 'w', top: '#2E2715', hb: '#403720' },
+  kfanous: { n: 'فانوس رمضان', base: 'dark', g: 'islamic', acc: 'kfanous', bar: '#0B0605', sw: ['#0B0605', '#1C1513', '#B4232C', '#EBA65E'], ph: 1, ink: 'w', top: '#010100', hb: '#060302' },
+  ktazhib: { n: 'التذهيب', base: 'light', g: 'islamic', acc: 'ktazhib', bar: '#F6EEDF', sw: ['#F6EEDF', '#FDFBF9', '#2F4A8C', '#B38D45'], ph: 1, ink: 'd', top: '#F9EFE2', hb: '#5F6E9A' },
+  kalger: { n: 'جامع الجزائر', base: 'dark', g: 'islamic', acc: 'kalger', bar: '#07090A', sw: ['#07090A', '#171918', '#1D7A57', '#D8B36C'], ph: 1, ink: 'w', top: '#010203', hb: '#0A0A09' },
+  kcordoba: { n: 'أقواس قرطبة', base: 'dark', g: 'islamic', acc: 'kcordoba', bar: '#120B07', sw: ['#120B07', '#221B16', '#A8482F', '#E6C8A0'], ph: 1, ink: 'w', top: '#190F08', hb: '#231914' },
+  knasir: { n: 'المسجد الوردي', base: 'light', g: 'islamic', acc: 'knasir', bar: '#F7EFF2', sw: ['#F7EFF2', '#FDFCFC', '#94476B', '#C29A5C'], ph: 1, ink: 'w', top: '#2F292A', hb: '#7E425C' },
+  // ناعمة
+  blush: { n: 'وردي ناعم', base: 'light', g: 'soft', acc: 'blush', bar: '#FBF1F3', sw: ['#FBF1F3', '#FEFCFC', '#BF577A', '#D8A0AB'], ph: 1, ink: 'w', top: '#6F4C51', hb: '#BF617E' },
+  rosenight: { n: 'ليل وردي', base: 'dark', g: 'soft', acc: 'rosenight', bar: '#110C0E', sw: ['#110C0E', '#221C1E', '#C46C8C', '#EDB9C8'], ph: 1, ink: 'w', top: '#0F0F0E', hb: '#171515' },
+  lavender: { n: 'لافندر', base: 'light', g: 'soft', acc: 'lavender', bar: '#F4F1F9', sw: ['#F4F1F9', '#FDFCFD', '#7760B2', '#B89CDF'], ph: 1, ink: 'd', top: '#B8CCE1', hb: '#867BBD' },
+  peach: { n: 'زهر المشمش', base: 'light', g: 'soft', acc: 'peach', bar: '#FFF4EE', sw: ['#FFF4EE', '#FFFDFB', '#C8694C', '#E9AA8C'], ph: 1, ink: 'w', top: '#324E6B', hb: '#B0756A' },
+  rosegold: { n: 'ذهبي وردي', base: 'dark', g: 'soft', acc: 'rosegold', bar: '#190D10', sw: ['#190D10', '#281D1F', '#C47A7F', '#EBBCA9'], ph: 1, ink: 'w', top: '#30181A', hb: '#582D31' },
+  violet: { n: 'بنفسجي حالم', base: 'dark', g: 'soft', acc: 'violet', bar: '#0D0B19', sw: ['#0D0B19', '#1D1B29', '#7C62C6', '#CDB8F4'], ph: 1, ink: 'w', top: '#141323', hb: '#1D1C35' },
+  kbfly: { n: 'الفراشات الزرقاء', base: 'dark', g: 'soft', acc: 'kbfly', bar: '#08110F', sw: ['#08110F', '#172120', '#3D82D6', '#A0D4F7'], ph: 1, ink: 'w', top: '#141906', hb: '#202D21' },
+  krose: { n: 'برعم الورد', base: 'light', g: 'soft', acc: 'krose', bar: '#F7F3EE', sw: ['#F7F3EE', '#FDFCFB', '#C24D6E', '#8FAE66'], ph: 1, ink: 'w', top: '#1A2104', hb: '#9E4B58' },
+  kbloom: { n: 'حقل التوليب', base: 'light', g: 'soft', acc: 'kbloom', bar: '#FBF3F4', sw: ['#FBF3F4', '#FEFCFD', '#CE2F5A', '#7E9B55'], ph: 1, ink: 'd', top: '#DCDCDC', hb: '#C85273' },
+  kberry: { n: 'شقائق النعمان', base: 'light', g: 'soft', acc: 'kberry', bar: '#F7F5EE', sw: ['#F7F5EE', '#FDFDFB', '#C3322B', '#8A8A45'], ph: 1, ink: 'd', top: '#FAFAFA', hb: '#C75C57' },
+  sakura: { n: 'أزهار الكرز', base: 'light', g: 'soft', acc: 'sakura', bar: '#F9F2F4', sw: ['#F9F2F4', '#FDFCFD', '#AE6880', '#D9AAB7'], ph: 1, ink: 'd', top: '#E0E4E9', hb: '#B28094' },
+  roses: { n: 'غروب وردي', base: 'dark', g: 'soft', acc: 'roses', bar: '#0F0D14', sw: ['#0F0D14', '#201D22', '#C8738F', '#F1B294'], ph: 1, ink: 'w', top: '#444967', hb: '#5D5874' },
+  lavfield: { n: 'حقل الخزامى', base: 'light', g: 'soft', acc: 'lavfield', bar: '#F3F0F8', sw: ['#F3F0F8', '#FCFCFD', '#6C58AD', '#C98B3E'], ph: 1, ink: 'd', top: '#E1E9F7', hb: '#7E76BE' },
+  // طبيعة هادئة
+  dawn: { n: 'فجر', base: 'light', g: 'nature', acc: 'dawn', bar: '#F4EFEC', sw: ['#F4EFEC', '#FDFCFB', '#5B6CA2', '#CFA57C'], ph: 1, ink: 'd', top: '#CDD2DC', hb: '#7783AB' },
+  ocean: { n: 'بحري', base: 'light', g: 'nature', acc: 'ocean', bar: '#EEF1F3', sw: ['#EEF1F3', '#FBFCFC', '#3C6A85', '#C9A48F'], ph: 1, ink: 'd', top: '#F3E7E0', hb: '#5C7E94' },
+  olive: { n: 'زيتوني', base: 'light', g: 'nature', acc: 'olive', bar: '#F3F4EC', sw: ['#F3F4EC', '#FCFDFB', '#5C6A2D', '#B49A55'], ph: 1, ink: 'w', top: '#535B64', hb: '#677448' },
+  coffee: { n: 'غابة الضباب', base: 'light', g: 'nature', acc: 'coffee', bar: '#F1EFEC', sw: ['#F1EFEC', '#FCFCFB', '#56694A', '#B08A4A'], ph: 1, ink: 'd', top: '#E5E0E2', hb: '#74806A' },
+  sand: { n: 'رمال الصحراء', base: 'light', g: 'nature', acc: 'sand', bar: '#F6EEE3', sw: ['#F6EEE3', '#FDFBF9', '#AE6D38', '#C9924E'], ph: 1, ink: 'w', top: '#2A415A', hb: '#9C7657' },
+  kstar: { n: 'درب التبّانة', base: 'dark', g: 'nature', acc: 'kstar', bar: '#080B0D', sw: ['#080B0D', '#191B1C', '#5A79C8', '#E6D4A2'], ph: 1, ink: 'w', top: '#0C0D0E', hb: '#15191C' },
+  // بسيطة ومريحة
+  dark: { n: 'ليل هادئ', base: 'dark', g: 'calm', acc: 'dark', bar: '#070B12', sw: ['#070B12', '#171B20', '#1C7A62', '#D4AF63'], ph: 1, ink: 'w', top: '#0B1832', hb: '#142342' },
+  light: { n: 'صباح', base: 'light', g: 'calm', acc: 'light', bar: '#F2F4F7', sw: ['#F2F4F7', '#FCFDFD', '#0B5D4B', '#B08738'], ph: 1, ink: 'w', top: '#273850', hb: '#20625E' },
+  sepia: { n: 'دافئ مريح للعين', base: 'light', g: 'calm', acc: 'sepia', bar: '#F1E7D8', sw: ['#F1E7D8', '#FCFAF7', '#8A5A3C', '#B8843F'], ph: 1, ink: 'w', top: '#452F28', hb: '#8E6248' },
+  amoled: { n: 'ليل حالك', base: 'dark', g: 'calm', acc: 'amoled', bar: '#000000', sw: ['#000000', '#11110F', '#1C7A62', '#D4AF63'], ph: 1, ink: 'w', top: '#0C0C0C', hb: '#111111' },
+  bright: { n: 'ناصع', base: 'light', g: 'calm', acc: 'bright', bar: '#FFFFFF', sw: ['#FFFFFF', '#FFFFFF', '#0B5D4B', '#8A6A1E'], ph: 1, ink: 'd', top: '#E2E4E8', hb: '#3A786E' }
 };
 /* المفتاح الفعلي للسمة الآن (auto/prayer يختاران بين الداكن والفاتح) */
 function uiTheme() {
@@ -391,7 +408,12 @@ function applyTheme() {
   de.setAttribute('data-theme', T.base);
   if (T.tone) de.setAttribute('data-tone', T.tone); else de.removeAttribute('data-tone');
   de.setAttribute('data-tkey', k);
-  if (T.skin) de.setAttribute('data-skin', T.skin); else de.removeAttribute('data-skin');
+  de.removeAttribute('data-skin');
+  // وسن 5: رأس كل صفحة يحمل شريطًا ناعمًا مموّهًا من صورة الثيم (مرسوم مسبقًا — بلا كلفة تشغيل)
+  de.toggleAttribute('data-ph', !!T.ph);
+  de.style.setProperty('--th-h', T.ph ? 'url("' + new URL('img/th/' + k + '-h.webp', document.baseURI).href + '")' : 'none');
+  // ترحيل لمرة واحدة: ألوان كل ثيم مشتقة من صورته (ما لم تختاري لونًا حرًّا)
+  if (!Settings.v5) { Settings.v5 = 1; if (Settings.accent !== 'custom') { Settings.accent = T.acc || 'emerald'; Settings.accentAuto = true; } Store.set('settings', Settings); }
   if (typeof applySkinDeco === 'function') try { applySkinDeco(); } catch (e) { console.error(e); }
   const acc = Settings.accent || 'emerald';
   de.setAttribute('data-accent', acc);
