@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   وسن 4.0 · التلاوة الصوتية (مع تظليل الآية) · التفسير الميسّر · بطاقات المشاركة
+   وسن 5.1 · التلاوة الصوتية (مع تظليل الآية — ومتابعة تقريبية لمن لا توقيت له) · التفسير الميسّر · بطاقات المشاركة
    الصوت: everyayah.com (آية بآية) — يحتاج اتصالًا بالإنترنت.
    التفسير: التفسير الميسّر (مجمّع الملك فهد) عبر api.alquran.cloud ويُحفظ محليًا بعد أول تحميل.
    ════════════════════════════════════════════════════════════════ */
@@ -47,6 +47,49 @@ const Timings = {
     });
   },
 };
+/* ── وسن 5.1 · «متابعة تقريبية» للقرّاء الذين لا تتوفّر لهم توقيتات الآيات (ومنهم القرّاء المدمجون) ──
+   نأخذ نِسَب آيات السورة من قارئ مرجعي موقَّت من الأسلوب نفسه (مرتّل/مجوّد) ونمدّها على مدة تلاوة القارئ،
+   وإن لم تتوفّر (دون إنترنت) فبطول كل آية بالحروف مع وقفة بين الآيات. فتبدأ التلاوة من الآية المختارة،
+   وتُظلَّل الآية المتلوّة وتنتقل الصفحات، كسائر القرّاء. */
+const EstT = {
+  // قرّاء مرجعيون توقيتاتهم منتظمة (قيس ذلك على سور عدّة؛ استُبعد من اختلّت توقيتاته)
+  REF: { mj: [51, 122, 288], d: [123, 31, 112] },
+  refIds(m) { const k = (m && m.k) || ''; return k.includes('مجو') ? this.REF.mj : this.REF.d; },
+  letters(s) { const x = String(s || '').match(/[\u0621-\u063A\u0641-\u064A\u0670\u0671]/g); return x ? x.length : 1; },
+  refsCached(m, sn) { return this.refIds(m).map(id => Timings.cached(id, sn)).filter(c => c && c.length > 1); },
+  refFetch(m, sn) { return Promise.all(this.refIds(m).map(id => Timings.get(id, sn).catch(() => null))); },
+  /** تقدير أولي: طول الآيات بالحروف، ممزوجًا بمتوسط نِسَب القرّاء المرجعيين إن توفّرت */
+  build(sn, dur, part, refs) {
+    const S = Q.S[sn - 1]; if (!S || !(dur > 0) || !isFinite(dur)) return null;
+    const D = dur * 1000, a0 = part ? part[0] : 1, a1 = part ? part[1] : S.n, P = 2, items = [];
+    if (a0 === 1 && sn !== 1 && sn !== 9) items.push([0, 19 + P]);   // البسملة
+    for (let a = a0; a <= a1; a++) items.push([a, this.letters(Q.t[S.start + a - 1]) + P]);
+    const lead = Math.min(1200, D * .01), tot = items.reduce((s, x) => s + x[1], 0); let t = lead; const out = [];
+    items.forEach(([a, w]) => { const d = (D - lead) * w / tot; out.push({ ayah: a, st: t, en: t + Math.max(200, d - 250) }); t += d; });
+    if (part || !refs || !refs.length) return out;
+    const med = v => { const s = v.slice().sort((p, q) => p - q), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+    const norm = refs.map(r => { const T = r[r.length - 1].en, o = {}; r.forEach(x => { o[x.ayah] = [x.st / T, x.en / T]; }); return o; });
+    out.forEach(x => { const v = norm.map(o => o[x.ayah]).filter(Boolean); if (!v.length) return; x.st = (x.st + med(v.map(p => p[0])) * D) / 2; x.en = (x.en + med(v.map(p => p[1])) * D) / 2; });
+    out.sort((p, q) => p.st - q.st); return out;
+  },
+  /* تصحيحات المستمعة: «الشيخ يقرأ هذه الآية الآن» — تُحفظ لكل قارئ وسورة فتتحسّن المتابعة كل مرة */
+  akey: (id, sn) => 'tma.' + id + '.' + sn,
+  anchors(id, sn) { return Store.get(this.akey(id, sn), []); },
+  addAnchor(id, sn, a, t) {
+    let L = this.anchors(id, sn).filter(x => x.a !== a && !(x.a < a && x.t >= t) && !(x.a > a && x.t <= t));
+    L.push({ a, t: Math.round(t) }); L.sort((p, q) => p.a - q.a); Store.set(this.akey(id, sn), L.slice(-60)); return L;
+  },
+  /** تمديد التقدير بين نقاط التصحيح (خطّي قطعةً قطعة) */
+  warp(tm, L, D) {
+    if (!tm || !L || !L.length) return tm;
+    const E = {}; tm.forEach(x => { E[x.ayah] = x.st; });
+    let pts = L.filter(x => E[x.a] != null).map(x => [E[x.a], x.t]);
+    if (!pts.length) return tm;
+    pts = [[0, 0]].concat(pts).concat([[D, D]]).sort((p, q) => p[0] - q[0]);
+    const f = s => { for (let i = 1; i < pts.length; i++) if (s <= pts[i][0]) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; return x1 > x0 ? y0 + (s - x0) * (y1 - y0) / (x1 - x0) : y1; } return s; };
+    return tm.map(x => ({ ayah: x.ayah, st: f(x.st), en: Math.max(f(x.st) + 200, f(x.en)) }));
+  },
+};
 /* التنزيلات: ملف لكل سورة في مساحة التطبيق (بلا أذونات) عبر مدير التنزيلات في أندرويد */
 const Downloads = {
   st: Store.get('dl', {}),
@@ -62,7 +105,7 @@ const Downloads = {
     const k = this.key(m.id, sn), s = Q.S[sn - 1];
     this.st[k] = { s: 'run', ts: Date.now(), p: 0 }; this.save();
     Native.call('dlStart', k, m.s + pad3(sn) + '.mp3', this.rel(m.id, sn), 'سورة ' + (s ? s.name : sn) + ' — ' + m.n);
-    if (m.t) Timings.get(m.id, sn).catch(() => {});
+    if (m.t) Timings.get(m.id, sn).catch(() => {}); else EstT.refFetch(m, sn).catch(() => {});   // لتعمل المتابعة دون إنترنت
     this.watch();
   },
   cancel(id, sn) { const k = this.key(id, sn); Native.call('dlCancel', k, this.rel(id, sn)); delete this.st[k]; this.save(); },
@@ -124,8 +167,22 @@ const Player = {
     this.remote = m.off ? m.s + m.by[sn][1] + '.ogg' : m.s + pad3(sn) + '.mp3'; this.local = !!local; this.part = pr;
     this.loading = true; a.src = local || this.remote; a.playbackRate = Settings.qRate || 1;
     const seek = () => { const e = this.tm && this.tm.find(x => x.ayah === want); if (e && want > 1) try { a.currentTime = e.st / 1000; } catch (er) {} };
-    if (m.t) Timings.get(m.id, sn).then(tm => { if (this.cs !== sn || !this.on) return; this.tm = tm; if (a.readyState >= 1) seek(); else a.addEventListener('loadedmetadata', seek, { once: true }); }).catch(() => {});
-    else if (want > 1 && !pr) toast('هذا القارئ يُسمَع من أول السورة');
+    this.est = false;
+    // وسن 5.1: توقيتات تقديرية حين لا تتوفّر الدقيقة — تُبنى متى عُرفت مدة الملف
+    const est = () => {
+      if (this.cs !== sn || !this.on || this.tm) return;
+      const e0 = m.off && m.by[sn], dur = e0 && !pr ? e0[e0.length - 1] : (isFinite(a.duration) && a.duration > 0 ? a.duration : pr && e0 ? e0[e0.length - 1] : 0);
+      const base = EstT.build(sn, dur, pr, pr ? null : EstT.refsCached(m, sn)); if (!base) return;
+      this.tmBase = base; this.tmDur = dur * 1000; this.tm = EstT.warp(base, EstT.anchors(m.id, sn), this.tmDur); this.est = true; seek();
+      if (!Store.get('estTip', 0)) { Store.set('estTip', 1); toast('متابعة الآيات مع هذا القارئ تقريبية', 2600); }
+    };
+    const estSoon = () => {
+      const go = () => { if (m.off || (a.readyState >= 1 && isFinite(a.duration) && a.duration > 0)) est(); else { a.addEventListener('loadedmetadata', est, { once: true }); a.addEventListener('durationchange', est, { once: true }); } };
+      if (pr || EstT.refsCached(m, sn).length) { go(); return; }
+      let done = false; const fin = () => { if (!done) { done = true; go(); } }; EstT.refFetch(m, sn).then(fin, fin); setTimeout(fin, 3500);
+    };
+    if (m.t) Timings.get(m.id, sn).then(tm => { if (this.cs !== sn || !this.on) return; this.tm = tm; if (a.readyState >= 1) seek(); else a.addEventListener('loadedmetadata', seek, { once: true }); }).catch(estSoon);
+    else estSoon();
     const p = a.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== 'AbortError') this.fail(); });
     this.i = Q.S[sn - 1].start + (want - 1); this.highlight(); this.sync();
   },
@@ -136,7 +193,7 @@ const Player = {
     for (let j = 0; j < tm.length; j++) { if (tm[j].st <= t + 40) k = j; else break; }
     if (k < 0) return;
     const e = tm[k], r = this.reps();
-    if (this.cur === e.ayah && e.ayah > 0 && (r === 0 || this.left > 1) && t >= e.en - 140) { if (r !== 0) this.left--; this.a.currentTime = e.st / 1000; return; }
+    if (!this.est && this.cur === e.ayah && e.ayah > 0 && (r === 0 || this.left > 1) && t >= e.en - 140) { if (r !== 0) this.left--; this.a.currentTime = e.st / 1000; return; }
     if (e.ayah !== this.cur) {
       if (this.cur > 0) Growth.add('ql', 1);
       this.cur = e.ayah; this.left = r; this.basm = e.ayah === 0;
@@ -153,6 +210,12 @@ const Player = {
     if (this.tm) { const k = this.tm.findIndex(x => x.ayah === this.cur), e = this.tm[k + d]; if (k >= 0 && e) { this.left = this.reps(); this.a.currentTime = e.st / 1000; return; } }
     const m = this.lib(); let n = this.cs + d; while (n >= 1 && n <= 114 && !libHas(m, n)) n += d;
     if (n >= 1 && n <= 114) this.loadSurah(n, 1); else toast(d > 0 ? 'آخر سورة' : 'أول سورة');
+  },
+  /** وسن 5.1: تصحيح المتابعة التقريبية — «الشيخ يقرأ هذه الآية الآن» */
+  resync(ayah) {
+    const m = this.lib(); if (!m || !this.est || !this.a || !this.tmBase) return false;
+    const t = Math.max(0, this.a.currentTime * 1000 - 700);   // نطرح زمن ردّ الفعل
+    const L = EstT.addAnchor(m.id, this.cs, ayah, t); this.tm = EstT.warp(this.tmBase, L, this.tmDur); this.cur = -1; this.tick(); return true;
   },
   /* ── مؤقّت النوم ── */
   armSleep() {
@@ -278,10 +341,10 @@ function playerSheet(startI) {
   };
   const html = '<div class="sh-t">التلاوة</div><div class="sh-s">' + (Q.ready ? esc(ayahRef(si)) : '') + '</div>' +
     '<div class="mx"><b class="lbl2">القارئ</b><button class="li ps-rec" id="ps-rec"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">' + esc(reciterName(Settings.reciter)) + '</div>' +
-    '<div class="s">' + (m ? (m.off ? 'مدمج في التطبيق · ' + pSur(m.c) + ' · بلا إنترنت' : (m.t ? 'سورة كاملة مع متابعة الآيات' : 'سورة كاملة') + ' · ' + (m.c < 114 ? pSur(m.c) : 'المصحف كاملًا')) : 'آية بآية · متابعة دقيقة') + '</div></div><span class="link">تغيير</span></button>' +
+    '<div class="s">' + (m ? (m.off ? 'مدمج في التطبيق · ' + pSur(m.c) + ' · بلا إنترنت · متابعة تقريبية' : (m.t ? 'سورة كاملة مع متابعة الآيات' : 'سورة كاملة مع متابعة تقريبية للآيات') + ' · ' + (m.c < 114 ? pSur(m.c) : 'المصحف كاملًا')) : 'آية بآية · متابعة دقيقة') + '</div></div><span class="link">تغيير</span></button>' +
     dlRow() +
     '<b class="lbl2">تكرار كل آية</b><div class="seg" id="ps-rep">' + reps.map(([v, t]) => '<button data-v="' + v + '" class="' + (Player.reps() === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
-    (m && !m.t ? '<div class="faint" style="font-size:11.5px;margin-top:4px">التكرار يعمل مع القرّاء الذين تتوفّر لهم متابعة الآيات</div>' : '') +
+    (m && !m.t ? '<div class="faint" style="font-size:11.5px;margin-top:4px">تكرار الآية يحتاج توقيتًا دقيقًا — يعمل مع القرّاء الموسومين «متابعة دقيقة»</div>' : '') +
     '<b class="lbl2">السرعة</b><div class="seg" id="ps-rate">' + rates.map(([v, t]) => '<button data-v="' + v + '" class="' + ((Settings.qRate || 1) === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
     '<b class="lbl2">عند نهاية السورة</b><div class="seg" id="ps-cont"><button data-v="0" class="' + (!Settings.qCont ? 'on' : '') + '">توقف</button><button data-v="1" class="' + (Settings.qCont ? 'on' : '') + '">تابع للسورة التالية</button></div>' +
     '<b class="lbl2">مؤقّت النوم</b><div class="seg" id="ps-sl">' + sleeps.map(([v, t]) => '<button data-v="' + v + '" class="' + ((+Settings.sleepMin || 0) === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
@@ -304,7 +367,7 @@ function reciterSheet(done) {
   const rowA = ([id, n]) => '<button class="li opt ' + (id === cur ? 'on' : '') + '" data-r="' + id + '"><div class="grow"><div class="t">' + esc(n) + '</div><div class="s">آية بآية · متابعة دقيقة</div></div><span class="rad"></span></button>';
   const rowL = x => { const id = 'm:' + x.id, dn = Downloads.count(x.id);
     return '<button class="li opt ' + (id === cur ? 'on' : '') + '" data-r="' + id + '" data-q="' + esc(x.n + ' ' + x.k) + '"><div class="grow"><div class="t">' + esc(x.n) + (x.k ? ' <span class="rk">' + esc(x.k) + '</span>' : '') + '</div>' +
-      '<div class="s">' + (x.t ? 'متابعة الآيات' : 'سورة كاملة') + ' · ' + (x.c < 114 ? pSur(x.c) : 'المصحف كاملًا') + (dn ? ' · ' + N(dn) + ' منزّلة' : '') + '</div></div><span class="rad"></span></button>'; };
+      '<div class="s">' + (x.t ? 'متابعة دقيقة' : 'متابعة تقريبية') + ' · ' + (x.c < 114 ? pSur(x.c) : 'المصحف كاملًا') + (dn ? ' · ' + N(dn) + ' منزّلة' : '') + '</div></div><span class="rad"></span></button>'; };
   const html = '<div class="sh-t">القارئ</div><div class="sh-s">' + N(RECITERS.length + LIB().length + OFFLINE.length) + ' تلاوة · ابحث بالاسم</div>' +
     '<div class="mx"><div class="search rs-q">' + icon('search') + '<input id="rq" placeholder="ابحث عن قارئ…" autocomplete="off"></div></div>' +
     '<div class="rs-g" data-g="o">مدمجة في التطبيق · تعمل دون إنترنت</div><div class="rs-list">' + OFFLINE.map(o => { const m = offOf('o:' + o.id);

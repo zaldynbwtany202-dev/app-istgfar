@@ -21,7 +21,7 @@ const ARC = { p0: [334, 104], p1: [180, -22], p2: [26, 104] };
 const bez = (t) => { const u = 1 - t; return [u * u * ARC.p0[0] + 2 * u * t * ARC.p1[0] + t * t * ARC.p2[0], u * u * ARC.p0[1] + 2 * u * t * ARC.p1[1] + t * t * ARC.p2[1]]; };
 
 function currentAzkarCat(now) {
-  const t = Times.forDay(now);
+  const t = Times.forDay(Times.locDay(now));
   if (now >= t.fajr && now < t.dhuhr) return 'morning';
   if (now >= t.asr && now < t.isha) return 'evening';
   if (now >= t.isha || now < t.fajr) return 'sleep';
@@ -38,12 +38,12 @@ function moonIcon(m) {
 SCREENS.home = {
   tab: 'home',
   render() {
-    const now = new Date(), l = Loc.eff(), t = Times.forDay(now), h = hijriOf(now);
+    const now = new Date(), l = Loc.eff(), t = Times.forDay(Times.locDay(now)), h = hijriOf(now);
     const occ = NoorEngine.occasionOn(h);
     const g = Growth.info(), gst = Garden.STAGES[g.stage], mn = LivingSky.moon(now);
-    const photo = heroMode() !== 'sky';   // وسن 5: صورة عالية الدقة (للثيم أو من هاتفك) بدل السماء المرسومة
-    const hero = '<section class="scene' + (photo ? ' photo ink-' + heroInk() : '') + '" id="hero">' +
-      (photo ? heroPhotoLayer() : '<div class="sky-tex"></div><div class="sky-stars" aria-hidden="true">' + LivingSky.starsHTML(46, 11) + '</div>' +
+    const hk = heroKind(), T0 = THEMES[uiTheme()] || {};   // وسن 5.1: صورة (ثيم الصور أو صورتك) · مشهد حيّ متحرك · السماء والبستان للثيمات القديمة
+    const hero = '<section class="scene' + (hk === 'photo' ? ' photo ink-' + heroInk() : hk === 'anim' ? ' anim an-' + T0.anim + ' ink-' + heroInk() : '') + '" id="hero">' +
+      (hk === 'photo' ? heroPhotoLayer() : hk === 'anim' ? AnimScene.html(T0.anim) : '<div class="sky-tex"></div><div class="sky-stars" aria-hidden="true">' + LivingSky.starsHTML(46, 11) + '</div>' +
       '<div class="clouds" aria-hidden="true"><i></i><i></i><i></i></div><div class="glow" id="h-glow"></div>') +
       '<div class="top"><div class="brandmark">' + wordmark('wm-hero') +
       '<button class="loc" data-go="location">' + icon('pin') + '<span>' + esc(l.label) + '</span></button></div>' +
@@ -61,7 +61,9 @@ SCREENS.home = {
       '<div class="cd num" id="h-cd">' + icon('clock') + '<span></span></div></div>' +
       '<div class="dates"><span>' + weekday(now) + '</span><i class="dot"></i><span class="hj">' + moonIcon(mn) + fmtH(h) + '</span><i class="dot"></i><span>' + fmtG(now) + '</span></div>' +
       (occ ? '<div class="dates"><span class="occ">' + icon('sparkle', '', 'width:14px;height:14px;display:inline-block;vertical-align:-2px') + ' ' + esc(occ.t) + '</span></div>' : '') +
-      (photo ? '' : '<div class="land" data-go="garden" aria-label="بستانك">' + Garden.render(g.L, { bare: true, phase: gardenPhase(now), id: 'hl', par: 'xMidYMax slice' }) + '</div>') +
+      (hk !== 'sky' ? '' : artKey() ? '<div class="kw-artw" aria-hidden="true"><img class="kw-art" src="' + Art.heroURI(artKey(), g.L) + '" alt="" draggable="false"></div><div class="land kw-hit" data-go="garden" aria-label="بستانك"></div>'
+        : '<div class="land" data-go="garden" aria-label="بستانك">' + Garden.render(g.L, { bare: true, phase: gardenPhase(now), id: 'hl', par: 'xMidYMax slice' }) + '</div>') +
+      (hk === 'sky' && curSkin() ? (curSkin().stickers ? kwHero(curSkin()) : '<div class="skin-fx fx-' + curSkin().fx + '" aria-hidden="true">' + skinFX(curSkin()) + '</div>') : '') +
       '<button class="lvchip" data-go="garden"><svg viewBox="0 0 24 24"><path d="' + starD(12, 12, 11, 0.76, Math.PI / 8) + '"/></svg><b class="num">' + N(g.L) + '</b><span>' + esc(gst.name) + '</span></button>' +
       '</section>';
     const strip = '<div class="pstrip" id="h-strip">' + FIVE.map((k, i) =>
@@ -72,7 +74,9 @@ SCREENS.home = {
   mount(el) {
     this.paintSky(new Date(), true);
     // عمق المشهد: الأرض والسماء تتحرّكان أبطأ من المحتوى عند التمرير
-    const hero = $('#hero', el), land = hero && (hero.querySelector('.ph-w') || hero.querySelector('.land')), np = hero && hero.querySelector('.np'), sky = hero && hero.querySelector('.sky-stars');
+    const hero = $('#hero', el), land = hero && (hero.querySelector('.ph-w') || hero.querySelector('.an-par') || hero.querySelector('.kw-artw') || hero.querySelector('.land')), np = hero && hero.querySelector('.np'), sky = hero && hero.querySelector('.sky-stars');
+    // وسن 5.1: تتوقف حركة المشهد حين يخرج من الشاشة (توفير البطارية)
+    if (hero && 'IntersectionObserver' in window) { this._io = new IntersectionObserver(es => es.forEach(e => hero.classList.toggle('paused', !e.isIntersecting)), { threshold: 0.02 }); this._io.observe(hero); }
     let raf = 0;
     this._par = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; const y = Math.max(0, Math.min(window.scrollY, 520));
       if (land) land.style.transform = 'translate3d(0,' + (y * 0.28).toFixed(1) + 'px,0)';
@@ -81,7 +85,7 @@ SCREENS.home = {
     window.addEventListener('scroll', this._par, { passive: true });
     $('#h-strip', el).addEventListener('click', e => {
       const b = e.target.closest('[data-trk]'); if (!b) return;
-      const i = +b.dataset.trk, now = new Date(), t = Times.forDay(now);
+      const i = +b.dataset.trk, now = new Date(), t = Times.forDay(Times.locDay(now));
       if (t[FIVE[i]] > now && !Tracker.has(now, i)) { toast('لم يحن وقت صلاة ' + PNAME[FIVE[i]] + ' بعد'); return; }
       const on = Tracker.toggle(now, i); b.classList.toggle('on', on); vibrate(on ? 25 : 10);
       if (on) toast(Tracker.count(now) === 5 ? 'ما شاء الله! أتممت صلوات اليوم' : 'تقبّل الله صلاتك');
@@ -91,7 +95,7 @@ SCREENS.home = {
     if (!Q.ready) loadQuran().then(() => { if (Router.cur.r === 'home') this.drawMore(); }).catch(() => {});
   },
   target(now) {
-    const t = Times.forDay(now);
+    const t = Times.forDay(Times.locDay(now));
     if (now >= t.fajr && now < t.sunrise) return { key: 'sunrise', time: t.sunrise, day: now, label: 'ينتهي وقت الفجر', name: 'الشروق' };
     const nx = Times.next(now); nx.label = nx.tomorrow ? 'الصلاة القادمة · غدًا' : 'الصلاة القادمة'; nx.name = pname(nx.key, nx.day); return nx;
   },
@@ -103,22 +107,23 @@ SCREENS.home = {
   },
   paintSky(now, first) {
     const hero = $('#hero'); if (!hero) return;
-    const t = Times.forDay(now), nx = Times.next(now), tg = this.target(now), sky = LivingSky.at(now);
+    const t = Times.forDay(Times.locDay(now)), nx = Times.next(now), tg = this.target(now), sky = LivingSky.at(now);
     this._k = tg.key;
-    const photo = hero.classList.contains('photo');
-    if (!photo) LivingSky.paint(hero, sky);
-    if (Router.cur && Router.cur.r === 'home') { if (photo) statusBar(heroTop(), heroInk() === 'd'); else statusBar(sky.top, sky.ink === 'dark'); }
+    const own = hero.classList.contains('photo') || hero.classList.contains('anim');
+    if (!own) LivingSky.paint(hero, sky);
+    if (Router.cur && Router.cur.r === 'home') { if (own) statusBar(heroTop(), heroInk() === 'd'); else statusBar(sky.top, sky.ink === 'dark'); }
     $('#h-lbl').textContent = tg.label; $('#h-nn').textContent = tg.name; $('#h-nt').textContent = fmtTime(tg.time);
     const c = $('#h-cd span'); if (c) c.textContent = 'بعد ' + fmtCountdown(tg.time - now);
     let a, b, la, lb, frac, sun = true;
     if (now >= t.sunrise && now < t.maghrib) { a = t.sunrise; b = t.maghrib; la = ['الشروق', t.sunrise]; lb = ['المغرب', t.maghrib]; }
     else if (now >= t.fajr && now < t.sunrise) { a = t.fajr; b = t.sunrise; la = ['الفجر', t.fajr]; lb = ['الشروق', t.sunrise]; sun = true; }
-    else { sun = false; if (now >= t.maghrib) { a = t.maghrib; b = Times.forDay(addDays(now, 1)).fajr; } else { a = Times.forDay(addDays(now, -1)).maghrib; b = t.fajr; }
+    else { sun = false; if (now >= t.maghrib) { a = t.maghrib; b = Times.forDay(addDays(Times.locDay(now), 1)).fajr; } else { a = Times.forDay(addDays(Times.locDay(now), -1)).maghrib; b = t.fajr; }
       la = ['المغرب', a]; lb = ['الفجر', b]; }
     frac = clamp((now - a) / (b - a), 0, 1);
     if (now >= t.fajr && now < t.sunrise) frac = 0.02 + frac * 0.05;
     const [x, y] = bez(frac);
-    $('#h-body').innerHTML = sun
+    const ak = own ? null : artKey();
+    $('#h-body').innerHTML = ak ? '<g class="kw-mk" transform="translate(' + (+x).toFixed(1) + ' ' + (+y).toFixed(1) + ')">' + Art.marker(ak) + '</g>' : sun
       ? '<circle cx="' + x + '" cy="' + y + '" r="22" fill="url(#sunGl)"/><circle cx="' + x + '" cy="' + y + '" r="9.5" fill="url(#sunG)"/>'
       : LivingSky.moonSVG(+x.toFixed(1), +y.toFixed(1), 9, LivingSky.moon(now));
     const steps = 24; let d = 'M' + ARC.p0; for (let k = 1; k <= steps; k++) { const p = bez(frac * k / steps); d += ' L' + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }
@@ -133,8 +138,8 @@ SCREENS.home = {
     if (land) land.dataset.ph = ph;
     void first;
   },
-  statusBar() { if (heroMode() !== 'sky') return [heroTop(), heroInk() === 'd']; const s = LivingSky.at(new Date()); return [s.top, s.ink === 'dark']; },
-  leave() { if (this._par) window.removeEventListener('scroll', this._par); this._par = null; },
+  statusBar() { if (heroKind() !== 'sky') return [heroTop(), heroInk() === 'd']; const s = LivingSky.at(new Date()); return [s.top, s.ink === 'dark']; },
+  leave() { if (this._par) window.removeEventListener('scroll', this._par); this._par = null; if (this._io) { this._io.disconnect(); this._io = null; } },
   drawCtx() {
     const box = $('#h-ctx'); if (!box) return;
     const now = new Date(), h = hijriOf(now), cat = currentAzkarCat(now);
@@ -145,7 +150,7 @@ SCREENS.home = {
       '<div class="row"><div class="q" style="flex:none"><div class="qi' + (curSkin() && curSkin().stickers ? ' qi-emo' : '') + '" style="' + hueVars(A.hue) + ';width:52px;height:52px;border-radius:18px">' + kwIcon(A.icon, A.id === 'prayer' ? 'prayer' : null, 32) + '</div></div>' +
       '<div class="grow"><div style="font-weight:700;font-size:16px">' + esc(A.title) + '</div><div class="faint" style="font-size:12.5px">' + (pr.done ? 'أتممت ' + N(pr.done) + ' من ' + N(pr.total) : A.sub + ' · ' + N(pr.total) + ' ذكرًا') + '</div>' +
       '<div class="progress g" style="margin-top:9px"><i style="width:' + Math.round(pr.done / pr.total * 100) + '%"></i></div></div>' + icon('chev', 'faint') + '</div></button>';
-    const dow = now.getDay(), t = Times.forDay(now);
+    const dow = now.getDay(), t = Times.forDay(Times.locDay(now));
     if (dow === 5 || (dow === 4 && now >= t.maghrib)) {
       html += '<button class="hc mt" style="display:block;width:calc(100% - 32px);text-align:right" data-go="reader" data-a=\'{"s":18}\'><div class="row">' +
         '<div class="q" style="flex:none"><div class="qi" style="' + hueVars('gold') + ';width:52px;height:52px;border-radius:18px">' + icon('book') + '</div></div>' +
@@ -757,15 +762,26 @@ function segRow(title, sub, key, opts) {
     '<div class="seg" data-seg="' + key + '" style="flex:1 1 170px">' + opts.map(([v, t]) => '<button data-v="' + v + '" class="' + (String(Settings[key]) === String(v) ? 'on' : '') + '">' + t + '</button>').join('') + '</div></div>';
 }
 const THEME_NAMES = Object.assign({ auto: 'حسب النظام', prayer: 'تلقائي حسب المواقيت' }, Object.fromEntries(Object.entries(THEMES).map(([k, v]) => [k, v.n])));
-const THEME_GROUPS = [['islamic', 'فخامة إسلامية'], ['soft', 'ناعمة'], ['nature', 'طبيعة هادئة'], ['calm', 'بسيطة ومريحة']];
-/* وسن 5 · الثيمات: صور حقيقية عالية الدقة + ألوان مشتقة من كل صورة، وخلفية الصفحة الرئيسية (صورة الثيم / صورتي / السماء) */
-const HERO_MODES = [['photo', 'صورة الثيم'], ['mine', 'صورتي'], ['sky', 'السماء والبستان']];
+const THEME_GROUPS = [['anim', 'حيّة متحركة (جديد)'], ['islamic', 'فخامة إسلامية بالصور'], ['kawaii', 'ثيمات كاملة للبنات'], ['scene', 'مشاهد'], ['girls', 'ناعمة وردية'], ['calm', 'هادئة'], ['more', 'مختلفة']];
+/* وسن 5.1 · الثيمات: القديمة كما كانت (المشاهد والرسوم) + فخامة إسلامية بالصور + ثيمات حيّة متحركة، وخلفية الرئيسية: مشهد الثيم أو صورتك */
+const HERO_MODES = [['theme', 'مشهد الثيم'], ['mine', 'صورتي']];
 function themeSheet() {
   const card = k => { const T = THEMES[k];
-    return '<button class="thm thm-ph' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-img"><img src="img/th/' + k + '-t.webp" alt="" loading="lazy" decoding="async" draggable="false">' +
-      '<i style="background:' + T.sw[2] + '"></i></span><span class="thm-n">' + T.n + '</span></button>'; };
+    if (T.ph || T.anim) return '<button class="thm thm-ph' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-img"><img src="img/th/' + k + '-t.webp" alt="" loading="lazy" decoding="async" draggable="false">' +
+      '<i style="background:' + T.sw[2] + '"></i>' + (T.anim ? '<b class="thm-live">' + icon('sparkle') + 'حيّ</b>' : '') + '</span><span class="thm-n">' + T.n + '</span></button>';
+    const sw = T.sw;
+    if (T.skin && typeof Art !== 'undefined' && Art.has(T.skin)) return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-kw thm-art"><img src="' + Art.thumbURI(T.skin) + '" alt="" draggable="false">' +
+      '<i style="position:absolute;left:0;right:0;bottom:0;height:5px;background:' + sw[2] + '"></i></span><span class="thm-n">' + T.n + '</span></button>';
+    if (T.skin && SKINS[T.skin] && SKINS[T.skin].stickers) { const K = SKINS[T.skin], w = K.wall || [K.e];
+      return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-kw" style="background:linear-gradient(160deg,' + sw[0] + ',' + sw[1] + ')">' +
+        emoImg(K.e, 'left:50%;top:50%;width:46%;margin:-23% 0 0 -23%;filter:drop-shadow(0 3px 5px rgba(0,0,0,.18))' + (K.bulletHue ? ' ' + KW_HUE[K.bulletHue] : '')) +
+        emoImg(w[1] || K.e, 'left:8%;top:10%;width:22%;transform:rotate(-14deg);opacity:.9') + emoImg(w[2] || K.e, 'right:8%;bottom:9%;width:20%;transform:rotate(12deg);opacity:.9') +
+        '<i style="position:absolute;left:0;right:0;bottom:0;height:5px;background:' + sw[2] + '"></i></span><span class="thm-n">' + T.n + '</span></button>'; }
+    if (T.skin && SKINS[T.skin]) return '<button class="thm thm-scene' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-sc">' +
+      Garden.render(260, { skin: SKINS[T.skin], phase: T.base === 'dark' ? 'night' : 'day', id: 'ts' + k, par: 'xMidYMax slice' }) + '</span><span class="thm-n">' + T.n + '</span></button>';
+    return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-sw" style="background:' + sw[0] + '"><i style="background:' + sw[1] + '"></i><b style="background:' + sw[2] + '"></b><s style="background:' + sw[3] + '"></s></span><span class="thm-n">' + T.n + '</span></button>'; };
   const draw = () => { const hm = heroMode();
-    return '<div class="sh-t">الثيمات</div><div class="sh-s">صور حقيقية عالية الدقة، وألوان كل ثيم مأخوذة من صورته</div>' +
+    return '<div class="sh-t">الثيمات</div><div class="sh-s">اختاري ما يريح عينيك ويناسب ذوقك</div>' +
       '<div class="thm-g">خلفية الصفحة الرئيسية</div><div class="seg hm-seg" id="hm-seg">' + HERO_MODES.map(([v, t]) => '<button data-hm="' + v + '" class="' + (hm === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
       (Settings.heroImg ? '<div class="hm-mine' + (hm === 'mine' ? ' on' : '') + '"><img src="' + esc(Settings.heroImg) + '" alt=""><div class="grow"><div class="t">صورتك من الهاتف</div><div class="s">حرّكيها واضبطي تعتيمها لتبقى الكتابة واضحة</div></div>' +
         '<button class="btn sm" data-hm-act="adjust">ضبط</button><button class="btn sm ghost" data-hm-act="pick">تغيير</button></div>' : '<div class="hm-hint faint">اختاري «صورتي» لتضعي صورة من معرض هاتفك</div>') +
@@ -785,12 +801,16 @@ function themeSheet() {
         if (T && T.acc) { setSetting('accent', T.acc); setSetting('accentAuto', true); }
         else if (Settings.accentAuto) { setSetting('accent', 'emerald'); setSetting('accentAuto', false); }
       }
+      if (T && T.skin && T.rt) setSetting('readTheme', T.rt);
+      if (Settings.heroMode === 'mine') setSetting('heroMode', 'theme');   // اختيار ثيم = عرض مشهده (وتبقى صورتك محفوظة لتعودي إليها)
       applyTheme(); $$('[data-th]', el).forEach(x => x.classList.toggle('on', x === b)); vibrate(8);
+      try { if (T && T.skin) kwCelebrate(T.skin); } catch (er) {}
     });
   }, () => Router.refresh());
 }
 /* ── خلفية الصفحة الرئيسية ── */
-function heroMode() { const m = Settings.heroMode || 'photo'; return m === 'mine' && !Settings.heroImg ? 'photo' : (HERO_MODES.some(x => x[0] === m) ? m : 'photo'); }
+function heroMode() { return Settings.heroMode === 'mine' && Settings.heroImg ? 'mine' : 'theme'; }
+function heroKind() { if (heroMode() === 'mine') return 'photo'; const T = THEMES[uiTheme()] || {}; return T.ph ? 'photo' : T.anim ? 'anim' : 'sky'; }
 function heroInk() { return heroMode() === 'mine' ? (Settings.heroInk === 'd' ? 'd' : 'w') : ((THEMES[uiTheme()] || {}).ink === 'd' ? 'd' : 'w'); }
 function heroTop() {
   if (heroMode() === 'mine') { const d = +Settings.heroDim || 0, ink = heroInk(), t = /^#[0-9a-f]{6}$/i.test(Settings.heroTop || '') ? Settings.heroTop : '#222222';
@@ -1013,8 +1033,13 @@ function soundSheet() {
 window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.textContent = j.title || SOUND_NAMES[j.mode] || ''; toast('صوت الأذان: ' + (j.title || '')); } catch (e) {} };
 
 /* ═══════════════ عن التطبيق ═══════════════ */
-const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '5.0';
+const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '5.1';
 const WHATS_NEW = [
+  ['5.1', [['palette', 'عادت ثيماتك القديمة — وأجمل', 'رجعت الثيمات المرسومة التي أحببتِها (الفراشات، الساكورا، الوردي، الليلي…) كما كانت بمشاهدها، ومعها ١٠ صور إسلامية بأعلى دقة متاحة'],
+    ['waves', 'ثيمات متحرّكة', 'موج، وغيم، وأوراق الشجر، ومطر، وشفق قطبي — حركة ناعمة تتوقف تلقائيًّا حين لا تظهر لتبقى البطارية بخير'],
+    ['grid', 'لوحة الاستغفار بالتلوين', 'اختاري صورة أو كلمة (أستغفر الله، الله، اسمٌ تحبّينه…) فتبدأ رمادية كصفحة تلوين، ومع كل استغفار يتلوّن مربّع حتى تكتمل الصورة — ١٠٠ أو ٣٠٠ أو ١٠٠٠ مربّع'],
+    ['globe', 'المواقيت لكل العالم', 'طريقة الحساب تُختار تلقائيًّا لكل دول العالم، وتوقيت المدينة البعيدة بساعتها المحلية، ومعالجة المناطق القطبية، وإدخال الإحداثيات يدويًّا، وتحديث الموقع عند السفر — و٣٧٠ مدينة في ١٣٧ دولة'],
+    ['headphones', 'كل القرّاء مع المصحف', 'القرّاء الذين لا توقيت لهم (ومنهم القرّاء المدمجون) صاروا يبدؤون من الآية التي تختارينها ويتابعون الآيات والصفحات — وإن تقدّمت المتابعة أو تأخّرت فاضغطي على الآية: «الشيخ يقرأ هذه الآن»']]],
   ['5.0', [['palette', 'ثيمات بصور حقيقية عالية الدقة', '٣٦ ثيمًا بصور فوتوغرافية فائقة الوضوح: مكة المكرمة، المدينة المنوّرة، المسجد الأقصى، جامع الجزائر، أقواس قرطبة، قبّة أصفهان، المسجد الوردي… وألوان كل ثيم مأخوذة من صورته نفسها'],
     ['image', 'صورتك من الهاتف', 'ضعي أي صورة من معرض هاتفك خلفيةً للصفحة الرئيسية، ثم حرّكيها وكبّريها واضبطي تعتيمها ولون الكتابة فوقها'],
     ['beads', 'مسبحة حقيقية', 'حبّات على خيط تسحبينها بإصبعك فتسقط وتطقطق كالمسبحة في يدك، مع الفواصل والإمام والشُّرّابة — خشب الصندل، الكهرمان، اللؤلؤ، الفيروز، العقيق اليماني، الأونيكس، وذهب الثيم'],
@@ -1063,7 +1088,7 @@ SCREENS.about = {
       '<div class="li"><div class="ic">' + icon('book') + '</div><div class="grow"><div class="t">نص القرآن الكريم</div><div class="s">الرسم العثماني برواية حفص عن عاصم، بخط مجمّع الملك فهد (KFGQPC Uthmanic Hafs)</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('text') + '</div><div class="grow"><div class="t">الخطوط</div><div class="s">IBM Plex Sans Arabic وReem Kufi وAmiri وAmiri Quran — رخصة SIL Open Font License 1.1</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">الرسوم والرموز</div><div class="s">رسوم البستان مرسومة خصيصًا لوسن، والرموز ثلاثية الأبعاد من Fluent Emoji (مايكروسوفت) برخصة MIT</div></div></div>' +
-      '<button class="li" id="ab-ph"><div class="ic">' + icon('image') + '</div><div class="grow"><div class="t">صور الثيمات (5.0)</div><div class="s">٣٦ صورة من ويكيميديا كومنز برخص حرّة (CC0، ملك عام، CC BY، CC BY-SA) — اضغطي لرؤية اسم كل مصوّر ورخصته</div></div>' + icon('chev', 'faint') + '</button>' +
+      '<button class="li" id="ab-ph"><div class="ic">' + icon('image') + '</div><div class="grow"><div class="t">صور الثيمات (5.0)</div><div class="s">١٠ صور بأعلى دقة من ويكيميديا كومنز برخص حرّة (CC0، ملك عام، CC BY، CC BY-SA) — اضغطي لرؤية اسم كل مصوّر ورخصته</div></div>' + icon('chev', 'faint') + '</button>' +
       '<div class="li"><div class="ic">' + icon('sparkle') + '</div><div class="grow"><div class="t">الشعار (5.0)</div><div class="s">«وسن» بخط Noto Nastaliq Urdu من Google برخصة SIL Open Font License</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">بيانات المدن</div><div class="s">إحداثيات من GeoNames.org برخصة CC BY 4.0</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('hands') + '</div><div class="grow"><div class="t">الأذكار والأدعية</div><div class="s">من كتاب «حصن المسلم» وكتب السنة مع ذكر المصدر لكل ذكر</div></div></div>' +

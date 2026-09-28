@@ -105,6 +105,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var coords: NoorLocation.Coords = NoorLocation.Coords.DEFAULT
     private var realLocation = false
     private var geoLabel: String? = null
+    @Volatile private var geoCC: String? = null
+    @Volatile private var lastLocAt = 0L
     private var method: CalcMethod = CalcMethod.MWL
 
     // ── البوصلة ──
@@ -137,10 +139,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     /** وسن 5 · صورة الصفحة الرئيسية من معرض الهاتف (منتقي الصور الآمن — دون أي إذن إضافي) */
     private val photoPicker = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri == null) js("window.onPickedImage&&onPickedImage(null)") else Thread { savePickedImage(uri) }.start()
+        val slot = pickSlot
+        if (uri == null) js("window.onPickedImage&&onPickedImage(null)") else Thread { savePickedImage(uri, slot) }.start()
     }
+    /** لكل استعمال خانته: bg للصفحة الرئيسية، ig للوحة الاستغفار — فلا تحذف صورةٌ الأخرى */
+    @Volatile private var pickSlot = "bg"
 
-    private fun savePickedImage(uri: Uri) {
+    private fun savePickedImage(uri: Uri, slot: String) {
         try {
             val cr = contentResolver
             val bo = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -167,8 +172,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val ra = (rs / n).toInt(); val ga = (gs / n).toInt(); val ba = (bs / n).toInt()
             val lum = (0.2126 * ra + 0.7152 * ga + 0.0722 * ba) / 255.0
             val dir = File(filesDir, "userbg").apply { mkdirs() }
-            dir.listFiles()?.forEach { it.delete() }
-            val f = File(dir, "bg_" + System.currentTimeMillis() + ".jpg")
+            dir.listFiles()?.filter { it.name.startsWith(slot + "_") }?.forEach { it.delete() }
+            val f = File(dir, slot + "_" + System.currentTimeMillis() + ".jpg")
             f.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 88, it) }
             val ratio = w.toDouble() / h
             bmp.recycle()
@@ -336,6 +341,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onResume()
         web.onResume()
         if (compassOn || qiblaLegacy) registerSensors()
+        // وسن 5.1: تحديث صامت للموقع عند العودة للتطبيق (كل ٣٠ دقيقة على الأكثر) — للمسافرين حول العالم
+        if (lastLocAt > 0 && SystemClock.elapsedRealtime() - lastLocAt > 30 * 60_000L && NoorLocation.hasPermission(this)) refreshLocation()
     }
 
     override fun onPause() {
@@ -392,6 +399,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 java.lang.Double.longBitsToDouble(p.getLong("lng", 0))
             )
             geoLabel = p.getString("label", null)
+            geoCC = p.getString("cc", null)
             realLocation = true
         }
     }
@@ -405,16 +413,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun refreshLocation() {
+        lastLocAt = SystemClock.elapsedRealtime()
         CoroutineScope(Dispatchers.IO).launch {
             val c = try { NoorLocation.getLastKnownLocation(this@MainActivity) } catch (e: Exception) { null }
             if (c != null) {
                 coords = c
                 realLocation = true
+                geoCC = null   // لا نُبقي دولة قديمة إن تعذّر التعرّف بعد السفر
                 geoLabel = reverseGeocode(c.lat, c.lng)
                 prefs().edit()
                     .putLong("lat", java.lang.Double.doubleToRawLongBits(c.lat))
                     .putLong("lng", java.lang.Double.doubleToRawLongBits(c.lng))
                     .putString("label", geoLabel)
+                    .putString("cc", geoCC)
                     .apply()
                 updateDeclination()
             }
@@ -428,6 +439,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun reverseGeocode(lat: Double, lng: Double): String? = try {
         if (!Geocoder.isPresent()) null
         else Geocoder(this, Locale("ar")).getFromLocation(lat, lng, 1)?.firstOrNull()?.let {
+            // وسن 5.1: رمز الدولة لاختيار طريقة الحساب تلقائيًا في أي بلد
+            geoCC = it.countryCode?.uppercase(Locale.US)?.takeIf { c -> Regex("^[A-Z]{2}$").matches(c) }
             it.locality ?: it.subAdminArea ?: it.adminArea
         }
     } catch (_: Exception) { null }
@@ -438,6 +451,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         put("lng", coords.lng)
         put("isDefault", !realLocation)
         if (geoLabel != null) put("label", geoLabel)
+        geoCC?.let { put("cc", it) }
     }.toString()
 
     private fun notifyLocation(ok: Boolean) {
@@ -541,13 +555,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         } catch (e: Exception) { Log.e("NoorWeb", "asset read failed: $path", e); "" }
 
         /** وسن 5 · اختيار صورة من الهاتف للصفحة الرئيسية */
-        @JavascriptInterface fun pickImage() {
+        @JavascriptInterface fun pickImage() { pickImageFor("bg") }
+        @JavascriptInterface fun pickImageFor(slot: String) {
+            pickSlot = if (Regex("^[a-z]{1,8}$").matches(slot)) slot else "bg"
             runOnUiThread {
                 try { photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 catch (e: Exception) { js("window.onPickedImage&&onPickedImage(null)") }
             }
         }
-        @JavascriptInterface fun clearPickedImage() { try { File(filesDir, "userbg").listFiles()?.forEach { it.delete() } } catch (_: Exception) { } }
+        @JavascriptInterface fun clearPickedImage() { clearPickedImageFor("bg") }
+        @JavascriptInterface fun clearPickedImageFor(slot: String) { try { File(filesDir, "userbg").listFiles()?.filter { it.name.startsWith(slot + "_") }?.forEach { it.delete() } } catch (_: Exception) { } }
         /** صورة من مجلد صور التطبيق كرابط data: لرسمها على لوحة مشاركة (مجلد img فقط) */
         @JavascriptInterface fun assetB64(path: String): String = try {
             val p = path.trimStart('/')
@@ -843,7 +860,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/5.0 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/5.1 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }

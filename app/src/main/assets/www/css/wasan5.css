@@ -47,7 +47,9 @@
 .scene .ibtn.glassy,.scene .lvchip{background:var(--gl);border-color:var(--gl-b)}
 
 /* ── هدوء: لا حركة دائمة في الخلفيات ── */
-.scene .sky-stars i,.scene .sky-stars .shoot,.scene .clouds i{animation:none!important}
+/* النجوم: تتلألأ واحدة من كل ثلاث (أخف بكثير)، وتتوقف كل حركة المشهد حين يخرج من الشاشة */
+.scene .sky-stars i{animation:none}.scene .sky-stars i:nth-child(3n+1){animation:twk 4.5s ease-in-out infinite}
+.scene.paused,.scene.paused *,.scene.paused *::before,.scene.paused *::after{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 /* ── ألوان الثيم بدل الأخضر الثابت (المسبحة والعدّاد واليوم الحالي) ── */
@@ -55,8 +57,8 @@
 .counter::before{opacity:.05}
 .zk .cnt,.cd2.today,.rmd-b.on{background:linear-gradient(180deg,var(--brand-2),var(--brand))}
 .zk .cnt{box-shadow:0 6px 16px rgba(0,0,0,.18)}
-[data-tkey] .beads .bd{fill:var(--card-3)}
-[data-tkey] .beads .bd.on{fill:url(#bdG)}
+[data-ph] .beads .bd{fill:var(--card-3)}
+[data-ph] .beads .bd.on{fill:url(#bdG)}
 
 /* ── «مسبحة حقيقية» ── */
 .tb-real .tbr{position:relative;width:min(92vw,380px);height:440px;margin:6px auto 0;border-radius:30px;overflow:hidden;touch-action:none;
@@ -82,3 +84,46 @@
 .wm-hero{height:40px}
 .wm-onb{height:92px}
 .wm-about{height:76px}
+
+/* ═══════════ وسن 5.1 · لوحة التلوين بالاستغفار ═══════════ */
+.igm-row{justify-content:center;margin-top:12px;flex-wrap:nowrap}
+.igm-row .chip .i,.igs-m .chip .i{width:17px;height:17px}
+.igc{position:relative;display:block;width:min(86vw,352px);aspect-ratio:4/5;margin:14px auto 0;border:0;padding:0;border-radius:22px;overflow:hidden;
+  background:#F4EFE6;box-shadow:0 18px 44px -22px rgba(0,0,0,.55),0 0 0 1px var(--line-2);touch-action:manipulation;-webkit-tap-highlight-color:transparent;direction:ltr;isolation:isolate;contain:layout paint}
+[data-theme=dark] .igc{background:#2B2931}
+.igc-cv,.igc-gl{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+.igc-cv{opacity:0;transition:opacity .45s}
+.igc.ready .igc-cv{opacity:1}
+.igc-ld{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--gold);opacity:.7;animation:igcld 1.2s ease-in-out infinite}
+.igc-ld .i{width:30px;height:30px}
+.igc.ready .igc-ld{display:none}
+@keyframes igcld{50%{opacity:.25;transform:translate(-50%,-50%) scale(.85)}}
+.igc-sp{position:absolute;display:block;pointer-events:none;border-radius:3px;box-shadow:0 0 0 2px #FFE39A,0 0 14px 3px rgba(255,214,120,.85);animation:igcsp .65s ease-out forwards;will-change:transform,opacity}
+@keyframes igcsp{0%{transform:scale(1.6);opacity:0}25%{opacity:1}100%{transform:scale(1);opacity:0}}
+.igc-n{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:baseline;gap:6px;padding:6px 14px;border-radius:999px;direction:rtl;
+  background:rgba(12,10,8,.58);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+.igc-n b{font-size:20px;font-weight:700;color:#F6DA8E}
+.igc-n small{font-size:12px;opacity:.85}
+.igc.full{box-shadow:0 0 0 2px var(--gold),0 0 36px -4px rgba(232,192,103,.75),0 18px 44px -22px rgba(0,0,0,.55);animation:igcfull 1.4s ease-out}
+@keyframes igcfull{0%{filter:brightness(1.35)}100%{filter:none}}
+.igs-ph{margin-top:2px}
+.igs-ph .gf-art.on,.gf-art.on{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand)}
+.igs-mine b{display:flex;align-items:center;justify-content:center;aspect-ratio:3/4;width:100%;color:var(--tx-3);background:var(--card-2,var(--card))}
+.igs-mine b .i{width:28px;height:28px}
+.igs-mine img{aspect-ratio:3/4;object-fit:cover}
+.sh-l{font-size:13px;font-weight:700;color:var(--tx-2);margin:14px 2px 8px}
+.igs-m{margin-top:6px}
+.igs-pal{display:flex;gap:10px;flex-wrap:wrap}
+.igs-sw{width:46px;height:46px;border-radius:14px;border:0;font:700 20px/1 'Amiri',serif;box-shadow:0 0 0 1px var(--line-2)}
+.igs-sw.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--brand)}
+.ig-gi.igp img,.ig-gi.igp i,.ig-gi.igw{width:100%;aspect-ratio:4/5;border-radius:10px;object-fit:cover;display:flex;align-items:center;justify-content:center}
+.ig-gi.igp i{background:var(--card);color:var(--tx-3)}
+.ig-gi.igw{flex-direction:column;justify-content:center;padding:4px;text-align:center}
+.ig-gi.igw b{font:400 15px/1.5 'Amiri',serif}
+.ig-gi.igw span{color:inherit;opacity:.8}
+
+/* وسن 5.1 · ملاحظات الموقع حول العالم */
+.geo-n{display:flex;align-items:center;gap:10px;margin-top:10px;padding:11px 13px;border-radius:16px;background:var(--card);border:1px solid var(--line-2);color:var(--tx);font:inherit;text-align:start;width:calc(100% - 32px)}
+.geo-n>.i{width:20px;height:20px;color:var(--gold);flex:none}
+.geo-n b{display:block;font-size:13.5px;font-weight:700;line-height:1.5}
+.geo-n span{display:block;font-size:12px;color:var(--tx-3);line-height:1.6;margin-top:2px}

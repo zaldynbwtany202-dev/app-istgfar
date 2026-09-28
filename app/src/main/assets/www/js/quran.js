@@ -365,6 +365,7 @@ function ayahSheet(i, span) {
     '<button class="act" data-x="copy">' + icon('copy') + 'نسخ</button><button class="act" data-x="share">' + icon('share') + 'مشاركة</button>' +
     '<button class="act" data-x="bm">' + icon(bm ? 'bookmarkf' : 'bookmark') + (bm ? 'إزالة العلامة' : 'حفظ علامة') + '</button>' +
     '<button class="act" data-x="last">' + icon('pin') + 'موضع التوقف</button>' +
+    (Player.on && Player.est && Player.cs === Q.s[i] ? '<button class="act" data-x="sync">' + icon('target') + 'الشيخ يقرأ هذه الآن</button>' : '') +
     '<button class="act" data-x="play">' + icon('headphones') + 'استماع من هنا</button><button class="act" data-x="tafsir">' + icon('tafsir') + 'التفسير</button>' +
     '<button class="act" data-x="img">' + icon('image') + 'صورة</button>' +
     '<button class="act" data-x="note">' + icon('edit') + (nt ? 'ملاحظتي' : 'تدبّر') + '</button></div>' + hlRow +
@@ -380,6 +381,7 @@ function ayahSheet(i, span) {
     else if (x === 'bm') { const on = Bookmarks.toggle(i); toast(on ? 'تم حفظ العلامة' : 'أُزيلت العلامة'); Sheet.close(); }
     else if (x === 'last') { LastRead.set(i, RS.mode); toast('تم حفظ موضع التوقف'); Sheet.close(); }
     else if (x === 'play') { Sheet.close(() => Player.start(i, { noBasm: Q.a[i] !== 1 })); }
+    else if (x === 'sync') { const ok = Player.resync(Q.a[i]); Sheet.close(); toast(ok ? 'صُحّحت المتابعة — وتُحفظ لهذا القارئ' : 'التصحيح متاح أثناء التلاوة'); }
     else if (x === 'tafsir') { Sheet.close(() => tafsirSheet(i)); }
     else if (x === 'note') { Sheet.close(() => noteSheet(i)); }
     else if (x === 'img') { Sheet.close(() => ShareCard.share({ kind: 'ayah', title: 'سورة ' + surahOf(i).name, text: Q.t[i], ref: '[' + surahOf(i).name + ': ' + arDigits(Q.a[i]) + ']' }, txt())); }

@@ -8,14 +8,61 @@ const PNAME = { fajr: 'الفجر', sunrise: 'الشروق', dhuhr: 'الظهر'
   midnight: 'منتصف الليل', lastThird: 'الثلث الأخير من الليل', imsak: 'الإمساك' };
 const PICON = { fajr: 'fajr', sunrise: 'sunrise', dhuhr: 'sun', asr: 'asr', maghrib: 'sunset', isha: 'isha', midnight: 'moon', lastThird: 'moonstar', imsak: 'clock' };
 const pname = (k, d) => (k === 'dhuhr' && d && d.getDay() === 5) ? 'الجمعة' : PNAME[k];
-const DEFAULT_LOC = { lat: 21.4225, lng: 39.8262, label: 'مكة المكرمة', cc: 'SA', src: 'default' };
+const DEFAULT_LOC = { lat: 21.4225, lng: 39.8262, label: 'مكة المكرمة', cc: 'SA', tz: 'Asia/Riyadh', src: 'default' };
+
+/* ───────── وسن 5.1 · الموقع حول العالم: الدولة والمنطقة الزمنية دون إنترنت ─────────
+   ─ الدولة (لطريقة الحساب): من الهاتف، ثم أقرب مدينة معروفة، ثم منطقة الهاتف الزمنية، ثم أقرب منطقة زمنية.
+   ─ المنطقة الزمنية: الموقع الحالي يتبع ساعة الهاتف دائمًا؛ والمدينة المختارة يدويًا تُحسب بتوقيتها هي
+     (مع التوقيت الصيفي عبر Intl)، فمن اختار مدينة بعيدة يرى مواقيتها بساعتها المحلية. */
+const Geo = {
+  _f: {},
+  devTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } },
+  canon(tz) { return (window.NOOR_TZA && NOOR_TZA[tz]) || tz; },
+  zone(tz) { tz = this.canon(tz); return tz ? (window.NOOR_TZ || []).find(z => z[0] === tz) || null : null; },
+  devZone() { return this.zone(this.devTz()); },
+  nearestZone(lat, lng, cc) { let best = null, bd = 1e9; (window.NOOR_TZ || []).forEach(z => { if (cc && z[1] !== cc) return; const d = NoorEngine.distanceKm(lat, lng, z[2], z[3]); if (d < bd) { bd = d; best = z; } }); return best ? { z: best, d: bd } : null; },
+  /** أجزاء الوقت (سنة، شهر، يوم، ساعة، دقيقة) في منطقة زمنية */
+  parts(tz, at) {
+    let f = this._f[tz];
+    if (f === undefined) { try { f = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }); } catch (e) { f = null; } this._f[tz] = f; }
+    if (!f) return null; const o = {}; f.formatToParts(at).forEach(x => { if (x.type !== 'literal') o[x.type] = +x.value; }); if (o.hour === 24) o.hour = 0; return o;
+  },
+  /** فرق التوقيت بالساعات لمنطقة زمنية في لحظة معيّنة (يراعي التوقيت الصيفي) */
+  offset(tz, at) { const p = this.parts(tz, at || new Date()); if (!p) return null; const t = at || new Date(); return Math.round((Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(t.getTime() / 1000) * 1000) / 60000) / 60; },
+  devOffset(at) { return -(at || new Date()).getTimezoneOffset() / 60; },
+  ccFor(lat, lng, hint, src) {
+    if (hint && /^[A-Z]{2}$/.test(hint)) return hint;
+    const nc = Loc.nearest(lat, lng); if (nc && nc.d < 120) return nc.cc;
+    // الموقع الحالي: دولة منطقة الهاتف الزمنية إن كان لها منطقة قريبة من الموقع (أدقّ من «أقرب نقطة» قرب الحدود)
+    const dz = this.devZone(); if (dz && (src === 'gps' || src === 'default' || src == null)) { const near = this.nearestZone(lat, lng, dz[1]); if (near && (near.d < 1200 || NoorEngine.distanceKm(lat, lng, dz[2], dz[3]) < 700)) return dz[1]; }
+    const nz = this.nearestZone(lat, lng);
+    if (nc && (!nz || nc.d <= nz.d) && nc.d < 600) return nc.cc;
+    return nz && nz.d < 1500 ? nz.z[1] : null;
+  },
+  tzFor(lat, lng, cc, src) {
+    const dev = this.devTz(); if (src === 'gps' || src === 'default') return dev || null;
+    const dz = this.devZone(), nz = this.nearestZone(lat, lng, cc) || this.nearestZone(lat, lng);
+    if (dz && nz && (dz[0] === nz.z[0] || (dz[1] === nz.z[1] && Math.abs(this.offset(nz.z[0]) - this.devOffset()) < .01))) return dev;
+    return nz ? nz.z[0] : dev || null;
+  },
+  fmtOff(h) { if (h == null) return ''; const s = h < 0 ? '−' : '+', a = Math.abs(h), hh = Math.floor(a), mm = Math.round((a - hh) * 60); return 'GMT' + s + hh + (mm ? ':' + String(mm).padStart(2, '0') : ''); },
+  /** موقع افتراضي قبل إذن الموقع: عاصمة منطقتك الزمنية بدل مكة (مواقيت تقريبية صحيحة لبلدك) */
+  guess() {
+    const z = this.devZone(); if (!z) return DEFAULT_LOC;
+    const nc = Loc.nearest(z[2], z[3]), en = z[0].split('/').pop().replace(/_/g, ' ');
+    return { lat: z[2], lng: z[3], label: nc && nc.d < 150 ? nc.name : en, cc: z[1], tz: this.devTz(), src: 'default' };
+  },
+};
 
 /* ───────── الموقع ───────── */
 const Loc = {
   _v: Store.get('loc', null),
   get() { return this._v; },
-  eff() { return this._v || DEFAULT_LOC; },
+  /** موقع اختارته المستخدمة بنفسها (مدينة أو إحداثيات) — لا يغيّره التحديد التلقائي الصامت */
+  pinned() { return !!this._v && (this._v.src === 'city' || this._v.src === 'manual'); },
+  eff() { return this._v || this._g || (this._g = Geo.guess()); },
   set(v, silent) {
+    if (v && v.lat != null) { if (!v.cc) v.cc = Geo.ccFor(v.lat, v.lng, null, v.src); if (!v.tz || v.src === 'gps') v.tz = Geo.tzFor(v.lat, v.lng, v.cc, v.src); }
     this._v = v; Store.set('loc', v); Times.clear();
     if (!silent) Bus.emit('loc', v);
     Notif.schedule();
@@ -25,11 +72,13 @@ const Loc = {
     (window.NOOR_CITIES || []).forEach(c => { const d = NoorEngine.distanceKm(lat, lng, c[2], c[3]); if (d < bd) { bd = d; best = c; } });
     return best ? { name: best[0], cc: best[1], d: bd } : null;
   },
-  fromCoords(lat, lng, src, label) {
+  fromCoords(lat, lng, src, label, cc) {
     const nc = this.nearest(lat, lng);
     let lb = label || null;
-    if (!lb) lb = !nc ? 'موقعي الحالي' : nc.d < 25 ? nc.name : nc.d < 90 ? 'قرب ' + nc.name : 'موقعي الحالي';
-    this.set({ lat: +(+lat).toFixed(5), lng: +(+lng).toFixed(5), label: lb, cc: nc && nc.d < 400 ? nc.cc : null, src: src || 'gps', ts: Date.now() });
+    const far = src === 'manual' ? 'موقع مخصّص' : 'موقعي الحالي';
+    if (!lb) lb = !nc ? far : nc.d < 25 ? nc.name : nc.d < 90 ? 'قرب ' + nc.name : far;
+    const c = Geo.ccFor(lat, lng, cc, src || 'gps');
+    this.set({ lat: +(+lat).toFixed(5), lng: +(+lng).toFixed(5), label: lb, cc: c, src: src || 'gps', ts: Date.now() });
   },
   /* طلب الموقع من أفضل مصدر متاح */
   request(onDone) {
@@ -46,6 +95,9 @@ const Loc = {
   },
   _finish(ok) { const cb = Loc._cb; Loc._cb = null; Loc._pending = false; if (cb) cb(ok); else if (!ok) toast('تعذّر تحديد الموقع — اختر مدينتك يدويًا'); },
 };
+
+/* ترحيل 5.1: موقع محفوظ من إصدار سابق بلا دولة أو منطقة زمنية */
+try { const v = Loc._v; if (v && v.lat != null && (!v.tz || !v.cc)) { if (!v.cc) v.cc = Geo.ccFor(v.lat, v.lng, null, v.src); if (!v.tz) v.tz = Geo.tzFor(v.lat, v.lng, v.cc, v.src); Store.set('loc', v); } } catch (e) { console.error(e); }
 
 /* ── استرجاع الإحداثيات من الجسر القديم عبر (اتجاه القبلة + المسافة) ── */
 const QProbe = {
@@ -75,7 +127,7 @@ window.applyPrayers = function (p) {
   const real = p.city && p.city !== 'المدينة المنورة';
   const cur = Loc.get();
   if (!real) { if (Loc._awaitOld) { Loc._awaitOld = false; Loc._finish(false); } return; }
-  if (cur && cur.src === 'city' && !Loc._awaitOld) return;   // اختيار يدوي يبقى كما هو
+  if (cur && Loc.pinned() && !Loc._awaitOld) return;   // اختيار يدوي يبقى كما هو
   QProbe.run(ll => {
     const wasAwait = Loc._awaitOld; Loc._awaitOld = false;
     if (ll) { const moved = !cur || NoorEngine.distanceKm(cur.lat, cur.lng, ll.lat, ll.lng) > 2 || cur.src !== 'gps';
@@ -90,38 +142,64 @@ window.onNativeLocation = function (j) {
   if (j && j.lat != null && !j.isDefault && j.ok !== false) {
     const cur = Loc.get();
     // تحديث صامت عند الإقلاع، ولا يُمس اختيار المدينة اليدوي إلا بطلب صريح من المستخدم
-    if (!cur || cur.src !== 'city' || asked) Loc.fromCoords(j.lat, j.lng, 'gps', j.label || null);
+    if (!cur || !Loc.pinned() || asked) Loc.fromCoords(j.lat, j.lng, 'gps', j.label || null, j.cc || null);
     if (asked) Loc._finish(true);
   } else if (asked) Loc._finish(false);
 };
 
 /* ───────── المواقيت ───────── */
 const Times = {
-  cache: {},
-  clear() { this.cache = {}; },
-  method() { const l = Loc.get(); return Settings.method || (l && NoorEngine.COUNTRY_METHOD[l.cc]) || 'mwl'; },
+  cache: {}, _tz: undefined,
+  clear() { this.cache = {}; this._tz = undefined; },
+  method() { const l = Loc.eff(); return Settings.method || (l && l.cc ? NoorEngine.methodFor(l.cc) : 'mwl'); },
   methodName() { const m = NoorEngine.METHODS[this.method()]; return m ? m.name : ''; },
+  /** وسن 5.1: منطقة زمنية للمدينة المختارة إن اختلفت عن ساعة الهاتف (وإلا null فتُحسب بساعة الهاتف) */
+  tz() {
+    if (this._tz !== undefined) return this._tz;
+    const l = Loc.eff(); let r = null;
+    if (l && l.tz && l.src !== 'gps' && l.src !== 'default' && Geo.canon(l.tz) !== Geo.canon(Geo.devTz())) { const o = Geo.offset(l.tz); if (o != null && Math.abs(o - Geo.devOffset()) > .01) r = l.tz; }
+    return (this._tz = r);
+  },
+  tzNote() { const z = this.tz(); return z ? 'بتوقيت ' + Loc.eff().label + ' (' + Geo.fmtOff(Geo.offset(z)) + ')' : ''; },
+  /** «اليوم» بتقويم الموقع (يختلف عن تقويم الهاتف فقط للمدن البعيدة قرب منتصف الليل) */
+  locDay(now) { const z = this.tz(); if (!z) return now; const p = Geo.parts(z, now); return p ? new Date(p.year, p.month - 1, p.day, 12) : now; },
   forDay(d) {
     const k = dayKey(d); if (this.cache[k]) return this.cache[k];
-    const l = Loc.eff(); const h = hijriOf(d);
-    const T = NoorEngine.prayerTimes(startOfDay(d), { lat: l.lat, lng: l.lng, method: this.method(), asr: Settings.asr, highLat: Settings.highLat, adjust: Settings.adjust, ramadan: h.month === 9 });
-    const o = {};
-    ['imsak', 'fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha', 'midnight', 'lastThird'].forEach(x => { o[x] = NoorEngine.toDate(startOfDay(d), T[x]); });
+    const l = Loc.eff(); const h = hijriOf(d), z = this.tz();
+    const opt = { lat: l.lat, lng: l.lng, method: this.method(), asr: Settings.asr, highLat: Settings.highLat, adjust: Settings.adjust, ramadan: h.month === 9 };
+    const o = {}, KS = ['imsak', 'fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha', 'midnight', 'lastThird'];
+    if (z) {  // مدينة بمنطقة زمنية أخرى: نحسب بتوقيتها، ونحوّل إلى لحظات مطلقة
+      const u0 = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()), off = Geo.offset(z, new Date(u0 + 12 * 3600e3));
+      const T = NoorEngine.prayerTimes(startOfDay(d), Object.assign(opt, { tz: off }));
+      KS.forEach(x => { if (T[x] == null || isNaN(T[x])) { o[x] = null; return; } const t = new Date(u0 + Math.round((T[x] - off) * 3600) * 1000); t._tz = z; o[x] = t; });
+      o.polar = !!T.polar;
+    } else {
+      const T = NoorEngine.prayerTimes(startOfDay(d), opt);
+      KS.forEach(x => { o[x] = NoorEngine.toDate(startOfDay(d), T[x]); });
+      o.polar = !!T.polar;
+    }
     return (this.cache[k] = o);
   },
   next(now) {
-    const t = this.forDay(now);
-    for (const k of FIVE) if (t[k] && t[k] > now) return { key: k, time: t[k], day: now };
-    const d2 = addDays(now, 1); return { key: 'fajr', time: this.forDay(d2).fajr, day: d2, tomorrow: true };
+    const day = this.locDay(now), t = this.forDay(day);
+    for (const k of FIVE) if (t[k] && t[k] > now) return { key: k, time: t[k], day };
+    const d2 = addDays(day, 1); return { key: 'fajr', time: this.forDay(d2).fajr, day: d2, tomorrow: true };
   },
   prev(now) {
-    const t = this.forDay(now); let p = null;
+    const day = this.locDay(now), t = this.forDay(day); let p = null;
     for (const k of FIVE) if (t[k] && t[k] <= now) p = { key: k, time: t[k] };
-    if (!p) p = { key: 'isha', time: this.forDay(addDays(now, -1)).isha };
+    if (!p) p = { key: 'isha', time: this.forDay(addDays(day, -1)).isha };
     return p;
   },
+  /** تنبيه: ساعة الهاتف لا تطابق منطقة موقعك (في الدول ذات المنطقة الزمنية الواحدة فقط، تجنّبًا للإنذار الكاذب) */
+  tzMismatch() {
+    const l = Loc.get(); if (!l || l.src !== 'gps' || !l.cc) return null;
+    const zs = (window.NOOR_TZ || []).filter(z => z[1] === l.cc); if (!zs.length) return null;
+    const now = new Date(), offs = zs.map(z => Geo.offset(z[0], now)).filter(x => x != null); if (!offs.length || offs.some(x => Math.abs(x - offs[0]) > .01)) return null;
+    const dev = Geo.devOffset(now); return Math.abs(offs[0] - dev) >= 1 ? { want: offs[0], dev } : null;
+  },
   phase(now) {
-    const t = this.forDay(now);
+    const t = this.forDay(this.locDay(now));
     if (now < t.fajr) return 'night';
     if (now < t.sunrise) return 'dawn';
     if (now < t.asr) return 'day';
@@ -132,6 +210,13 @@ const Times = {
 };
 Bus.on('settings', k => { if (['method', 'asr', 'highLat', 'adjust', 'hijriOffset'].includes(k)) { Times.clear(); Notif.schedule(); } if (k === 'notif' || k === 'preNotif' || k === 'clock') Notif.schedule(); });
 Bus.on('day', () => { Times.clear(); Notif.schedule(); });
+/* وسن 5.1: عند السفر يغيّر الهاتف منطقته الزمنية — نعيد الحساب فورًا عند العودة للتطبيق */
+let _devTzSig = Geo.devTz() + '|' + Geo.devOffset();
+Bus.on('resume', () => {
+  const sig = Geo.devTz() + '|' + Geo.devOffset(); if (sig === _devTzSig) return; _devTzSig = sig;
+  Times.clear(); Loc._g = null; const v = Loc.get(); if (v && (v.src === 'gps' || v.src === 'default')) { v.tz = Geo.devTz() || v.tz; Store.set('loc', v); }
+  Notif.schedule(); try { Router.refresh(); } catch (e) {}
+});
 
 /* ───────── متابعة الصلوات ───────── */
 const Tracker = {
@@ -333,10 +418,18 @@ function duaCard(now, ad) {
     '<button class="act" id="pd-stop"' + (playing ? '' : ' hidden') + '>' + icon('stop') + 'إيقاف الأذان</button>' +
     '<button class="act dua-cp" id="pd-cp" aria-label="نسخ الدعاء">' + icon('copy') + '</button></div></div>';
 }
+/** وسن 5.1: ملاحظات الموقع حول العالم — توقيت مدينة بعيدة، وساعة هاتف لا تطابق الموقع، والمناطق القطبية */
+function geoNotes(d) {
+  let s = ''; const note = (ic, b, t, id) => '<' + (id ? 'button id="' + id + '" data-go="location"' : 'div') + ' class="geo-n mx">' + icon(ic) + '<div class="grow"><b>' + b + '</b>' + (t ? '<span>' + t + '</span>' : '') + '</div>' + (id ? icon('chev') + '</button>' : '</div>');
+  const tn = Times.tzNote(); if (tn) s += note('globe', esc(tn), 'المواقيت معروضة بالساعة المحلية للمدينة المختارة، والأذان يصلك في لحظته الصحيحة', 'p-tzn');
+  const mm = Times.tzMismatch(); if (mm) s += note('warn', 'ساعة هاتفك (' + Geo.fmtOff(mm.dev) + ') لا تطابق منطقة موقعك (' + Geo.fmtOff(mm.want) + ')', 'صحّحي «المنطقة الزمنية» من إعدادات الهاتف لتظهر المواقيت بساعتك الصحيحة');
+  if (Times.forDay(d).polar) s += note('info', 'موقعك قرب القطب: الشمس لا تغيب أو لا تشرق هذه الأيام', 'حُسبت المواقيت بأقرب خط عرض تتعاقب فيه الشمس (٦٠°) — ويمكنك مطابقتها بتقويم مسجدك من «تعديل يدوي»');
+  return s;
+}
 SCREENS.prayer = {
   tab: 'prayer',
   render(a) {
-    const now = new Date(), d = addDays(now, PS.off), l = Loc.eff();
+    const now = new Date(), d = addDays(Times.locDay(now), PS.off), l = Loc.eff();
     const ad = PS.off === 0 ? adhanNow(now, a) : null;
     const h = hijriOf(d);
     const dateLbl = PS.off === 0 ? 'اليوم' : PS.off === 1 ? 'غدًا' : PS.off === -1 ? 'أمس' : weekday(d);
@@ -348,7 +441,7 @@ SCREENS.prayer = {
         { actions: [{ id: 'p-loc', icon: 'gps', label: 'تحديد الموقع' }], extra }) +
       '<div class="ptoday">' + (PS.off === 0 ? '<div class="nextc" id="p-next"></div>' : '') + '</div>' +
       (PS.off === 0 && bells && NotifHealth.broken() ? '<button class="nh-warn" id="p-nh">' + icon('warn') + '<div class="grow"><b>قد لا يصلك الأذان في وقته</b><span>بعض أذونات التنبيه ناقصة — اضغط للإصلاح</span></div>' + icon('chev') + '</button>' : '') +
-      (ad ? duaCard(now, ad) : '') +
+      (ad ? duaCard(now, ad) : '') + geoNotes(d) +
       '<div class="list ptl" id="p-list">' + prayerRows(d, now, bells) + '</div>' +
       '<div class="row mx mt" style="gap:10px"><button class="btn ghost grow" data-go="month">' + icon('calendar') + 'جدول الشهر</button>' +
       '<button class="btn ghost grow" id="p-meth">' + icon('gear') + 'الإعدادات</button></div>' +
@@ -470,17 +563,19 @@ SCREENS.location = {
   parent: 'prayer',
   render() {
     const l = Loc.eff();
-    const src = { gps: 'تحديد تلقائي', city: 'اختيار يدوي', default: 'افتراضي' }[l.src] || '';
+    const src = { gps: 'تحديد تلقائي', city: 'اختيار يدوي', manual: 'إحداثيات يدوية', default: 'تقريبي حسب منطقتك الزمنية' }[l.src] || '';
     return hdr('الموقع', 'لمواقيت دقيقة واتجاه قبلة صحيح', { back: true, compact: true }) +
       '<div class="card mx mt pad"><div class="row"><div class="icbox">' + icon('pin') + '</div>' +
-      '<div class="grow"><div style="font-weight:700;font-size:16px">' + esc(l.label) + '</div><div class="faint num" style="font-size:12.5px">' + N(l.lat.toFixed(4)) + '، ' + N(l.lng.toFixed(4)) + ' · ' + src + '</div></div></div>' +
-      '<button class="btn primary block mt" id="l-gps">' + icon('gps') + 'تحديد موقعي تلقائيًا</button></div>' +
+      '<div class="grow"><div style="font-weight:700;font-size:16px">' + esc(l.label) + (l.cc && NOOR_COUNTRIES[l.cc] ? ' <span class="faint" style="font-size:13px;font-weight:500">· ' + esc(NOOR_COUNTRIES[l.cc]) + '</span>' : '') + '</div><div class="faint num" style="font-size:12.5px">' + N(l.lat.toFixed(4)) + '، ' + N(l.lng.toFixed(4)) + ' · ' + src + '</div>' +
+      '<div class="faint" style="font-size:12px;margin-top:2px">' + esc(Times.methodName()) + (Settings.method ? '' : ' (تلقائي)') + ' · ' + esc(Geo.fmtOff(Times.tz() ? Geo.offset(Times.tz()) : Geo.devOffset())) + (Times.tz() ? ' · بتوقيت المدينة' : '') + '</div></div></div>' +
+      '<button class="btn primary block mt" id="l-gps">' + icon('gps') + 'تحديد موقعي تلقائيًا</button>' +
+      '<button class="btn ghost block" id="l-ll" style="margin-top:8px">' + icon('marker') + 'إدخال الإحداثيات يدويًا</button></div>' +
       '<div class="mx mt"><div class="search">' + icon('search') + '<input id="l-q" placeholder="ابحث عن مدينة أو ولاية…" autocomplete="off"></div></div>' +
       '<div class="list mx mt" id="l-list"></div>';
   },
   mount(el) {
     const draw = q => {
-      const nq = normAr(q || ''); const cc = (Loc.get() || {}).cc || 'DZ';
+      const nq = normAr(q || ''); const cc = (Loc.get() || {}).cc || (Geo.devZone() || [])[1] || 'DZ';
       let arr = (window.NOOR_CITIES || []).map((c, i) => ({ c, i }));
       if (nq) arr = arr.filter(x => normAr(x.c[0]).includes(nq) || normAr(NOOR_COUNTRIES[x.c[1]] || '').includes(nq));
       else arr.sort((a, b) => (a.c[1] === cc ? 0 : 1) - (b.c[1] === cc ? 0 : 1));
@@ -497,5 +592,22 @@ SCREENS.location = {
       toast('تم اختيار ' + c[0]); Router.back();
     });
     $('#l-gps', el).onclick = () => { toast('جارٍ تحديد موقعك…'); Loc.request(ok => { if (ok) { toast('تم تحديد موقعك: ' + Loc.eff().label); Router.refresh(); } else toast('تعذّر التحديد التلقائي — اختر مدينتك من القائمة'); }); };
+    // وسن 5.1: أي مكان في العالم — بالإحداثيات مباشرة
+    $('#l-ll', el).onclick = () => {
+      const c = Loc.eff();
+      Sheet.open('<div class="sh-t">إدخال الإحداثيات</div><div class="sh-s">لأي مكان في العالم — من خرائط الهاتف (اضغطي مطوّلًا على المكان وانسخي الرقمين)</div>' +
+        '<div class="form"><label>خط العرض (−90 إلى 90)</label><input id="ll-a" inputmode="decimal" dir="ltr" value="' + (+c.lat).toFixed(4) + '">' +
+        '<label>خط الطول (−180 إلى 180)</label><input id="ll-o" inputmode="decimal" dir="ltr" value="' + (+c.lng).toFixed(4) + '">' +
+        '<label>اسم المكان (اختياري)</label><input id="ll-n" maxlength="40" placeholder="مثال: بيتي"></div>' +
+        '<button class="btn gold block" id="ll-ok" style="margin-top:14px">حفظ الموقع</button>', sh => {
+          const ai = $('#ll-a', sh); ai.addEventListener('paste', ev => { const t = (ev.clipboardData || window.clipboardData).getData('text') || ''; const m = t.match(/(-?\d+(?:\.\d+)?)\s*[,،\s]\s*(-?\d+(?:\.\d+)?)/); if (m) { ev.preventDefault(); ai.value = m[1]; $('#ll-o', sh).value = m[2]; } });
+          $('#ll-ok', sh).onclick = () => {
+            const num = v => parseFloat(String(v).replace(/[٠-٩]/g, x => '٠١٢٣٤٥٦٧٨٩'.indexOf(x)).replace('٫', '.').replace(',', '.'));
+            const la = num($('#ll-a', sh).value), lo = num($('#ll-o', sh).value), nm = $('#ll-n', sh).value.trim();
+            if (!(la >= -90 && la <= 90) || !(lo >= -180 && lo <= 180) || isNaN(la) || isNaN(lo)) { toast('تحقّقي من الرقمين'); return; }
+            Loc.fromCoords(la, lo, 'manual', nm || null); Sheet.close(); toast('تم حفظ الموقع: ' + Loc.eff().label); setTimeout(() => Router.refresh(), 350);
+          };
+        });
+    };
   },
 };

@@ -30,7 +30,7 @@
 
   // الموقع من النواة الأصلية
   if (Native.has('getLocation')) {
-    try { const j = JSON.parse(Native.call('getLocation') || 'null'); if (j && j.lat != null && !j.isDefault) { const cur = Loc.get(); if (!cur || cur.src !== 'city') Loc.fromCoords(j.lat, j.lng, 'gps', j.label || null); } } catch (e) {}
+    try { const j = JSON.parse(Native.call('getLocation') || 'null'); if (j && j.lat != null && !j.isDefault) { const cur = Loc.get(); if (!cur || !Loc.pinned()) Loc.fromCoords(j.lat, j.lng, 'gps', j.label || null, j.cc || null); } } catch (e) {}
   } else if (Native.has('requestPrayers')) {
     Native.call('requestPrayers');     // الجسر القديم ← applyPrayers ← استرجاع الإحداثيات
   }
