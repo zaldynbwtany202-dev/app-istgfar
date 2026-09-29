@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════════════════════════════
    وسن 4.8 · «المنبّه»
    ─ منبّهات بوقت ثابت وأيام تكرار + منبّهات إسلامية تتبع مواقيتك كل يوم:
-     «قبل الفجر» بفارق تختارينه، و«قيام الليل» مع بداية الثلث الأخير.
+     «قبل الفجر» بفارق تختاره، و«قيام الليل» مع بداية الثلث الأخير.
    ─ يرنّ في الهاتف بشاشة كاملة فوق القفل، بصوت يعلو تدريجيًّا، مع «غفوة» و«إيقاف».
    ─ الجدولة والرنين في النواة الأصلية (WasanAlarm.kt) فيعمل والتطبيق مغلق.
    ════════════════════════════════════════════════════════════════ */
@@ -74,7 +74,7 @@ function alarmSheet(a, preset) {
     '<div class="list" style="margin-top:12px"><div class="li"><div class="ic">' + icon('vib') + '</div><div class="grow"><div class="t">اهتزاز</div></div><button class="switch ' + (f.vib ? 'on' : '') + '" id="al-v"></button></div>' +
     '<div class="li"><div class="ic">' + icon('wave') + '</div><div class="grow"><div class="t">صوت يعلو تدريجيًّا</div></div><button class="switch ' + (f.ramp ? 'on' : '') + '" id="al-r"></button></div></div>' +
     '<div class="row" style="gap:10px;margin-top:16px"><button class="btn gold grow" id="al-ok">' + icon('check') + (isNew ? 'إضافة المنبّه' : 'حفظ') + '</button>' +
-    '<button class="btn ghost" id="al-try">' + icon('play') + 'جرّبي</button>' + (!isNew && f.type === 'fixed' ? '<button class="btn ghost" id="al-x" style="color:var(--bad)">' + icon('trash') + '</button>' : '') + '</div></div>';
+    '<button class="btn ghost" id="al-try">' + icon('play') + 'جرّب</button>' + (!isNew && f.type === 'fixed' ? '<button class="btn ghost" id="al-x" style="color:var(--bad)">' + icon('trash') + '</button>' : '') + '</div></div>';
   Sheet.open(draw(), el => {
     const oT = () => { const o = $('#al-o', el); if (o) o.textContent = offTxt(f.off, f.type === 'fajr' ? 'الفجر' : 'الثلث الأخير'); };
     const qOf = () => f.days.length === 7 ? 'all' : (f.days.length === 5 && [0, 1, 2, 3, 4].every(x => f.days.includes(x))) ? 'wk' : !f.days.length ? 'once' : '';
@@ -104,7 +104,7 @@ function alarmSheet(a, preset) {
 function alarmSoundSheet(cur, pick) {
   let au = null;
   const stop = () => { try { if (au) au.pause(); } catch (e) {} au = null; };
-  const html = '<div class="sh-t">صوت المنبّه</div><div class="sh-s">اضغطي ▶ لسماع الأصوات المتاحة داخل التطبيق</div><div class="list mx al-sl">' + ALARM_SOUNDS.map(([v, t]) => v === 'g' ? '<div class="al-sg">' + t + '</div>' :
+  const html = '<div class="sh-t">صوت المنبّه</div><div class="sh-s">اضغط ▶ لسماع الأصوات المتاحة داخل التطبيق</div><div class="list mx al-sl">' + ALARM_SOUNDS.map(([v, t]) => v === 'g' ? '<div class="al-sg">' + t + '</div>' :
     '<div class="li opt ' + (v === cur ? 'on' : '') + '" data-v="' + v + '"><div class="grow"><div class="t">' + esc(t) + '</div></div>' + (/^(amb|voice):/.test(v) ? '<button class="act pv" data-pv="' + v + '" aria-label="استماع">' + icon('play') + '</button>' : '') + '<span class="rad"></span></div>').join('') + '</div>';
   Sheet.open(html, el => {
     el.addEventListener('click', e => {
@@ -127,11 +127,11 @@ SCREENS.alarms = {
         '<button class="switch ' + (a.on ? 'on' : '') + '" data-sw="' + a.id + '" aria-label="تفعيل"></button></div>'; };
     return hdr('المنبّه', s ? 'التالي ' + untilTxt(s.t) : 'منبّهات تتبع مواقيتك', { back: true, compact: true, actions: [{ id: 'al-add', icon: 'plus', label: 'منبّه جديد' }] }) +
       '<div class="hc mt al-hero"><div class="al-hi">' + icon('alarm') + '</div><div class="grow"><div class="t">' + (s ? esc(s.a.label) + ' · ' + fmtTime(s.t) : 'لا منبّه مفعّل') + '</div>' +
-        '<div class="s">' + (s ? untilTxt(s.t) + ' — ' + (s.t.toDateString() === now.toDateString() ? 'اليوم' : 'غدًا أو بعده') : 'فعّلي منبّه الفجر ليوقظك قبل الأذان كل يوم') + '</div></div></div>' +
-      (!ex ? '<div class="li pz-warn mx mt"><div class="ic">' + icon('warn') + '</div><div class="grow"><div class="t">اسمحي بالمنبّهات الدقيقة</div><div class="s">كي يرنّ المنبّه في وقته تمامًا</div></div><button class="act" id="al-ex">السماح</button></div>' : '') +
-      (!fs ? '<div class="li pz-warn mx mt"><div class="ic">' + icon('warn') + '</div><div class="grow"><div class="t">اسمحي بالشاشة الكاملة</div><div class="s">لتظهر شاشة المنبّه فوق قفل الهاتف</div></div><button class="act" id="al-fs">السماح</button></div>' : '') +
+        '<div class="s">' + (s ? untilTxt(s.t) + ' — ' + (s.t.toDateString() === now.toDateString() ? 'اليوم' : 'غدًا أو بعده') : 'فعّل منبّه الفجر ليوقظك قبل الأذان كل يوم') + '</div></div></div>' +
+      (!ex ? '<div class="li pz-warn mx mt"><div class="ic">' + icon('warn') + '</div><div class="grow"><div class="t">اسمح بالمنبّهات الدقيقة</div><div class="s">كي يرنّ المنبّه في وقته تمامًا</div></div><button class="act" id="al-ex">السماح</button></div>' : '') +
+      (!fs ? '<div class="li pz-warn mx mt"><div class="ic">' + icon('warn') + '</div><div class="grow"><div class="t">اسمح بالشاشة الكاملة</div><div class="s">لتظهر شاشة المنبّه فوق قفل الهاتف</div></div><button class="act" id="al-fs">السماح</button></div>' : '') +
       sec('منبّهات تتبع المواقيت') + '<div class="mx al-list">' + isl.map(card).join('') + '</div>' +
-      sec('منبّهاتي') + '<div class="mx al-list">' + (mine.length ? mine.map(card).join('') : '<button class="emptyc" id="al-add2" style="width:100%"><div class="ic">' + icon('alarm') + '</div><div class="t">أضيفي منبّهًا</div><div class="s">للاستيقاظ أو الدراسة أو أي موعد — مع أيام التكرار</div></button>') + '</div>' +
+      sec('منبّهاتي') + '<div class="mx al-list">' + (mine.length ? mine.map(card).join('') : '<button class="emptyc" id="al-add2" style="width:100%"><div class="ic">' + icon('alarm') + '</div><div class="t">أضف منبّهًا</div><div class="s">للاستيقاظ أو الدراسة أو أي موعد — مع أيام التكرار</div></button>') + '</div>' +
       '<div class="pz-foot mx">' + icon('info') + '<span>منبّه الفجر وقيام الليل يتغيّران كل يوم مع مواقيت مدينتك. يرنّ المنبّه حتى لو كان الهاتف صامتًا (على مستوى صوت المنبّه).</span></div>';
   },
   mount(el) {

@@ -235,7 +235,7 @@ function todoSheet(t, preset) {
     '<label>الأولوية</label><div class="seg" id="ts-p"><button data-v="0">عادية</button><button data-v="1">مهمة</button><button data-v="2">عاجلة</button></div>' +
     '<label>القائمة</label><div class="chips" id="ts-l">' + Todo.LISTS.map(([k, n, hu]) => '<button class="chip" data-v="' + k + '" style="' + hueVars(hu) + '">' + esc(n) + '</button>').join('') + '</div>' +
     '<label>التكرار</label><div class="seg" id="ts-rp">' + Todo.REP.map(([v, n]) => '<button data-v="' + v + '">' + n + '</button>').join('') + '</div>' +
-    '<label>خطوات المهمة</label><div class="tsub-ed" id="ts-sb"></div><div class="quickadd" style="margin-top:6px"><input id="ts-sq" maxlength="60" placeholder="أضيفي خطوة…"><button id="ts-sb2" aria-label="إضافة خطوة">' + icon('plus') + '</button></div>' +
+    '<label>خطوات المهمة</label><div class="tsub-ed" id="ts-sb"></div><div class="quickadd" style="margin-top:6px"><input id="ts-sq" maxlength="60" placeholder="أضف خطوة…"><button id="ts-sb2" aria-label="إضافة خطوة">' + icon('plus') + '</button></div>' +
     '<div class="row" style="gap:10px;margin-top:16px"><button class="btn gold grow" id="ts-s">' + icon('check') + (isNew ? 'إضافة' : 'حفظ') + '</button>' +
     (isNew ? '' : '<button class="btn ghost" id="ts-x" style="color:var(--bad)">' + icon('trash') + '</button>') + '</div></div>';
   Sheet.open(html, el => {
@@ -313,7 +313,7 @@ SCREENS.todo = {
     return hdr('المهام', cnt.today ? N(cnt.today) + ' مهمة لليوم' : 'نظّم يومك وبارك الله في وقتك', { back: true, compact: true, actions: [{ id: 'td-add', icon: 'plus', label: 'مهمة جديدة' }] }) +
       '<div class="mx mt"><div class="quickadd"><input id="td-q" maxlength="90" placeholder="أضف مهمة سريعة لليوم…"><button id="td-qb" aria-label="إضافة">' + icon('plus') + '</button></div></div>' +
       '<div class="mx" style="margin-top:12px"><div class="seg" id="td-tabs">' + tabs.map(([k, n]) => '<button data-v="' + k + '" class="' + (TS.tab === k ? 'on' : '') + '">' + n + (cnt[k] ? ' <span class="num">' + N(cnt[k]) + '</span>' : '') + '</button>').join('') + '</div></div>' +
-      '<div class="mx td-flt"><div class="search">' + icon('search') + '<input id="td-s" placeholder="ابحثي في المهام…" value="' + esc(TS.q || '') + '" autocomplete="off"></div>' +
+      '<div class="mx td-flt"><div class="search">' + icon('search') + '<input id="td-s" placeholder="ابحث في المهام…" value="' + esc(TS.q || '') + '" autocomplete="off"></div>' +
         '<div class="chips" id="td-lf" style="padding:8px 0 0"><button class="chip ' + (!TS.list ? 'on' : '') + '" data-v="">الكل</button>' + Todo.LISTS.map(([k, n, hu]) => '<button class="chip ' + (TS.list === k ? 'on' : '') + '" data-v="' + k + '" style="' + hueVars(hu) + '">' + esc(n) + '</button>').join('') + '</div></div>' +
       (arr.length ? (late.length ? sec('متأخرة · ' + N(late.length)) + '<div class="tlist mx" id="td-late">' + late.map(todoRow).join('') + '</div>' : '') +
         (rest.length ? (late.length ? sec('اليوم') : '') + '<div class="tlist mx mt" id="td-l">' + rest.map(todoRow).join('') + '</div>' : '') +

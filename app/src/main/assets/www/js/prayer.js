@@ -562,7 +562,7 @@ function duaCard(now, ad) {
 function geoNotes(d) {
   let s = ''; const note = (ic, b, t, id) => '<' + (id ? 'button id="' + id + '" data-go="location"' : 'div') + ' class="geo-n mx">' + icon(ic) + '<div class="grow"><b>' + b + '</b>' + (t ? '<span>' + t + '</span>' : '') + '</div>' + (id ? icon('chev') + '</button>' : '</div>');
   const tn = Times.tzNote(); if (tn) s += note('globe', esc(tn), 'المواقيت معروضة بالساعة المحلية للمدينة المختارة، والأذان يصلك في لحظته الصحيحة', 'p-tzn');
-  const mm = Times.tzMismatch(); if (mm) s += note('warn', 'ساعة هاتفك (' + Geo.fmtOff(mm.dev) + ') لا تطابق منطقة موقعك (' + Geo.fmtOff(mm.want) + ')', 'صحّحي «المنطقة الزمنية» من إعدادات الهاتف لتظهر المواقيت بساعتك الصحيحة');
+  const mm = Times.tzMismatch(); if (mm) s += note('warn', 'ساعة هاتفك (' + Geo.fmtOff(mm.dev) + ') لا تطابق منطقة موقعك (' + Geo.fmtOff(mm.want) + ')', 'صحّح «المنطقة الزمنية» من إعدادات الهاتف لتظهر المواقيت بساعتك الصحيحة');
   if (Times.forDay(d).polar) s += note('info', 'موقعك قرب القطب: الشمس لا تغيب أو لا تشرق هذه الأيام', 'حُسبت المواقيت بأقرب خط عرض تتعاقب فيه الشمس (٦٠°) — ويمكنك مطابقتها بتقويم مسجدك من «تعديل يدوي»');
   return s;
 }
@@ -855,7 +855,7 @@ SCREENS.location = {
     // وسن 5.1: أي مكان في العالم — بالإحداثيات مباشرة
     $('#l-ll', el).onclick = () => {
       const c = Loc.eff();
-      Sheet.open('<div class="sh-t">إدخال الإحداثيات</div><div class="sh-s">لأي مكان في العالم — من خرائط الهاتف (اضغطي مطوّلًا على المكان وانسخي الرقمين)</div>' +
+      Sheet.open('<div class="sh-t">إدخال الإحداثيات</div><div class="sh-s">لأي مكان في العالم — من خرائط الهاتف (اضغط مطوّلًا على المكان وانسخ الرقمين)</div>' +
         '<div class="form"><label>خط العرض (−90 إلى 90)</label><input id="ll-a" inputmode="decimal" dir="ltr" value="' + (+c.lat).toFixed(4) + '">' +
         '<label>خط الطول (−180 إلى 180)</label><input id="ll-o" inputmode="decimal" dir="ltr" value="' + (+c.lng).toFixed(4) + '">' +
         '<label>اسم المكان (اختياري)</label><input id="ll-n" maxlength="40" placeholder="مثال: بيتي"></div>' +
@@ -864,7 +864,7 @@ SCREENS.location = {
           $('#ll-ok', sh).onclick = () => {
             const num = v => parseFloat(String(v).replace(/[٠-٩]/g, x => '٠١٢٣٤٥٦٧٨٩'.indexOf(x)).replace('٫', '.').replace(',', '.'));
             const la = num($('#ll-a', sh).value), lo = num($('#ll-o', sh).value), nm = $('#ll-n', sh).value.trim();
-            if (!(la >= -90 && la <= 90) || !(lo >= -180 && lo <= 180) || isNaN(la) || isNaN(lo)) { toast('تحقّقي من الرقمين'); return; }
+            if (!(la >= -90 && la <= 90) || !(lo >= -180 && lo <= 180) || isNaN(la) || isNaN(lo)) { toast('تحقّق من الرقمين'); return; }
             Loc.fromCoords(la, lo, 'manual', nm || null); Sheet.close(); toast('تم حفظ الموقع: ' + Loc.eff().label); setTimeout(() => Router.refresh(), 350);
           };
         });

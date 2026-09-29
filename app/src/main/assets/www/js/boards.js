@@ -33,7 +33,7 @@ function igBoardSVG(n, D, cls, small) {
   s += '<path d="' + kh(15, 0, 0) + '" class="ig-c" fill="' + (n >= 100 ? D.g : 'none') + '" stroke="' + D.g + '" stroke-width="1.2"/><circle r="' + IG_R[5] + '" fill="none" stroke="' + D.g + '" stroke-width="1" opacity=".6"/>';
   return s + '</svg>';
 }
-/* ═══════════ وسن 5.1 · «لوحة التلوين»: كل استغفار يلوّن مربّعًا من صورة أو كلمة تختارينها ═══════════
+/* ═══════════ وسن 5.1 · «لوحة التلوين»: كل استغفار يلوّن مربّعًا من صورة أو كلمة تختارها ═══════════
    تبدأ اللوحة رمادية باهتة كصفحة تلوين، ومع كل «أستغفر الله» يتلوّن مربّع، حتى تظهر الصورة كاملة.
    الرسم على لوحة واحدة (canvas) لا على ألف عنصر — فتبقى خفيفة حتى مع ١٠٠٠ مربّع. */
 const IGC_T = [100, 300, 1000];
@@ -186,7 +186,7 @@ function igcSheet() {
     if (c.m === 'photo' || c.m === 'ring' || c.m === 'mine') body += '<div class="sh-l">صورة اللوحة</div><div class="gf-arts igs-ph">' + igcPhotos().map(k => '<button class="gf-art' + (c.m === 'photo' && k === c.s ? ' on' : '') + '" data-ph="' + k + '"><img src="img/th/' + k + '-t.webp" alt="" loading="lazy"><span>' + esc(THEMES[k].n) + '</span></button>').join('') +
       '<button class="gf-art igs-mine' + (c.m === 'mine' ? ' on' : '') + '" data-mine="1">' + (c.mine ? '<img src="' + esc(c.mine) + '" alt="">' : '<b>' + icon('upload') + '</b>') + '<span>' + (c.mine ? 'صورتي' : 'من هاتفك') + '</span></button></div>';
     if (c.m === 'word') body += '<div class="sh-l">الكلمة</div><div class="chips" id="igs-w" style="padding:0">' + IGC_WORDS.map(w => '<button class="chip' + (w === c.w ? ' on' : '') + '" data-v="' + esc(w) + '">' + esc(w) + '</button>').join('') + '</div>' +
-      '<div class="form" style="margin-top:8px"><input id="igs-wi" maxlength="18" placeholder="أو اكتبي كلمتك: اسم، دعاء قصير…" value="' + (IGC_WORDS.includes(c.w) ? '' : esc(c.w)) + '"></div>' +
+      '<div class="form" style="margin-top:8px"><input id="igs-wi" maxlength="18" placeholder="أو اكتب كلمتك: اسم، دعاء قصير…" value="' + (IGC_WORDS.includes(c.w) ? '' : esc(c.w)) + '"></div>' +
       '<div class="sh-l">الألوان</div><div class="igs-pal">' + IGC_PAL.map((P, i) => '<button class="igs-sw' + (i === c.p ? ' on' : '') + '" data-p="' + i + '" style="background:linear-gradient(135deg,' + P.bg[1] + ',' + P.bg[0] + ');color:' + P.fg[1] + '" aria-label="' + esc(P.n) + '">ع</button>').join('') + '</div>';
     if (c.m !== 'ring') body += '<div class="sh-l">عدد المربّعات</div><div class="chips" id="igs-t" style="padding:0">' + IGC_T.map(v => '<button class="chip' + (v === c.t ? ' on' : '') + '" data-v="' + v + '">' + N(v) + ' مربّع</button>').join('') + '</div>' +
       '<div class="sh-l">ترتيب التلوين</div><div class="chips" id="igs-o" style="padding:0">' + IGC_ORD.map(([v, t]) => '<button class="chip' + (v === c.o ? ' on' : '') + '" data-v="' + v + '">' + t + '</button>').join('') + '</div>';
@@ -214,7 +214,7 @@ SCREENS.istighfar = {
     const board = c.m === 'ring'
       ? '<button class="igwrap" id="ig-g" aria-label="أستغفر الله">' + igBoardSVG(n, D) + '<span class="ig-n"><b class="num" id="ig-n">' + N(n) + '</b><small>من ' + N(100) + '</small></span></button>'
       : '<button class="igc' + (n >= T ? ' full' : '') + '" id="ig-g" aria-label="أستغفر الله"><canvas class="igc-cv" aria-hidden="true"></canvas><span class="igc-ld">' + icon('sparkle') + '</span><span class="igc-n"><b class="num" id="ig-n">' + N(Math.min(n, T)) + '</b><small>من ' + N(T) + '</small></span></button>';
-    const sub = c.m === 'ring' ? 'تصميم اليوم: ' + esc(D.n) : c.m === 'word' ? 'لوّني «' + esc(c.w) + '» باستغفارك' : c.m === 'mine' ? 'لوّني صورتك باستغفارك' : 'لوّني «' + esc(THEMES[c.s].n) + '» باستغفارك';
+    const sub = c.m === 'ring' ? 'تصميم اليوم: ' + esc(D.n) : c.m === 'word' ? 'لوّن «' + esc(c.w) + '» باستغفارك' : c.m === 'mine' ? 'لوّن صورتك باستغفارك' : 'لوّن «' + esc(THEMES[c.s].n) + '» باستغفارك';
     const galItem = x => { const m = x.m || 'ring', lab = '<span>' + esc(fmtDateShort(x.d)) + (x.t && x.t !== 100 ? ' · ' + N(x.t) : '') + '</span>';
       if (m === 'ring') return '<div class="ig-gi">' + igBoardSVG(100, IG_DESIGNS[x.k] || D, 'igm', true) + lab + '</div>';
       if (m === 'photo' && THEMES[x.s]) return '<div class="ig-gi igp"><img src="img/th/' + x.s + '-t.webp" alt="" loading="lazy">' + lab + '</div>';
@@ -225,7 +225,7 @@ SCREENS.istighfar = {
       '<div class="chips igm-row" id="ig-m">' + IGC_MODES.map(([v, t, ic]) => '<button class="chip' + (v === c.m ? ' on' : '') + '" data-v="' + v + '">' + icon(ic) + t + '</button>').join('') + '</div>' +
       board +
       '<div class="mx mt"><button class="btn primary block" id="ig-b" style="height:56px;font-size:17px">' + icon('plus') + (n >= T ? 'لوحة جديدة' : 'أستغفر الله') + '</button></div>' +
-      '<div class="row mx" style="gap:8px;margin-top:10px"><button class="btn ghost grow" id="ig-sh">' + icon('share') + 'شاركي</button><button class="btn ghost grow" id="ig-cf2">' + icon('palette') + 'تخصيص</button><button class="btn ghost grow" data-go="gift">' + icon('sparkle') + 'الهدية</button></div>' +
+      '<div class="row mx" style="gap:8px;margin-top:10px"><button class="btn ghost grow" id="ig-sh">' + icon('share') + 'شارك</button><button class="btn ghost grow" id="ig-cf2">' + icon('palette') + 'تخصيص</button><button class="btn ghost grow" data-go="gift">' + icon('sparkle') + 'الهدية</button></div>' +
       (gal.length ? sec('لوحاتك المكتملة · ' + N(gal.length)) + '<div class="ig-gal mx">' + gal.slice(-24).reverse().map(galItem).join('') + '</div>' : '');
   },
   mount(el) {
@@ -241,13 +241,13 @@ SCREENS.istighfar = {
         cv.width = W; cv.height = H; const x = cv.getContext('2d'), s = IG.st(); ord = igcOrder(T, c.o, seed());
         const dk = document.documentElement.dataset.theme === 'dark'; paintCell = igcPaint(x, im, W, H, T, s.n, ord, s.n >= T, dk); ready = true; box.classList.add('ready');
         cv._grid = document.createElement('canvas'); cv._grid.className = 'igc-gl'; cv._grid.width = W; cv._grid.height = H; igcGrid(cv._grid.getContext('2d'), W, H, T, document.documentElement.dataset.theme === 'dark'); box.insertBefore(cv._grid, cv.nextSibling);
-      }).catch(() => { toast('تعذّر فتح صورة اللوحة — اختاري غيرها'); if (c.m === 'mine') IG.setCfg({ m: 'photo' }); });
+      }).catch(() => { toast('تعذّر فتح صورة اللوحة — اختر غيرها'); if (c.m === 'mine') IG.setCfg({ m: 'photo' }); });
     }
     const spark = i => { const [co, ro] = IGC_GRID[T], sp = document.createElement('i'); sp.className = 'igc-sp';
       sp.style.cssText = 'left:' + (i % co) / co * 100 + '%;top:' + Math.floor(i / co) / ro * 100 + '%;width:' + 100 / co + '%;height:' + 100 / ro + '%';
       $('#ig-g', el).appendChild(sp); setTimeout(() => sp.remove(), 700); };
     const finish = s => { vibrate(220); try { TasSound.play(null, true); } catch (e) {} if (c.v !== 'off') setTimeout(() => { try { DhikrVoice.play('is', 1); } catch (e) {} }, 380); const r = $('#ig-g', el).getBoundingClientRect(); FX.burst(r.left + r.width / 2, r.top + r.height / 2); try { kwCelebrate(artKey()); } catch (e) {}
-      toast('اكتملت اللوحة — غفر الله لكِ', 2600); };
+      toast('اكتملت اللوحة — غفر الله لك', 2600); };
     const add = () => {
       const s = IG.st();
       if (s.n >= T) { // اكتملت: نبدأ لوحة جديدة لليوم نفسه
@@ -275,7 +275,7 @@ SCREENS.istighfar = {
     $('#ig-m', el).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; const v = b.dataset.v;
       if (v === 'mine' && !IG.cfg().mine) { igcPickMine(() => Router.refresh()); return; } if (v === IG.cfg().m && v !== 'ring') { igcSheet(); return; } IG.setCfg({ m: v }); Router.refresh(); };
     $('#ig-cfg', el).onclick = igcSheet; $('#ig-cf2', el).onclick = igcSheet;
-    $('#ig-r', el).onclick = () => confirmSheet('إعادة لوحة اليوم؟', 'سيُصفَّر عدّاد اللوحة، ويبقى ما سُجّل من استغفارك في نموّك.', 'نعم، أعيديها', () => { const s = IG.st(); s.n = 0; s.sv = 0; Store.set('ig', s); Router.refresh(); });
+    $('#ig-r', el).onclick = () => confirmSheet('إعادة لوحة اليوم؟', 'سيُصفَّر عدّاد اللوحة، ويبقى ما سُجّل من استغفارك في نموّك.', 'نعم، أعِدها', () => { const s = IG.st(); s.n = 0; s.sv = 0; Store.set('ig', s); Router.refresh(); });
     $('#ig-sh', el).onclick = igcShare;
   },
 };
@@ -299,6 +299,7 @@ const GIFT_REL = [
   ['dead_f', 'لروحها', 'اللهمّ اغفر لها وارحمها، وعافِها واعفُ عنها، وأكرِم نُزُلها، ووسّع مدخلها', 'رواه مسلم'],
   ['sick', 'للشفاء', 'أسألُ اللهَ العظيم، ربَّ العرش العظيم، أن يشفيك', 'رواه أبو داود والترمذي'],
   ['parents', 'لوالديّ', 'ربِّ ارحمهما كما ربّياني صغيرًا', 'الإسراء: ٢٤'],
+  ['friend_m', 'لصديقي', 'جمعنا الله وإيّاك في الفردوس الأعلى، إخوانًا على سُرُرٍ متقابلين', ''],
   ['friend', 'لصديقتي', 'جمعنا الله وإيّاكِ في الفردوس الأعلى، إخوانًا على سُرُرٍ متقابلين', ''],
   ['self', 'عامّ', 'اللهمّ تقبّل منّا إنك أنت السميع العليم', 'البقرة: ١٢٧'],
 ];
@@ -364,7 +365,7 @@ SCREENS.gift = {
       '<textarea id="gf-d" rows="3" maxlength="240" placeholder="' + esc(R[2]) + '">' + esc(o.dua || '') + '</textarea>' +
       '<label>ما أهديه</label><div class="chips" id="gf-w" style="padding:0">' + GIFT_WHAT.map(([v, t]) => { const n = Gift.count(v); return '<button class="chip ' + (v === o.what ? 'on' : '') + '" data-v="' + v + '">' + t + (v !== 'dua' ? ' · ' + N(n) : '') + '</button>'; }).join('') + '</div>' +
       '<label>اللوحة</label><div class="gf-arts" id="gf-a">' + GIFT_ART.map(([k, t]) => '<button class="gf-art ' + (k === o.art ? 'on' : '') + '" data-v="' + k + '"><img src="img/th/' + k + '-t.webp" alt="" loading="lazy"><span>' + t + '</span></button>').join('') + '</div>' +
-      '<button class="btn gold block" id="gf-s" style="margin-top:16px;height:54px">' + icon('share') + 'شاركي اللوحة</button>' +
+      '<button class="btn gold block" id="gf-s" style="margin-top:16px;height:54px">' + icon('share') + 'شارك اللوحة</button>' +
       '<div class="faint" style="font-size:12px;margin-top:8px;text-align:center">الأدعية من السنّة الصحيحة والقرآن الكريم · يمكنك كتابة دعائك الخاص</div></div>';
   },
   mount(el) {

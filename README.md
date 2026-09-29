@@ -1,15 +1,25 @@
 <div dir="rtl">
 
-# وسن · Wasan 6.3
+# وسن · Wasan 7.0
 
 **رفيقك اليومي للصلاة والقرآن والذكر** — تطبيق أندرويد يعمل دون إنترنت ودون إعلانات.
 
-![وسن 6.1](docs/wasan-6.1.png)
+![وسن 7.0](docs/wasan-7.0.png)
 
 ## التحميل
 
-- **التطبيق الجاهز:** [Wasan-6.3.apk](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.3/Wasan-6.3.apk) · لمتجر Google Play: [Wasan-6.3.aab](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.3/Wasan-6.3.aab) (من صفحة الإصدارات Releases) — يُثبَّت فوق النسخ السابقة مباشرة وتبقى بياناتك.
-- النسخ السابقة: [الإصدار 6.2](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.2) · [الإصدار 6.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.1) · [الإصدار 6.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.0) · [الإصدار 5.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.1) · [الإصدار 5.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.0) · [الإصدار 4.8](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v4.8) · [release/Wasan-4.7.apk](release/Wasan-4.7.apk).
+- **التطبيق الجاهز:** [Wasan-7.0.apk](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v7.0/Wasan-7.0.apk) · لمتجر Google Play: [Wasan-7.0.aab](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v7.0/Wasan-7.0.aab) (من صفحة الإصدارات Releases) — يُثبَّت فوق النسخ السابقة مباشرة وتبقى بياناتك.
+- النسخ السابقة: [الإصدار 6.3](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.3) · [الإصدار 6.2](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.2) · [الإصدار 6.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.1) · [الإصدار 6.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.0) · [الإصدار 5.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.1) · [الإصدار 5.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.0) · [الإصدار 4.8](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v4.8) · [release/Wasan-4.7.apk](release/Wasan-4.7.apk).
+
+
+## ما الجديد في 7.0 · «ثيمات جديدة، وتخصيص كامل، والمصحف كاملًا مع كل قارئ»
+
+- **ثيمان كاملان مرسومان:** «الكتاكيت» (مزرعة ربيعية، عبّاد الشمس، سياج وبيت خشبي، عُشّ بيض وكتاكيت تفقس وتمشي على العشب) و«الأرانب» (مرج ليلكيّ ونعناعيّ، أرانب بيضاء وكريمية ورمادية، جزر ونفل وتوليب، وأرنب يطلّ من الشجيرة) — بمشهد الرئيسية وزينتها المتحركة، والمسبحة وحبّاتها، والبستان، ورموز العناوين والبطاقات (رسوم متجهية جديدة في `art.js`: chick · egg · nest · sunflower · coop · bunny · carrot · carrotTop · clover · bush · feather · bow).
+- **ثيمات رجالية بصور حقيقية** (مجموعة `men`): صقر الصحراء، الخيل العربية، الأسد، ليل الصحراء (درب التبّانة)، الربع الخالي، شراع الغروب، جبل شمس، القمر، حافة العالم — صور ويكيميديا كومنز برخص حرّة (مذكورة في «صور الثيمات»)، وألوان كل ثيم مشتقة من صورته آليًّا.
+- **تخصيص الشاشة الرئيسية** (`SCREENS.homecfg` · `Settings.home` · `Settings.quick`): إظهار شعار «وسن» أو إخفاؤه أو وضع تحية/اسمك مكانه، وإظهار أو إخفاء: اسم المدينة، قوس الشمس، العدّ التنازلي، التاريخ، المناسبات، رسومات المشهد، شارة البستان، والأقسام (الصلوات الخمس، وقتك الآن، يومك، الوصول السريع، وردك، آية اليوم، الحديث، صلواتك هذا الأسبوع)، واختيار الاختصارات من ٤ إلى ١٢ بالترتيب.
+- **المصحف كاملًا مع كل قارئ** (`Settings.recFill` · `recFillWith`): السورة غير المسجّلة بصوت قارئك تُتلى تلقائيًا بصوت قارئ قريب من أسلوبه (أو من تختاره) ثم يعود إليه، في التشغيل المتتابع والتنقّل أيضًا — ولا عبارة «مدمج» بعد اليوم.
+- **قرّاء أكثر:** ٢٤ قارئًا جديدًا آية بآية (everyayah)، وتراويح المسجد الحرام والمسجد النبوي كاملة ١٤٤٢–١٤٤٧ هـ، والشحات محمد أنور، وعزيز عليلي، ومحمد حسان، وعبدالرزاق الدليمي (quranicaudio.com · archive.org)، مع تصفية سريعة: المصحف كاملًا بصوته · متابعة دقيقة · مجوّد · تراويح الحرمين · منزّل عندي.
+- **صياغة محايدة** لكل المستخدمين (اضغط، اختر، اسحب…)، وخيار «لصديقي» في لوحة الهدية.
 
 ## ما الجديد في 6.3 · «الأذان في دقيقته، ومواقيت مسجدك»
 

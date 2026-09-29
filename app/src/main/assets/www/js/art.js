@@ -517,7 +517,211 @@ const Art = (() => {
     const gb = d.def('br' + (key || ''), key === 'p' ? LG(0, 0, 1, 0, [[0, '#B58A58'], [.55, '#946A40'], [1, '#6E4C2C']]) : LG(0, 0, 0, 1, key === 'l' ? [[0, '#A9785E'], [1, '#6E4634']] : [[0, '#94644C'], [1, '#5E3A2A']]));
     return '<path d="M' + L.map(pt).join('L') + 'L' + Rr.reverse().map(pt).join('L') + 'Z" fill="' + gb + '"/>';
   }
+
+  /* ═══════════ وسن 7 · «الكتاكيت» و«الأرانب»: رسوم جديدة مرسومة لوسن (بلا صور خارجية) ═══════════ */
+  /* فيونكة صغيرة */
+  function bow(d, o) {
+    const c = o.c || '#FF86AE', gb = d.def('bw' + c.slice(1), RG(.4, .35, .8, [[0, '#FFFFFF', .55], [.5, c], [1, c]]));
+    const lp = '<path d="M0 0C-2.6 -4.6 -8.6 -5.6 -8.8 -.6C-9 4 -3.2 3.6 0 0Z" fill="' + gb + '"/>';
+    return g(o.x, o.y, o.s || 1, o.r || 0, lp + '<g transform="scale(-1 1)">' + lp + '</g><path d="M-1 .6L-3.4 6.4L-.6 5.6ZM1 .6L3.4 6.4L.6 5.6Z" fill="' + c + '"/><ellipse rx="2" ry="1.8" fill="' + c + '" stroke="#FFFFFF" stroke-width=".5" stroke-opacity=".6"/>', op(o));
+  }
+  /* ───────── الكتكوت (دائري منفوش بعينين لامعتين) ───────── */
+  const CK = {
+    yellow: { b: ['#FFFBD8', '#FFE96C', '#FFCF33', '#F2AB1A'], w: ['#FFE468', '#F4B025'], k: ['#FFC44F', '#F28612'], ft: '#F2941F', t: '#F9BF22' },
+    lemon: { b: ['#FFFFF2', '#FFF6AA', '#FFE55A', '#F3C335'], w: ['#FFF08A', '#F0CB40'], k: ['#FFC868', '#F2941C'], ft: '#F2A030', t: '#F4CF3A' },
+    cream: { b: ['#FFFFFF', '#FFF8E6', '#FCE7B6', '#EDC984'], w: ['#FFF0C6', '#EBC888'], k: ['#FFC57A', '#EF9030'], ft: '#EFA048', t: '#EFCB86' },
+    peach: { b: ['#FFF8EF', '#FFE3BA', '#FFC67E', '#F2A04A'], w: ['#FFD89E', '#F0A656'], k: ['#FFB26A', '#EC7C28'], ft: '#EC8A36', t: '#F4B064' },
+  };
+  function chick(d, o) {
+    const pal = CK[o.pal] ? o.pal : 'yellow', c = CK[pal], pose = o.pose || 'stand', eye = o.eye || 'o';
+    const gb = d.def('ckb' + pal, RG(.4, .32, .78, [[0, c.b[0]], [.42, c.b[1]], [.8, c.b[2]], [1, c.b[3]]]));
+    const gw = d.def('ckw' + pal, LG(0, 0, 0, 1, [[0, c.w[0]], [1, c.w[1]]]));
+    const gk = d.def('ckk' + pal, LG(0, 0, 0, 1, [[0, c.k[0]], [1, c.k[1]]]));
+    let s = '';
+    if (pose !== 'hatch' && pose !== 'hop') s += '<ellipse cx="0" cy="23.6" rx="15.5" ry="3.3" fill="#5A3E08" opacity=".13"/>';
+    const ft = '<g fill="none" stroke="' + c.ft + '" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">';
+    if (pose === 'stand' || pose === 'peck') s += ft + '<path d="M-6.5 15.5V22.4M-6.5 22.4L-10 24.2M-6.5 22.4V25M-6.5 22.4L-3.2 24.2M6.5 15.5V22.4M6.5 22.4L3.2 24.2M6.5 22.4V25M6.5 22.4L10 24.2"/></g>';
+    else if (pose === 'hop') s += ft + '<path d="M-6 16L-8.4 21.4M-8.4 21.4L-12 22.4M-8.4 21.4L-9.4 24.2M6 16L8.4 21.4M8.4 21.4L12 22.4M8.4 21.4L9.4 24.2"/></g>';
+    if (!(pose === 'hatch' && o.cap !== false)) s += '<g fill="' + c.t + '"><ellipse cx="-2.8" cy="-21" rx="2.1" ry="4.6" transform="rotate(-30 -2.8 -21)"/><ellipse cx="1.3" cy="-22.4" rx="2" ry="5.1" transform="rotate(6 1.3 -22.4)"/><ellipse cx="4.9" cy="-20.4" rx="1.6" ry="3.7" transform="rotate(40 4.9 -20.4)"/></g>';
+    s += '<ellipse rx="20" ry="19" fill="' + gb + '"/>';
+    s += '<ellipse cx="-6.4" cy="-9.4" rx="8.6" ry="5.2" transform="rotate(-30 -6.4 -9.4)" fill="#FFFFFF" opacity=".5"/>';
+    const wl = '<path d="M-16.4 -1.4C-23.6 .6 -25.2 9.6 -19.6 14.6C-16.2 11 -14.6 5 -16.4 -1.4Z" fill="' + gw + '"/>', wr = '<path d="M16.4 -1.4C23.6 .6 25.2 9.6 19.6 14.6C16.2 11 14.6 5 16.4 -1.4Z" fill="' + gw + '"/>';
+    if (pose === 'hop') s += '<g transform="rotate(40 -16.4 -1.4)">' + wl + '</g><g transform="rotate(-40 16.4 -1.4)">' + wr + '</g>';
+    else if (pose !== 'hatch') s += o.flap ? '<g class="ckw">' + wl + '</g><g class="ckw r">' + wr + '</g>' : wl + wr;
+    if (eye === 'happy') s += '<path d="M-10.2 -3.4Q-7 -7.6 -3.8 -3.4M3.8 -3.4Q7 -7.6 10.2 -3.4" fill="none" stroke="#3A2716" stroke-width="1.9" stroke-linecap="round"/>';
+    else s += '<g fill="#3A2716"><ellipse cx="-7" cy="-4.4" rx="2.8" ry="3.2"/><ellipse cx="7" cy="-4.4" rx="2.8" ry="3.2"/></g><g fill="#FFFFFF"><circle cx="-7.9" cy="-5.7" r="1.1"/><circle cx="6.1" cy="-5.7" r="1.1"/><circle cx="-6.1" cy="-3.2" r=".5" opacity=".8"/><circle cx="7.9" cy="-3.2" r=".5" opacity=".8"/></g>';
+    s += '<g fill="#FF8FA3" opacity=".55"><ellipse cx="-12.3" cy="2.5" rx="3.4" ry="2.1"/><ellipse cx="12.3" cy="2.5" rx="3.4" ry="2.1"/></g>';
+    s += '<path d="M-3.8 .5Q0 -3 3.8 .5Q0 2.5 -3.8 .5Z" fill="' + gk + '"/><path d="M-2.9 1.2Q0 5.2 2.9 1.2Q0 2.8 -2.9 1.2Z" fill="' + c.k[1] + '"/>';
+    if (pose === 'hatch') { const gs = d.def('cksh', LG(0, 0, 0, 1, [[0, '#FFFFFF'], [.6, '#FBF3E2'], [1, '#E9D6B0']]));
+      s += '<path d="M-22 4.5L-17.6 -1.2L-13.2 4.8L-8.8 -.8L-4.4 4.8L0 -.8L4.4 4.8L8.8 -.8L13.2 4.8L17.6 -1.2L22 4.5C23 17.4 13.4 26 0 26C-13.4 26 -23 17.4 -22 4.5Z" fill="' + gs + '" stroke="#E0CCA2" stroke-width=".8" stroke-linejoin="round"/>' +
+        '<path d="M-15.4 12.4Q-14.2 18.4 -9 21.4" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" opacity=".85"/>';
+      if (o.cap !== false) s += '<g transform="rotate(-16 0 -16)"><path d="M-11.4 -15.6L-8.2 -21L-4.6 -16.6L-1 -21.6L2.6 -16.6L6.2 -21L9.4 -16C9.6 -27.4 -11.6 -27.4 -11.4 -15.6Z" fill="' + gs + '" stroke="#E0CCA2" stroke-width=".7" stroke-linejoin="round"/></g>';
+    }
+    if (o.bow) s += bow(d, { x: 11, y: -15, s: .85, r: 18, c: o.bow });
+    if (o.bloom) s += use(daisySym(d, o.bloom === true ? 'white' : o.bloom), -9, -16.5, .75, 20);
+    const sc = o.s || 1, R = (o.r || 0) + (pose === 'peck' ? -20 : 0);
+    return g(o.x, o.y, o.flip ? [-sc, sc] : sc, R, s, op(o));
+  }
+  /* بيضة طبيعية، وعُشّ من القشّ يضمّ البيض */
+  const EGG = { cream: ['#FFFFFF', '#FBF2DE', '#E8D2A8'], brown: ['#FCEBD7', '#F0CDA2', '#D4A36C'], white: ['#FFFFFF', '#F7F5F1', '#DCD5C9'] };
+  function egg(d, o) {
+    const pal = EGG[o.pal] ? o.pal : 'cream', c = EGG[pal], ge = d.def('eg' + pal, RG(.38, .3, .82, [[0, c[0]], [.55, c[1]], [1, c[2]]]));
+    return g(o.x, o.y, o.s || 1, o.r || 0, '<path d="M0 -15C8.6 -15 12.4 -3.4 12.4 4C12.4 11.6 7 16 0 16C-7 16 -12.4 11.6 -12.4 4C-12.4 -3.4 -8.6 -15 0 -15Z" fill="' + ge + '"/><ellipse cx="-4.6" cy="-6" rx="2.6" ry="4.4" transform="rotate(20 -4.6 -6)" fill="#FFFFFF" opacity=".75"/>', op(o));
+  }
+  function nest(d, o) {
+    const gn = d.def('nst', LG(0, 0, 0, 1, [[0, '#DDAE6A'], [1, '#9A6A34']])), r = rng(o.seed || 5); let st = '';
+    for (let i = 0; i < 18; i++) { const x0 = -27 + r() * 50, y0 = 1 + r() * 11; st += '<path d="M' + f(x0) + ' ' + f(y0) + 'q' + f(6 + r() * 8) + ' ' + f(-3 + r() * 6) + ' ' + f(12 + r() * 10) + ' ' + f(-2 + r() * 4) + '"/>'; }
+    const eggs = (o.eggs || []).map(([x, y, z, rr, pal]) => egg(d, { x, y, s: z, r: rr, pal })).join('');
+    return g(o.x, o.y, o.s || 1, 0, '<ellipse cx="0" cy="13" rx="30" ry="4.2" fill="#5A3A10" opacity=".14"/><ellipse cx="0" cy="0" rx="27" ry="6" fill="#7A5226"/>' + eggs +
+      '<path d="M-29 -1C-27 11 -15 16 0 16C15 16 27 11 29 -1C19 5 -19 5 -29 -1Z" fill="' + gn + '"/><g fill="none" stroke="#F5D9A2" stroke-width="1.1" stroke-linecap="round" opacity=".8">' + st + '</g>' +
+      '<path d="M-29 -1C-19 5 19 5 29 -1" fill="none" stroke="#B98446" stroke-width="2.2" stroke-linecap="round"/>', op(o));
+  }
+  /* زهرة عبّاد الشمس بساقها */
+  function sunflower(d, o) {
+    const h = o.h == null ? 60 : o.h, b = o.bend || 0, gp = d.def('sfp', LG(0, 1, 0, 0, [[0, '#F29C00'], [.6, '#FFC726'], [1, '#FFE680']])), gc = d.def('sfc', RG(.42, .38, .72, [[0, '#9A6526'], [.6, '#5E3A14'], [1, '#3C2309']]));
+    let pet = '', pet2 = '', seeds = ''; const r = rng(9);
+    for (let i = 0; i < 18; i++) { pet += '<ellipse cy="-11.6" rx="3.2" ry="7.2" transform="rotate(' + (i * 20) + ')" fill="' + gp + '"/>'; pet2 += '<ellipse cy="-9.4" rx="2.6" ry="5.6" transform="rotate(' + (i * 20 + 10) + ')" fill="' + gp + '" opacity=".92"/>'; }
+    for (let i = 0; i < 18; i++) { const p = P(1.4 + r() * 4.8, r() * 6.283); seeds += '<circle cx="' + f(p[0]) + '" cy="' + f(p[1]) + '" r=".62"/>'; }
+    const stem = !h ? '' : '<path d="M0 6C' + f(b * .4) + ' ' + f(h * .4) + ' ' + f(b * 1.2) + ' ' + f(h * .72) + ' ' + f(b) + ' ' + f(h) + '" fill="none" stroke="#4E9A48" stroke-width="3" stroke-linecap="round"/>' +
+      leaf(d, { x: b * .8, y: h * .55, l: 22, r: -62 }) + leaf(d, { x: b * .95, y: h * .78, l: 19, r: 64, pal: 'deep' });
+    return g(o.x, o.y, o.s || 1, o.r || 0, stem + pet + pet2 + '<circle r="7.8" fill="' + gc + '"/><g fill="#D29A48" opacity=".75">' + seeds + '</g><circle cx="-2.4" cy="-2.6" r="2.4" fill="#FFFFFF" opacity=".12"/>', op(o));
+  }
+  /* بيت الكتاكيت الخشبي وفي بابه كتكوت يطلّ */
+  function coop(d, o) {
+    const gw = d.def('cpw', LG(0, 0, 1, 0, [[0, '#EDC285'], [1, '#C98E4F']])), gr = d.def('cpr', LG(0, 0, 0, 1, [[0, '#F58C6E'], [1, '#D2574A']]));
+    const cp = d.def('cpd', id => '<clipPath id="' + id + '"><ellipse cx="0" cy="15" rx="9.2" ry="10.6"/></clipPath>');
+    return g(o.x, o.y, o.s || 1, 0, '<ellipse cx="0" cy="30.5" rx="34" ry="4" fill="#3A2A10" opacity=".13"/><rect x="-24" y="-6" width="48" height="36" rx="3.4" fill="' + gw + '"/>' +
+      '<g stroke="#B07A40" stroke-width=".8" opacity=".55"><path d="M-24 3H24M-24 12H24M-24 21H24"/></g>' +
+      '<path d="M-31.5 -3.6L0 -28.6L31.5 -3.6Z" fill="' + gr + '" stroke="#B9463C" stroke-width="1.2" stroke-linejoin="round"/><path d="M-26 -5.6L0 -25.6L26 -5.6" fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" opacity=".45"/>' +
+      '<circle cx="0" cy="-12.8" r="3.6" fill="#FFF3CC" stroke="#B07A40" stroke-width="1"/>' +
+      '<ellipse cx="0" cy="15" rx="9.2" ry="10.6" fill="#553519"/><g clip-path="' + cp + '">' + chick(d, { x: 0, y: 19, s: .42, pose: 'sit', pal: 'yellow' }) + '</g>' +
+      '<path d="M-7 30L-12 38H12L7 30Z" fill="#C99258" opacity=".85"/>', op(o));
+  }
+  /* ───────── الأرنب (جالس، بأذنين طويلتين ووجنتين ورديتين) ───────── */
+  const BN = {
+    white: { b: ['#FFFFFF', '#FBF8FC', '#EBE1EF'], e: '#DACBE2', in: ['#FFDCE6', '#F7A6BF'] },
+    cream: { b: ['#FFFDF7', '#FBF0DC', '#EED6AE'], e: '#E0C595', in: ['#FFD9DE', '#F4A5B4'] },
+    grey: { b: ['#F8F8FC', '#E3E4EF', '#C3C6D8'], e: '#B4B7CC', in: ['#FFD8E3', '#EFA1B8'] },
+    caramel: { b: ['#FFF2E2', '#F2CFA4', '#DCA36A'], e: '#C88E56', in: ['#FFD4D9', '#EC9DAD'] },
+  };
+  function bunny(d, o) {
+    const pal = BN[o.pal] ? o.pal : 'white', c = BN[pal], pose = o.pose || 'sit', eye = o.eye || 'o';
+    const gb = d.def('bnb' + pal, RG(.4, .3, .88, [[0, c.b[0]], [.62, c.b[1]], [1, c.b[2]]])), gi = d.def('bni' + pal, LG(0, 0, 0, 1, [[0, c.in[0]], [1, c.in[1]]]));
+    const E = ' stroke="' + c.e + '" stroke-width=".9"';
+    const ear = (m, flop) => { const x = v => f(v * m); const e0 = '<path d="M' + x(-10.5) + ' -21C' + x(-16.6) + ' -33 ' + x(-16.6) + ' -50 ' + x(-9.6) + ' -54.6C' + x(-3) + ' -52 ' + x(-2.6) + ' -36 ' + x(-5) + ' -23Z" fill="' + gb + '"' + E + '/>' +
+      '<path d="M' + x(-9.6) + ' -25C' + x(-12.6) + ' -35 ' + x(-12.6) + ' -46 ' + x(-9.2) + ' -49.6C' + x(-5.8) + ' -47 ' + x(-5.8) + ' -36 ' + x(-6.6) + ' -26.6Z" fill="' + gi + '"/>';
+      return flop ? '<g transform="rotate(' + (m * -64) + ' ' + x(-7.6) + ' -23)">' + e0 + '</g>' : e0; };
+    let s = '';
+    if (pose !== 'peek') s += '<ellipse cx="0" cy="26.4" rx="21" ry="3.6" fill="#4A2A40" opacity=".12"/>';
+    s += (o.wig ? '<g class="bne">' + ear(-1, false) + '</g>' : ear(-1, false)) + ear(1, o.ear === 'flop');
+    if (pose !== 'peek') {
+      s += '<ellipse cx="0" cy="9" rx="19" ry="17" fill="' + gb + '"' + E + '/><ellipse cx="0" cy="12.5" rx="10.4" ry="10" fill="#FFFFFF" opacity=".55"/>';
+      s += '<ellipse cx="-10.6" cy="24" rx="8" ry="4.4" fill="' + gb + '"' + E + '/><ellipse cx="10.6" cy="24" rx="8" ry="4.4" fill="' + gb + '"' + E + '/>';
+      s += '<g fill="' + c.in[0] + '"><ellipse cx="-12" cy="24.5" rx="2.7" ry="1.7"/><ellipse cx="12" cy="24.5" rx="2.7" ry="1.7"/></g>';
+      if (o.carrot) s += carrot(d, { x: 1, y: 6, s: .5, r: -34 });
+      s += '<ellipse cx="-6.6" cy="13.4" rx="4.3" ry="5.4" fill="' + gb + '"' + E + '/><ellipse cx="6.6" cy="13.4" rx="4.3" ry="5.4" fill="' + gb + '"' + E + '/>';
+    }
+    s += '<ellipse cx="0" cy="-11" rx="17" ry="14.6" fill="' + gb + '"' + E + '/><ellipse cx="-6.2" cy="-18.4" rx="6" ry="3.4" transform="rotate(-20 -6.2 -18.4)" fill="#FFFFFF" opacity=".75"/>';
+    if (eye === 'happy') s += '<path d="M-9.2 -11.2Q-6.6 -14.8 -4 -11.2M4 -11.2Q6.6 -14.8 9.2 -11.2" fill="none" stroke="#2E2238" stroke-width="1.7" stroke-linecap="round"/>';
+    else s += '<g fill="#2E2238"><ellipse cx="-6.6" cy="-12" rx="2.5" ry="2.9"/><ellipse cx="6.6" cy="-12" rx="2.5" ry="2.9"/></g><g fill="#FFFFFF"><circle cx="-7.4" cy="-13.2" r="1"/><circle cx="5.8" cy="-13.2" r="1"/><circle cx="-5.8" cy="-11" r=".42" opacity=".8"/><circle cx="7.4" cy="-11" r=".42" opacity=".8"/></g>';
+    s += '<g fill="#FF9DB5" opacity=".5"><ellipse cx="-10.8" cy="-6.4" rx="3.3" ry="2"/><ellipse cx="10.8" cy="-6.4" rx="3.3" ry="2"/></g>';
+    s += '<path d="M-1.9 -7.6Q0 -6.6 1.9 -7.6Q1.5 -5.6 0 -5.1Q-1.5 -5.6 -1.9 -7.6Z" fill="#F286A5"/><path d="M0 -5.1V-3.9M0 -3.9Q-1.7 -2.5 -3.1 -3.8M0 -3.9Q1.7 -2.5 3.1 -3.8" fill="none" stroke="#B87A90" stroke-width=".9" stroke-linecap="round"/>';
+    s += '<g stroke="#C4B0C4" stroke-width=".55" stroke-linecap="round" opacity=".8"><path d="M-9 -5.2L-16.4 -6.6M-9 -3.9L-15.8 -2.8M9 -5.2L16.4 -6.6M9 -3.9L15.8 -2.8"/></g>';
+    if (o.bow) s += bow(d, { x: 9.4, y: -23.4, s: .95, r: 20, c: o.bow });
+    const sc = o.s || 1;
+    return g(o.x, o.y, o.flip ? [-sc, sc] : sc, o.r || 0, s, op(o));
+  }
+  /* جزرة، وجزرة مزروعة لا يظهر منها إلا رأسها */
+  function carrot(d, o) {
+    const gc = d.def('crt', LG(0, 0, 1, 0, [[0, '#FFB45E'], [.5, '#FF8A1E'], [1, '#DE640A']])), gl = d.def('crl', LG(0, 1, 0, 0, [[0, '#3E9A48'], [1, '#93DD70']]));
+    return g(o.x, o.y, o.s || 1, o.r || 0, '<g fill="' + gl + '"><path d="M0 -1C-3 -8 -8 -13 -9.4 -19.4C-4 -17 -1 -10 0 -1Z"/><path d="M0 -1C-.4 -9 1 -17 0 -23.6C3.2 -17 3 -9 0 -1Z"/><path d="M0 -1C3 -8 8 -12 10.4 -17.4C5 -16 1 -9 0 -1Z"/></g>' +
+      '<path d="M-5.6 -1C-6 8 -2.4 22 0 30C2.4 22 6 8 5.6 -1C3.6 -2.7 -3.6 -2.7 -5.6 -1Z" fill="' + gc + '"/><g stroke="#C85606" stroke-width=".9" stroke-linecap="round" opacity=".5"><path d="M-4.4 5H-1.6M1.8 10H4.2M-3.4 15H-1M.8 20H2.6"/></g>' +
+      '<path d="M-3 2Q-3.4 10 -1.4 17" fill="none" stroke="#FFDDB0" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>', op(o));
+  }
+  function carrotTop(d, o) {
+    const gc = d.def('crt', LG(0, 0, 1, 0, [[0, '#FFB45E'], [.5, '#FF8A1E'], [1, '#DE640A']])), gl = d.def('crl', LG(0, 1, 0, 0, [[0, '#3E9A48'], [1, '#93DD70']]));
+    return g(o.x, o.y, o.s || 1, o.r || 0, '<g fill="' + gl + '"><path d="M0 -2C-3.6 -10 -9 -15 -11 -22C-5 -19.6 -1.2 -12 0 -2Z"/><path d="M0 -2C-.4 -11 1.2 -20 0 -27C3.6 -20 3.4 -11 0 -2Z"/><path d="M0 -2C3.6 -10 9 -14 11.6 -20C5.6 -18.6 1.2 -11 0 -2Z"/></g>' +
+      '<ellipse cx="0" cy="0" rx="6.4" ry="3.2" fill="' + gc + '"/><ellipse cx="0" cy="1.6" rx="9" ry="2" fill="#3A5A20" opacity=".18"/>', op(o));
+  }
+  /* نفل بثلاث وريقات على هيئة قلوب */
+  function clover(d, o) {
+    const gl = d.def('clv', LG(0, 0, 0, 1, [[0, '#A6E693'], [1, '#3E9A4E']]));
+    const lf = '<path d="M0 0C-1.2 -2.6 -6.2 -4.6 -6.2 -8.6C-6.2 -11.6 -2.6 -12.6 0 -9.8C2.6 -12.6 6.2 -11.6 6.2 -8.6C6.2 -4.6 1.2 -2.6 0 0Z"/>';
+    return g(o.x, o.y, o.s || 1, o.r || 0, '<path d="M0 1Q1.2 8 -1 14" fill="none" stroke="#3E8A48" stroke-width="1.4" stroke-linecap="round"/><g fill="' + gl + '">' + lf + '<g transform="rotate(120)">' + lf + '</g><g transform="rotate(240)">' + lf + '</g></g>' +
+      '<g stroke="#DDF7D0" stroke-width=".7" opacity=".7" fill="none"><path d="M0 0V-7M0 0L6 3.5M0 0L-6 3.5"/></g>', op(o));
+  }
+  /* شجيرة مستديرة */
+  function bush(d, o) {
+    const c = o.c || ['#B6E8A8', '#6CC27A', '#3E9A5A'], gb = d.def('bs' + c[1].slice(1), RG(.4, .3, .8, [[0, c[0]], [.55, c[1]], [1, c[2]]]));
+    return g(o.x, o.y, o.s || 1, 0, '<ellipse cx="0" cy="14" rx="34" ry="4" fill="#1E4A2A" opacity=".13"/><g fill="' + gb + '"><circle cx="-18" cy="2" r="14"/><circle cx="18" cy="3" r="13"/><circle cx="0" cy="-6" r="17"/><circle cx="-6" cy="6" r="12"/><circle cx="8" cy="6" r="12"/></g>' +
+      '<g fill="#FFFFFF" opacity=".28"><ellipse cx="-6" cy="-14" rx="6" ry="3" transform="rotate(-20 -6 -14)"/><ellipse cx="-22" cy="-6" rx="3.6" ry="2" transform="rotate(-30 -22 -6)"/></g>', op(o));
+  }
+  /* ريشة صغيرة منفوشة (تتطاير فوق مشهد الكتاكيت) */
+  function feather(d, o) {
+    const gf = d.def('fth', LG(0, 0, 1, 1, [[0, '#FFF7C4'], [1, '#FFD23F']]));
+    return g(o.x, o.y, o.s || 1, o.r || 0, '<path d="M0 -9C4.6 -5 4.4 4.6 0 9C-4.4 4.6 -4.6 -5 0 -9Z" fill="' + gf + '"/><path d="M0 -8V10" stroke="#F1B21E" stroke-width=".8" stroke-linecap="round"/>', op(o));
+  }
+
   const HERO = {
+    /* ── وسن 7 · الكتاكيت: مزرعة ربيعية، عبّاد الشمس، سياج خشبي، بيت صغير، وعُشّ بيض وكتاكيت تفقس ── */
+    kchick(d, gr) {
+      const on = t => gr >= t; let s = '';
+      s += rays(d, { x: 404, y: -24, L: 600, a: [[20, 27], [32, 40], [46, 54], [61, 68]], op: .34 });
+      s += bokeh(d, { x0: 0, x1: 390, y0: 16, y1: 330, r0: 5, r1: 18, n: 14, c: '#FFFFFF', seed: 44, op: .55 });
+      s += bokeh(d, { x0: 0, x1: 390, y0: 60, y1: 300, r0: 3, r1: 10, n: 8, c: '#FFE58A', seed: 47, op: .4 });
+      s += hill(d, 'c1', 'M0 340C58 322 128 328 196 340C262 352 322 326 390 332L390 492L0 492Z', ['#F2F8D0', '#DCEDB0']);
+      s += sunflower(d, { x: 30, y: 254, h: 100, s: 1.02, bend: 3 }) + sunflower(d, { x: 72, y: 280, h: 76, s: .86, bend: -3 });
+      if (on(.62)) s += sunflower(d, { x: 108, y: 300, h: 58, s: .7, bend: 2 });
+      s += coop(d, { x: 322, y: 318, s: 1.06 });
+      s += fence(d, { x: -4, y: 334, n: 17, sp: 12, h: 22 });
+      s += hill(d, 'c2', 'M0 374C72 356 142 362 214 374C282 386 336 364 390 368L390 492L0 492Z', ['#D6EFAE', '#A7D889']);
+      [[18, 392, 26, -58], [70, 398, 24, 52], [252, 404, 26, -48], [382, 392, 24, 44], [150, 402, 22, -30]].forEach(([x, y, l, r], i) => { s += leaf(d, { x, y, l, r, pal: i % 2 ? 'deep' : 'green', w: 1.2 }); });
+      [[40, 392, 7, 'white', 0], [96, 402, 6.4, 'lemon', 0], [236, 398, 6.8, 'white', .55], [300, 396, 6, 'lemon', .65], [372, 404, 6.6, 'white', .8], [188, 408, 6, 'lemon', .9]].forEach(([x, y, r, pal, t], i) => { if (on(t)) s += daisy(d, { x, y, r, rot: i * 17, pal }); });
+      [[122, 386, 'yellow', 0], [262, 382, 'peach', .6], [352, 380, 'yellow', .75]].forEach(([x, y, pal, t], i) => { if (on(t)) s += tulip(d, { x, y: y - 26, pal, h: 26, bend: i % 2 ? 2 : -2, s: .9 }); });
+      s += nest(d, { x: 350, y: 452, s: 1.05, eggs: [[-11, -3, .72, -14, 'cream'], [3, -5, .78, 8, 'brown'], [14, -2, .66, 20, 'cream']] });
+      s += chick(d, { x: 130, y: 420, s: 1.6, pal: 'yellow' });
+      s += chick(d, { x: 218, y: 446, s: 1.18, pal: 'lemon', pose: 'peck', flip: true });
+      s += chick(d, { x: 286, y: 436, s: 1.2, pal: 'yellow', pose: 'hatch', eye: 'happy' });
+      if (on(.6)) s += chick(d, { x: 56, y: 452, s: .95, pal: 'cream', eye: 'happy', bloom: 'pink' });
+      if (on(.78)) s += chick(d, { x: 176, y: 470, s: .72, pal: 'peach', pose: 'hop' });
+      if (on(.9)) s += egg(d, { x: 252, y: 474, s: .62, r: 70, pal: 'white' });
+      s += grass(d, { x0: -4, x1: 394, y: 474, h0: 12, h1: 28, n: 70, seed: 9, c: ['#C8EFA2', '#7FC468', '#4E9A48'] });
+      [[8, 486, 8.6, 'white'], [384, 484, 8, 'lemon'], [30, 490, 6.2, 'lemon'], [364, 490, 6.4, 'white']].forEach(([x, y, r, pal], i) => { s += daisy(d, { x, y, r, rot: i * 29, pal }); });
+      s += bfly(d, { x: 56, y: 226, s: .27, r: -16, pal: 'lemon' }) + bfly(d, { x: 342, y: 206, s: .22, r: 15, pal: 'sky' });
+      if (on(.7)) s += bfly(d, { x: 256, y: 350, s: .15, r: -10, pal: 'pink' });
+      [[92, 168, 4.6], [300, 132, 4], [212, 312, 4.2], [48, 318, 3.4], [352, 272, 3.6]].forEach(([x, y, z]) => { s += sparkle(d, { x, y, s: z }); });
+      s += heart(d, { x: 176, y: 372, s: 5, r: -12, op: .85 });
+      return s;
+    },
+    /* ── وسن 7 · الأرانب: مرج ليلكيّ ونعناعيّ، أرانب بيضاء وكريمية، جزر ونفل وتوليب، وأرنب يطلّ من الشجيرة ── */
+    kbunny(d, gr) {
+      const on = t => gr >= t; let s = '';
+      s += rays(d, { x: 404, y: -24, L: 600, a: [[20, 27], [33, 41], [48, 56], [62, 69]], op: .3 });
+      s += bokeh(d, { x0: 0, x1: 390, y0: 16, y1: 330, r0: 5, r1: 18, n: 14, c: '#FFFFFF', seed: 61, op: .58 });
+      s += bokeh(d, { x0: 0, x1: 390, y0: 50, y1: 300, r0: 3, r1: 11, n: 9, c: '#FFB8D6', seed: 67, op: .32 });
+      s += hill(d, 'n1', 'M0 346C62 328 130 334 196 346C262 358 326 330 390 336L390 492L0 492Z', ['#F7EAF7', '#EAD4F0']);
+      s += bunny(d, { x: 352, y: 336, s: .78, pose: 'peek', pal: 'grey', eye: 'happy' });
+      s += bush(d, { x: 350, y: 356, s: 1.08, c: ['#C8F0D6', '#7FCB98', '#4AA06C'] });
+      s += bush(d, { x: 22, y: 352, s: .9, c: ['#C8F0D6', '#7FCB98', '#4AA06C'] });
+      [[296, 352, 'pink', 0], [318, 358, 'white', .6], [58, 350, 'lilac', .5]].forEach(([x, y, pal, t], i) => { if (on(t)) s += tulip(d, { x, y: y - 30, pal, h: 30, bend: i % 2 ? 2 : -2, s: 1 }); });
+      s += hill(d, 'n2', 'M0 378C70 362 140 368 212 380C280 392 336 370 390 374L390 492L0 492Z', ['#DDF5E7', '#B0E2C4']);
+      [[30, 404, 1], [52, 410, .92], [76, 402, .98]].forEach(([x, y, z]) => { s += carrotTop(d, { x, y, s: z }); });
+      [[112, 398, .9, -10], [236, 404, .8, 20], [318, 400, .86, -20], [372, 410, .8, 12], [168, 404, .74, 30]].forEach(([x, y, z, r], i) => { if (i < 3 || on(.6 + i * .08)) s += clover(d, { x, y, s: z, r }); });
+      [[204, 396, 6.6, 'pink', 0], [150, 390, 6, 'white', 0], [292, 392, 6.4, 'lilac', .6], [18, 432, 6.2, 'pink', .75], [346, 430, 6, 'white', .85]].forEach(([x, y, r, pal, t], i) => { if (on(t)) s += daisy(d, { x, y, r, rot: i * 19, pal }); });
+      s += bunny(d, { x: 128, y: 412, s: 1.32, pal: 'white', carrot: true });
+      s += bunny(d, { x: 262, y: 428, s: 1.04, pal: 'cream', ear: 'flop', eye: 'happy', bow: '#F58BB0' });
+      if (on(.6)) s += bunny(d, { x: 200, y: 458, s: .64, pal: 'grey', eye: 'happy' });
+      if (on(.78)) s += bunny(d, { x: 334, y: 456, s: .7, pal: 'caramel', flip: true });
+      s += carrot(d, { x: 58, y: 468, s: .8, r: 72 });
+      if (on(.9)) s += carrot(d, { x: 372, y: 476, s: .62, r: -64 });
+      s += grass(d, { x0: -4, x1: 394, y: 476, h0: 12, h1: 28, n: 70, seed: 13, c: ['#C9F2DA', '#76C895', '#3F9A64'] });
+      [[8, 486, 8.4, 'pink'], [384, 484, 8, 'white'], [32, 490, 6, 'white'], [362, 490, 6.4, 'pink']].forEach(([x, y, r, pal], i) => { s += daisy(d, { x, y, r, rot: i * 23, pal }); });
+      s += bfly(d, { x: 54, y: 222, s: .26, r: -16, pal: 'pink' }) + bfly(d, { x: 340, y: 200, s: .22, r: 16, pal: 'lilac' });
+      if (on(.7)) s += bfly(d, { x: 214, y: 344, s: .14, r: 10, pal: 'sky' });
+      s += heart(d, { x: 88, y: 190, s: 6.4, r: -14, op: .9 }) + heart(d, { x: 316, y: 150, s: 5.4, r: 12, op: .85 }) + heart(d, { x: 196, y: 330, s: 4.6, r: 8, op: .8 });
+      [[160, 150, 4.4], [290, 296, 4], [40, 300, 3.4], [352, 256, 3.6]].forEach(([x, y, z]) => { s += sparkle(d, { x, y, s: z }); });
+      return s;
+    },
     /* ── الفراشات الزرقاء: حديقة كوبية زرقاء وفراشات مورفو وأشعة ضوء ── */
     kbfly(d, gr) {
       const on = t => gr >= t; let s = '';
@@ -644,6 +848,8 @@ const Art = (() => {
     kstar: [d => star(d, { x: 0, y: .6, s: 10 }), '-11.6 -11 23.2 23.2'],
     kberry: [d => berry(d, { x: 0, y: 0, s: 1 }), '-40 -50 80 90'],
     kbloom: [d => sakura(d, { x: 0, y: 0, r: 10, pal: 'pink' }), '-11 -11 22 22'],
+    kchick: [d => chick(d, { x: 0, y: 0, s: 1, pal: 'yellow' }), '-26 -29 52 56'],
+    kbunny: [d => bunny(d, { x: 0, y: 0, s: 1, pal: 'white', pose: 'peek' }), '-21 -57 42 72'],
   };
   function icon(th) { const I = ICON[th]; if (!I) return ''; const d = doc('i'); const b = I[0](d); return d.svg(I[1], b); }
   /* مؤشّر الشمس على قوس اليوم: فراشة ترفرف، وردة، نجمة، فراولة، زهرة */
@@ -655,6 +861,8 @@ const Art = (() => {
     else if (th === 'kstar') b = glow('#FFE38A') + star(d, { x: 0, y: 0, s: 10 });
     else if (th === 'kberry') b = glow('#FFFFFF') + berry(d, { x: 0, y: 1.5, s: .3, r: -8 });
     else if (th === 'kbloom') b = glow('#FFFFFF') + '<g class="spin">' + sakura(d, { x: 0, y: 0, r: 11, pal: 'deep' }) + '</g>';
+    else if (th === 'kchick') b = glow('#FFF6C8') + chick(d, { x: 0, y: 0, s: .5, pal: 'yellow', flap: true });
+    else if (th === 'kbunny') b = glow('#FFFFFF') + bunny(d, { x: 0, y: 6, s: .36, pal: 'white', pose: 'peek' });
     return '<defs>' + d.defs() + '</defs>' + b;
   }
   /* زينة زاوية البطاقات */
@@ -664,6 +872,8 @@ const Art = (() => {
     kstar: d => star(d, { x: 32, y: 32, s: 13, r: -10, glow: true }) + star(d, { x: 62, y: 18, s: 7, r: 14, pal: 'silver' }) + sparkle(d, { x: 66, y: 48, s: 4.4, c: '#FFE9A8' }) + sparkle(d, { x: 10, y: 12, s: 3.2, c: '#FFE9A8' }),
     kberry: d => trileaf(d, { x: 26, y: 46, s: .5, r: -34 }) + trileaf(d, { x: 58, y: 50, s: .42, r: 40, pal: 'light' }) + blossom(d, { x: 68, y: 18, s: .52, r: 20 }) + berry(d, { x: 56, y: 40, s: .28, r: 14 }) + berry(d, { x: 32, y: 34, s: .36, r: -12 }),
     kbloom: d => leaf(d, { x: 18, y: 42, l: 16, r: -64, pal: 'mint' }) + leaf(d, { x: 60, y: 50, l: 14, r: 70, pal: 'mint' }) + sbud(d, { x: 66, y: 18, r: 3.6, rot: 20 }) + sakura(d, { x: 58, y: 40, r: 8.5, pal: 'white', rot: 20 }) + sakura(d, { x: 32, y: 30, r: 12, pal: 'pink' }) + sakura(d, { x: 12, y: 56, r: 5.5, pal: 'deep' }),
+    kchick: d => leaf(d, { x: 16, y: 58, l: 20, r: -58 }) + leaf(d, { x: 70, y: 60, l: 18, r: 62, pal: 'deep' }) + daisy(d, { x: 72, y: 50, r: 6, pal: 'lemon' }) + egg(d, { x: 64, y: 44, s: .5, r: 14 }) + chick(d, { x: 38, y: 34, s: .8, pal: 'yellow' }) + sparkle(d, { x: 76, y: 12, s: 4.2, c: '#FFD64A' }) + sparkle(d, { x: 8, y: 22, s: 3, c: '#FFD64A' }),
+    kbunny: d => clover(d, { x: 14, y: 52, s: .9, r: -16 }) + carrotTop(d, { x: 70, y: 60, s: .8 }) + bunny(d, { x: 42, y: 60, s: .72, pal: 'white', pose: 'peek' }) + heart(d, { x: 74, y: 16, s: 4.4, r: 12 }) + sparkle(d, { x: 10, y: 14, s: 3.2, c: '#F7A6C8' }),
   };
   function corner(th) { const fn = CORNER[th]; if (!fn) return ''; const d = doc('c'); const b = fn(d); return d.svg('0 0 84 64', b); }
   /* نقشة خلفية الصفحات: رموز باهتة متباعدة */
@@ -673,6 +883,8 @@ const Art = (() => {
     kstar: d => '<g opacity=".5">' + sparkle(d, { x: 24, y: 28, s: 3.6, glow: false }) + sparkle(d, { x: 88, y: 92, s: 2.8, glow: false }) + '</g><g opacity=".4">' + star(d, { x: 92, y: 30, s: 3 }) + '</g><g fill="#FFFFFF" opacity=".35"><circle cx="58" cy="60" r=".9"/><circle cx="30" cy="96" r=".7"/><circle cx="110" cy="64" r=".6"/><circle cx="64" cy="12" r=".7"/></g>',
     kberry: d => '<g opacity=".2">' + berry(d, { x: 28, y: 32, s: .17, r: -12 }) + berry(d, { x: 92, y: 96, s: .14, r: 16 }) + blossom(d, { x: 92, y: 26, s: .32 }) + '</g>',
     kbloom: d => '<g opacity=".22">' + sakura(d, { x: 28, y: 30, r: 6.5, pal: 'pink' }) + daisy(d, { x: 92, y: 94, r: 6.5 }) + sakura(d, { x: 90, y: 26, r: 4.2, pal: 'white' }) + '</g><g fill="#EC7FA9" opacity=".16"><circle cx="30" cy="94" r="1.3"/><circle cx="60" cy="60" r="1"/></g>',
+    kchick: d => '<g opacity=".2">' + chick(d, { x: 28, y: 32, s: .38, r: -10 }) + chick(d, { x: 92, y: 94, s: .3, r: 12, pal: 'lemon', eye: 'happy' }) + egg(d, { x: 94, y: 30, s: .34, r: 16 }) + '</g><g fill="#F2B21E" opacity=".16"><circle cx="30" cy="94" r="1.5"/><circle cx="62" cy="60" r="1.1"/></g>',
+    kbunny: d => '<g opacity=".2">' + bunny(d, { x: 30, y: 40, s: .34, pose: 'peek', r: -10 }) + carrot(d, { x: 92, y: 88, s: .36, r: 36 }) + heart(d, { x: 92, y: 30, s: 4.2 }) + '</g><g fill="#C98AD9" opacity=".16"><circle cx="30" cy="96" r="1.4"/><circle cx="62" cy="62" r="1"/></g>',
   };
   function pattern(th) { const fn = PATTERN[th]; if (!fn) return ''; const d = doc('p'); const b = fn(d); return d.svg('0 0 120 120', b); }
   /* زينة المسبحة حول الدائرة (خارج حلقة الحبّات) */
@@ -687,6 +899,10 @@ const Art = (() => {
       trileaf(d, { x: 306, y: 54, s: .5, r: 150 }) + blossom(d, { x: 320, y: 34, s: .55, r: 10 }) + berry(d, { x: 290, y: 60, s: .3, r: -8 }),
     kbloom: d => tulip(d, { x: 30, y: 292, pal: 'pink', h: 34, bend: 2, s: 1.1 }) + tulip(d, { x: 58, y: 304, pal: 'yellow', h: 28, bend: -2, s: 1 }) + fmnCluster(d, { x: 90, y: 322, n: 5, spread: 10, r: 4, pal: 'lilac', seed: 4 }) + daisy(d, { x: 72, y: 326, r: 9 }) + daisy(d, { x: 16, y: 328, r: 7, pal: 'lemon' }) +
       branch(d, [[352, 14], [330, 26], [306, 40], [282, 58]], 4.6, 1.4, 'l') + sakura(d, { x: 304, y: 42, r: 10, pal: 'pink' }) + sakura(d, { x: 326, y: 28, r: 8, pal: 'white', rot: 30 }) + sakura(d, { x: 286, y: 60, r: 7, pal: 'deep' }) + sbud(d, { x: 342, y: 16, r: 3.4, rot: 40 }),
+    kchick: d => leaf(d, { x: 20, y: 326, l: 30, r: -44 }) + leaf(d, { x: 104, y: 330, l: 26, r: 52, pal: 'deep' }) + nest(d, { x: 62, y: 318, s: .8, eggs: [[-9, -3, .7, -12, 'cream'], [5, -4, .74, 10, 'brown']] }) + chick(d, { x: 30, y: 292, s: .82, pal: 'yellow', eye: 'happy' }) + daisy(d, { x: 100, y: 312, r: 7, pal: 'lemon' }) + daisy(d, { x: 10, y: 316, r: 6, pal: 'white' }) +
+      sunflower(d, { x: 306, y: 40, h: 0, s: 1.05 }) + chick(d, { x: 272, y: 30, s: .55, pal: 'lemon', pose: 'hop' }) + sparkle(d, { x: 326, y: 84, s: 4.2, c: '#FFD64A' }) + sparkle(d, { x: 256, y: 64, s: 3.2, c: '#FFD64A' }),
+    kbunny: d => clover(d, { x: 18, y: 318, s: 1.1, r: -20 }) + clover(d, { x: 104, y: 324, s: .9, r: 24 }) + carrotTop(d, { x: 84, y: 330, s: 1 }) + bunny(d, { x: 50, y: 308, s: .8, pal: 'white', eye: 'happy' }) + daisy(d, { x: 16, y: 334, r: 6, pal: 'pink' }) +
+      tulip(d, { x: 300, y: 30, pal: 'pink', h: 30, bend: 2, s: 1 }) + tulip(d, { x: 324, y: 44, pal: 'lilac', h: 24, bend: -2, s: .9 }) + heart(d, { x: 276, y: 60, s: 6, r: -12 }) + sparkle(d, { x: 330, y: 94, s: 4, c: '#F7A6C8' }) + sparkle(d, { x: 262, y: 22, s: 3.2, c: '#F7A6C8' }),
   };
   function tbArt(th) { const fn = TB[th]; if (!fn) return ''; const d = doc('t'); const b = fn(d); return d.svg('0 0 340 340', b); }
   /* صورة الثيم في قائمة السمات */
@@ -698,6 +914,10 @@ const Art = (() => {
     kberry: [['#FFC4CF', '#FFE0E6', '#FFF4F0'], d => '<g fill="#fff" opacity=".6">' + Array.from({ length: 40 }, (_, i) => '<circle cx="' + ((i % 8) * 22 + (Math.floor(i / 8) % 2) * 11 + 4) + '" cy="' + (Math.floor(i / 8) * 22 + 6) + '" r="2.2"/>').join('') + '</g>' + trileaf(d, { x: 30, y: 108, s: .8, r: -40 }) + trileaf(d, { x: 132, y: 110, s: .72, r: 40, pal: 'light' }) + trileaf(d, { x: 84, y: 118, s: .7, r: 0 }) + blossom(d, { x: 124, y: 36, s: .6, r: 10 }) + berry(d, { x: 40, y: 86, s: .46, r: 14 }) + berry(d, { x: 122, y: 88, s: .42, r: -12 }) + berry(d, { x: 82, y: 70, s: .66, r: -6 }) + heart(d, { x: 30, y: 34, s: 5, pal: 'red' })],
     kbloom: [['#FFC6AE', '#FFDDE6', '#EFE3FF'], d => hill(d, 'tm', 'M0 92C50 82 110 86 160 90L160 118L0 118Z', ['#D8F2DE', '#B6E4C4']) + branch(d, [[-6, 22], [20, 12], [50, 12], [84, 6]], 5, 1.4) + sakura(d, { x: 18, y: 16, r: 8, pal: 'pink' }) + sakura(d, { x: 44, y: 12, r: 7, pal: 'white' }) + sakura(d, { x: 70, y: 8, r: 7.5, pal: 'deep' }) +
       tulip(d, { x: 40, y: 78, pal: 'pink', h: 34, bend: 2, s: 1.15 }) + tulip(d, { x: 80, y: 72, pal: 'yellow', h: 40, bend: -2, s: 1.2 }) + tulip(d, { x: 120, y: 80, pal: 'lilac', h: 32, bend: 3, s: 1.1 }) + daisy(d, { x: 22, y: 104, r: 9 }) + daisy(d, { x: 100, y: 106, r: 8, pal: 'pink' }) + daisy(d, { x: 144, y: 104, r: 8 }) + bfly(d, { x: 132, y: 34, s: .12, r: 14, pal: 'pink' })],
+    kchick: [['#8FD0F2', '#CFEBF8', '#FFF6D2'], d => rays(d, { x: 170, y: -10, L: 220, a: [[22, 30], [38, 46], [56, 64]], op: .35 }) + hill(d, 'tc1', 'M0 88C40 80 96 82 160 88L160 118L0 118Z', ['#E4F4BE', '#C8E79C']) + sunflower(d, { x: 20, y: 44, h: 50, s: .82 }) + fence(d, { x: -2, y: 80, n: 7, sp: 10, h: 14 }) +
+      hill(d, 'tc2', 'M0 100C50 92 110 94 160 100L160 118L0 118Z', ['#C9E9A0', '#9FD482']) + nest(d, { x: 136, y: 104, s: .6, eggs: [[-7, -3, .6, -10, 'cream'], [6, -3, .6, 12, 'brown']] }) + chick(d, { x: 74, y: 84, s: .98, pal: 'yellow' }) + chick(d, { x: 112, y: 96, s: .62, pal: 'lemon', pose: 'peck', flip: true }) + chick(d, { x: 40, y: 100, s: .5, pal: 'cream', eye: 'happy' }) + sparkle(d, { x: 124, y: 30, s: 4 }) + sparkle(d, { x: 48, y: 22, s: 3 })],
+    kbunny: [['#F2B9D6', '#F8DDEC', '#EFEAFF'], d => bokeh(d, { x0: 0, x1: 160, y0: 0, y1: 80, r0: 3, r1: 10, n: 8, seed: 5, op: .6 }) + hill(d, 'tn1', 'M0 90C44 82 100 84 160 90L160 118L0 118Z', ['#F6E6F6', '#E7D0EE']) + bush(d, { x: 142, y: 84, s: .5, c: ['#C8F0D6', '#7FCB98', '#4AA06C'] }) +
+      hill(d, 'tn2', 'M0 100C50 94 110 96 160 102L160 118L0 118Z', ['#D9F3E4', '#ACDFC0']) + carrotTop(d, { x: 16, y: 104, s: .7 }) + carrotTop(d, { x: 30, y: 108, s: .6 }) + clover(d, { x: 142, y: 108, s: .6 }) + bunny(d, { x: 70, y: 80, s: .78, pal: 'white', carrot: true }) + bunny(d, { x: 112, y: 92, s: .54, pal: 'cream', ear: 'flop', eye: 'happy' }) + heart(d, { x: 128, y: 30, s: 6, r: 12 }) + heart(d, { x: 28, y: 40, s: 4.6, r: -12 }) + sparkle(d, { x: 96, y: 22, s: 3.4 })],
   };
   function thumb(th) { const T = THUMB[th]; if (!T) return ''; const d = doc('b'); const bg = d.def('tbg', LG(0, 0, 0, 1, [[0, T[0][0]], [.55, T[0][1]], [1, T[0][2]]])); const b = T[1](d); return d.svg('0 0 160 118', '<rect width="160" height="118" fill="' + bg + '"/>' + b, ' preserveAspectRatio="xMidYMid slice"'); }
   /* ───────── الحبّات ───────── */
@@ -708,7 +928,7 @@ const Art = (() => {
     else pos.forEach(([x, y], i) => { s += '<circle class="bd' + (th === 'kbloom' ? ' b' + (i % 4) : '') + '" cx="' + f(x) + '" cy="' + f(y) + '" r="' + f2(rr) + '"/>'; });
     return (d.defs() ? '<defs>' + d.defs() + '</defs>' : '') + s;
   }
-  const BEADTOP = { kbfly: 'kbfly', krose: 'krose', kstar: 'kstar', kberry: 'kbloomw', kbloom: 'kbloom' };
+  const BEADTOP = { kbfly: 'kbfly', krose: 'krose', kstar: 'kstar', kberry: 'kbloomw', kbloom: 'kbloom', kchick: 'kchick', kbunny: 'kbunny' };
   function beadTop(th, cx, cy, z) {
     let svg = th === 'kberry' ? (() => { const d = doc('bt'); const b = blossom(d, { x: 0, y: 0, s: 1 }); return d.svg('-19 -19 38 38', b); })() : th === 'kstar' ? (() => { const d = doc('bt'); const b = crescent(d, { x: 0, y: 0, r: 9, rot: -30, glow: false }); return d.svg('-11 -11 22 22', b); })() : icon(th);
     if (!svg) return '';
@@ -746,6 +966,23 @@ const Art = (() => {
       bokehs(6, ['rgba(255,255,255,.6)', 'rgba(255,200,210,.45)']);
       fly('pink', 'k1', 25, 34, 24);
       tw(5, '#FFFFFF');
+    } else if (th === 'kchick') {   // وسن 7: كتاكيت تمشي على العشب، وريش يتطاير، وفراشات ليمونية
+      [['k1', 30, 0, 'yellow'], ['k2', 38, 1, 'lemon']].forEach(([k, dur, fl, pal]) => { const d = doc('ck'); const b = chick(d, { x: 0, y: 0, s: 1, pal, flap: true, flip: !!fl });
+        s += '<i class="kck ' + k + '" style="animation-duration:' + dur + 's;animation-delay:-' + f(r() * dur) + 's"><b>' + d.svg('-26 -29 52 56', b) + '</b></i>'; });
+      for (let i = 0; i < 8; i++) { const d = doc('fe'); const b = feather(d, { x: 0, y: 0, s: 1 });
+        s += '<i class="kb" style="left:' + f(r() * 100) + '%;width:' + Math.round(9 + r() * 6) + 'px;animation-duration:' + f(12 + r() * 8) + 's;animation-delay:-' + f(r() * 19) + 's;--dx:' + Math.round(30 + r() * 50) * (r() < .5 ? -1 : 1) + 'px;--r:' + Math.round(160 + r() * 260) + 'deg">' + d.svg('-10 -10 20 20', b) + '</i>'; }
+      bokehs(6, ['rgba(255,255,255,.6)', 'rgba(255,230,140,.5)']);
+      fly('lemon', 'k1', 25, 30, 24); fly('sky', 'k4', 31, 54, 20);
+      tw(6, '#FFFFFF');
+    } else if (th === 'kbunny') {   // وسن 7: أرنب يقفز عبر المرج، وقلوب تصعد، وبتلات، وفراشات وردية
+      [['k1', 24, 0, 'white'], ['k2', 33, 1, 'cream']].forEach(([k, dur, fl, pal]) => { const d = doc('bn'); const b = bunny(d, { x: 0, y: 0, s: 1, pal, flip: !!fl, eye: fl ? 'happy' : 'o' });
+        s += '<i class="kbn ' + k + '" style="animation-duration:' + dur + 's;animation-delay:-' + f(r() * dur) + 's"><b>' + d.svg('-22 -57 44 88', b) + '</b></i>'; });
+      hearts(5, ['pink', 'pink', 'red']);
+      for (let i = 0; i < 10; i++) { const d = doc('s'); const b = sakura(d, { x: 0, y: 0, r: 10, pal: i % 3 ? 'pink' : 'white' });
+        s += '<i class="kb" style="left:' + f(r() * 100) + '%;width:' + Math.round(9 + r() * 7) + 'px;animation-duration:' + f(12 + r() * 8) + 's;animation-delay:-' + f(r() * 19) + 's;--dx:' + Math.round(30 + r() * 50) * (r() < .5 ? -1 : 1) + 'px;--r:' + Math.round(160 + r() * 260) + 'deg">' + d.svg('-11 -11 22 22', b) + '</i>'; }
+      bokehs(6, ['rgba(255,255,255,.6)', 'rgba(255,190,220,.45)']);
+      fly('pink', 'k2', 27, 36, 24); fly('lilac', 'k4', 32, 58, 20);
+      tw(5, '#FFFFFF');
     } else if (th === 'kbloom') {
       for (let i = 0; i < 14; i++) { const d = doc('s'); const b = sakura(d, { x: 0, y: 0, r: 10, pal: i % 3 ? 'pink' : 'white' });
         s += '<i class="kb" style="left:' + f(r() * 100) + '%;width:' + Math.round(10 + r() * 8) + 'px;animation-duration:' + f(11 + r() * 8) + 's;animation-delay:-' + f(r() * 19) + 's;--dx:' + Math.round(30 + r() * 50) * (r() < .5 ? -1 : 1) + 'px;--r:' + Math.round(160 + r() * 260) + 'deg">' + d.svg('-11 -11 22 22', b) + '</i>'; }
@@ -762,6 +999,8 @@ const Art = (() => {
     else if (th === 'krose') b = Math.random() < .5 ? heart(d, { x: 0, y: 0, s: 10, pal: 'pink' }) : rose(d, { x: 0, y: 0, r: 10, pal: 'pink' });
     else if (th === 'kstar') b = Math.random() < .6 ? star(d, { x: 0, y: 0, s: 10 }) : sparkle(d, { x: 0, y: 0, s: 9, c: '#FFF3C4' });
     else if (th === 'kberry') { if (Math.random() < .55) { b = berry(d, { x: 0, y: 4, s: .26 }); } else b = heart(d, { x: 0, y: 0, s: 10, pal: 'red' }); }
+    else if (th === 'kchick') { const q = Math.random(); if (q < .45) { b = chick(d, { x: 0, y: 0, s: 1, pal: ['yellow', 'lemon', 'cream'][Math.floor(Math.random() * 3)], pose: Math.random() < .5 ? 'hop' : 'stand', eye: 'happy' }); vb = '-26 -29 52 56'; } else if (q < .75) { b = feather(d, { x: 0, y: 0, s: 1, r: Math.random() * 60 - 30 }); vb = '-10 -10 20 20'; } else b = heart(d, { x: 0, y: 0, s: 10, pal: 'pink' }); }
+    else if (th === 'kbunny') { const q = Math.random(); if (q < .35) { b = bunny(d, { x: 0, y: 0, s: 1, pal: ['white', 'cream', 'grey'][Math.floor(Math.random() * 3)], pose: 'peek', eye: 'happy' }); vb = '-21 -57 42 72'; } else if (q < .6) { b = carrot(d, { x: 0, y: 0, s: 1, r: Math.random() * 60 - 30 }); vb = '-14 -26 28 58'; } else if (q < .8) { b = clover(d, { x: 0, y: 0, s: 1 }); vb = '-8 -13 16 28'; } else b = heart(d, { x: 0, y: 0, s: 10, pal: 'pink' }); }
     else b = sakura(d, { x: 0, y: 0, r: 10, pal: ['pink', 'white', 'deep'][Math.floor(Math.random() * 3)] });
     return d.svg(vb, b);
   }
@@ -773,6 +1012,8 @@ const Art = (() => {
     kstar: d => star(d, { x: 40, y: 32, s: 12, r: -10, glow: true }) + star(d, { x: 76, y: 18, s: 6.5, r: 14, pal: 'silver' }) + sparkle(d, { x: 98, y: 46, s: 4, c: '#FFF3C4' }) + sparkle(d, { x: 12, y: 14, s: 3, c: '#FFF3C4' }),
     kberry: d => trileaf(d, { x: 30, y: 48, s: .46, r: -34, pal: 'light' }) + trileaf(d, { x: 80, y: 50, s: .4, r: 40, pal: 'light' }) + blossom(d, { x: 36, y: 30, s: .62, r: 10 }) + blossom(d, { x: 94, y: 20, s: .46, r: 40 }) + berry(d, { x: 62, y: 38, s: .3, r: 12 }),
     kbloom: d => leaf(d, { x: 22, y: 44, l: 14, r: -64, pal: 'mint' }) + sakura(d, { x: 36, y: 32, r: 12, pal: 'white' }) + sakura(d, { x: 64, y: 42, r: 8.5, pal: 'pink', rot: 20 }) + daisy(d, { x: 90, y: 24, r: 8, pal: 'lemon' }) + sbud(d, { x: 108, y: 46, r: 3.4, pal: 'white', rot: 30 }),
+    kchick: d => leaf(d, { x: 22, y: 60, l: 18, r: -58, pal: 'mint' }) + chick(d, { x: 44, y: 34, s: .78, pal: 'lemon' }) + egg(d, { x: 76, y: 46, s: .5, r: 16, pal: 'white' }) + chick(d, { x: 98, y: 30, s: .44, pal: 'cream', pose: 'hop' }) + sparkle(d, { x: 12, y: 14, s: 3.2 }),
+    kbunny: d => clover(d, { x: 20, y: 52, s: .8, r: -18 }) + bunny(d, { x: 50, y: 60, s: .62, pal: 'white', pose: 'peek', eye: 'happy' }) + carrot(d, { x: 84, y: 34, s: .5, r: 40 }) + heart(d, { x: 104, y: 16, s: 4.4, r: 12 }) + sparkle(d, { x: 12, y: 12, s: 3 }),
   };
   function hdrArt(th) { const fn = HDRA[th]; if (!fn) return ''; const d = doc('r'); const b = fn(d); return d.svg('0 0 120 64', b); }
   /* ذاكرة مؤقتة لروابط الصور (تُرسم مرة واحدة) */
@@ -786,6 +1027,7 @@ const Art = (() => {
     iconURI: th => uri('i' + th, () => icon(th)), cornerURI: th => uri('c' + th, () => corner(th)), patternURI: th => uri('p' + th, () => pattern(th)),
     tbURI: th => uri('t' + th, () => tbArt(th)), thumbURI: th => uri('b' + th, () => thumb(th)), hdrURI: th => uri('r' + th, () => hdrArt(th)),
     _: { doc, bfly, rose, rose3, rosebud, berry, blossom, trileaf, sakura, sbud, daisy, tulip, hydrangea, fmn, fmnCluster, babys, lavsprig, star, crescent, cloud, sparkle, heart, leaf, bokeh, grass,
-      pomegranate, bird, dove, palmTree, stone, lily, bridge, fountain, lantern, fence, bench, tuft, sprout, BF },
+      pomegranate, bird, dove, palmTree, stone, lily, bridge, fountain, lantern, fence, bench, tuft, sprout, BF,
+      chick, egg, nest, sunflower, coop, bunny, carrot, carrotTop, clover, bush, feather, bow },
   };
 })();

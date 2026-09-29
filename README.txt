@@ -1,3 +1,11 @@
+وسن · Wasan 7.0 — «ثيمات جديدة، وتخصيص كامل، والمصحف كاملًا مع كل قارئ»
+=====================================================
+  - art.js: رسوم جديدة (chick/egg/nest/sunflower/coop/bunny/carrot/carrotTop/clover/bush/feather/bow) + HERO/ICON/marker/CORNER/PATTERN/TB/THUMB/BEADTOP/sprites/particle/HDRA لـ kchick وkbunny؛ skins.js KW + M؛ garden.js meadowItem (chick/sunflower/clover/carrot/bunny)؛ wasan7.css (tone/accent/skin + kck/kbn/ckw).
+  - ثيمات رجالية g:'men' (9 صور ph:1، img/th/<k>.webp/-t/-h، themes.css مولّد، credits.js PHOTO_CREDITS).
+  - screens.js: SCREENS.homecfg، hmOn/hmCls/heroBrand/QUICK_ALL/quickKeys/setHome/homeSummary، إعدادات «تخصيص الشاشة الرئيسية» و«إظهار شعار وسن» و«إكمال المصحف تلقائيًا/القارئ المكمِّل»، THEME_GROUPS (men)، شارة «جديد».
+  - audio.js: fillFor/FILL_PAIR/recFillOn/fillWho/fillWithSheet، Player.fillTip والتكميل في startLib/التتابع/libStep، reciterSheet بتصفية RS_CHIPS وقسم التراويح، +24 قارئًا everyayah؛ reciters.js +15 (quranicaudio/archive)؛ MainActivity dlStart يقبل download.quranicaudio.com.
+  - صياغة محايدة في كل الواجهة؛ WHATS_NEW 7.0؛ versionCode 19.
+
 وسن · Wasan 6.3 — «الأذان في دقيقته، ومواقيت مسجدك»
 =====================================================
   - AdhanScheduler.scheduleNext: الأذان setAlarmClock (strong، افتراضي) والتذكيرات setExactAndAllowWhileIdle؛ دون إذن: setAndAllowWhileIdle + ACTION_TICK في منتصف المدة المتبقية (REQ_TICK 7202)؛ mode/log (آخر ٢٠ وصولًا) + جسور adhanLog/adhanMode/adhanStrong/setAdhanStrong/sdkInt/oem/openAutostart/notifAskable/openNotifSettings.

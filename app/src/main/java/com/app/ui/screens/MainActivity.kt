@@ -999,7 +999,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface fun dlStart(k: String, url: String, rel: String, title: String) {
             try {
                 val host = try { Uri.parse(url).host ?: "" } catch (_: Exception) { "" }
-                if (!url.startsWith("https://") || !(host.endsWith("mp3quran.net") || host == "archive.org" || host.endsWith(".archive.org") || host == "media.way2quran.com")) { dlFail(k); return }
+                if (!url.startsWith("https://") || !(host.endsWith("mp3quran.net") || host == "archive.org" || host.endsWith(".archive.org") || host == "media.way2quran.com" || host == "download.quranicaudio.com")) { dlFail(k); return }
                 val f = recitFile(rel) ?: run { dlFail(k); return }
                 f.parentFile?.mkdirs()
                 if (f.exists()) f.delete()
@@ -1013,7 +1013,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/6.3 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/7.0 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }
