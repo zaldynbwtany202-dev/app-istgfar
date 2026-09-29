@@ -137,6 +137,12 @@ const Garden = (() => {
       case 'star': return A.star(ad, { x, y: y - 4 * sc, s: 2.6 * sc, r: k * 13, glow: true, pal: pal || 'gold' });
       case 'sparkle': return A.sparkle(ad, { x, y: y - 4 * sc, s: 3.2 * sc, c: '#FFF3C4' });
       case 'sakura': return A.sakura(ad, { x, y: y - 3 * sc, r: 3.2 * sc, pal: pal || PAL.sakura[k % 3], rot: k * 29 });
+      // وسن 7: كتاكيت وعبّاد شمس، وأرانب وجزر ونفل
+      case 'chick': return A.chick ? A.chick(ad, { x, y: y - 5.4 * sc, s: 0.2 * sc, pal: ['yellow', 'lemon', 'cream'][k % 3], pose: ['stand', 'peck', 'stand', 'hop'][k % 4], flip: k % 2 === 1, eye: k % 3 === 2 ? 'happy' : 'o' }) : '';
+      case 'sunflower': return A.sunflower ? A.sunflower(ad, { x, y: y - 11 * sc, h: 11 * sc / (0.3 * sc), s: 0.3 * sc, bend: (k % 3 - 1) * 2 }) : '';
+      case 'clover': return A.clover ? A.clover(ad, { x, y: y - 4 * sc, s: 0.42 * sc, r: (k % 5 - 2) * 12 }) : '';
+      case 'carrot': return A.carrotTop ? A.carrotTop(ad, { x, y, s: 0.34 * sc }) : '';
+      case 'bunny': return A.bunny ? A.bunny(ad, { x, y: y - 6 * sc, s: 0.2 * sc, pal: ['white', 'grey', 'cream', 'caramel'][k % 4], eye: k % 2 ? 'happy' : 'o', flip: k % 2 === 1 }) : '';
     }
     return '';
   }

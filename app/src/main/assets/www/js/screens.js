@@ -42,11 +42,11 @@ SCREENS.home = {
     const occ = NoorEngine.occasionOn(h);
     const g = Growth.info(), gst = Garden.STAGES[g.stage], mn = LivingSky.moon(now);
     const hk = heroKind(), T0 = THEMES[uiTheme()] || {};   // وسن 5.1: صورة (ثيم الصور أو صورتك) · مشهد حيّ متحرك · السماء والبستان للثيمات القديمة
-    const hero = '<section class="scene' + (hk === 'photo' ? ' photo ink-' + heroInk() : hk === 'anim' ? ' anim an-' + T0.anim + ' ink-' + heroInk() : '') + '" id="hero">' +
+    const hero = '<section class="scene' + (hk === 'photo' ? ' photo ink-' + heroInk() : hk === 'anim' ? ' anim an-' + T0.anim + ' ink-' + heroInk() : '') + hmCls() + '" id="hero">' +
       (hk === 'photo' ? heroPhotoLayer() : hk === 'anim' ? AnimScene.html(T0.anim) : '<div class="sky-tex"></div><div class="sky-stars" aria-hidden="true">' + LivingSky.starsHTML(46, 11) + '</div>' +
       '<div class="clouds" aria-hidden="true"><i></i><i></i><i></i></div><div class="glow" id="h-glow"></div>') +
-      '<div class="top"><div class="brandmark">' + wordmark('wm-hero') +
-      '<button class="loc" data-go="location">' + icon('pin') + '<span>' + esc(l.label) + '</span></button></div>' +
+      '<div class="top"><div class="brandmark">' + heroBrand() +
+      (hmOn('loc') ? '<button class="loc" data-go="location">' + icon('pin') + '<span>' + esc(l.label) + '</span></button>' : '') + '</div>' +
       '<button class="ibtn glassy" data-go="settings" aria-label="الإعدادات">' + icon('gear') + '</button></div>' +
       '<div class="arcwrap"><svg viewBox="0 0 360 118" id="h-arc">' +
       '<defs><radialGradient id="sunG"><stop offset="0" stop-color="#FFF8E1"/><stop offset=".55" stop-color="#FFE6A6"/><stop offset="1" stop-color="#F5C46A"/></radialGradient>' +
@@ -66,10 +66,11 @@ SCREENS.home = {
       (hk === 'sky' && curSkin() ? (curSkin().stickers ? kwHero(curSkin()) : '<div class="skin-fx fx-' + curSkin().fx + '" aria-hidden="true">' + skinFX(curSkin()) + '</div>') : '') +
       '<button class="lvchip" data-go="garden"><svg viewBox="0 0 24 24"><path d="' + starD(12, 12, 11, 0.76, Math.PI / 8) + '"/></svg><b class="num">' + N(g.L) + '</b><span>' + esc(gst.name) + '</span></button>' +
       '</section>';
-    const strip = '<div class="pstrip" id="h-strip">' + FIVE.map((k, i) =>
+    const strip = '<div class="pstrip' + (hmOn('strip') ? '' : ' hm-off') + '" id="h-strip">' + FIVE.map((k, i) =>
       '<div class="pcell" data-k="' + k + '">' + icon(PICON[k]) + '<div class="pn">' + pname(k, now) + '</div><div class="pt num">' + fmtTime(t[k], false) + '</div>' +
       '<button class="chk ' + (Tracker.has(now, i) ? 'on' : '') + '" data-trk="' + i + '" aria-label="تسجيل الصلاة">' + icon('check') + '</button></div>').join('') + '</div>';
-    return hero + strip + '<div id="h-ctx" class="stagger"></div>' + homeGrowth() + sec('الوصول السريع') + quickGrid() + '<div id="h-more"></div>';
+    return hero + strip + '<div id="h-ctx" class="stagger' + (hmOn('ctx') ? '' : ' hm-off') + '"></div>' + (hmOn('day') ? homeGrowth() : '') + (hmOn('quick') ? sec('الوصول السريع', { t: 'تخصيص', attr: 'data-go="homecfg"' }) + quickGrid() : '') + '<div id="h-more"></div>' +
+      '<div class="hm-edit mx"><button class="btn ghost block" data-go="homecfg">' + icon('edit') + 'تخصيص الشاشة الرئيسية</button></div>';
   },
   mount(el) {
     this.paintSky(new Date(), true);
@@ -172,7 +173,7 @@ SCREENS.home = {
     const box = $('#h-more'); if (!box) return;
     const now = new Date(); let html = '';
     const lr = LastRead.get(), k = Khatma.get();
-    if (Q.ready && (lr || k)) {
+    if (Q.ready && (lr || k) && hmOn('wird')) {
       html += sec('وردك من القرآن', { t: 'الختمة', attr: 'data-go="khatma"' });
       if (lr && Q.t[lr.i]) {
         const s = surahOf(lr.i), pg = Q.p[lr.i];
@@ -188,7 +189,7 @@ SCREENS.home = {
           '<div class="faint" style="font-size:12.5px">الصفحات ' + N(pa) + ' – ' + N(pb) + '</div></div>' + icon('chev', 'faint') + '</div></button>';
       }
     }
-    if (Q.ready) {
+    if (Q.ready && hmOn('ayah')) {
       const v = DAILY_VERSES[dayNo(now) % DAILY_VERSES.length];
       const txt = quranText(v[0], v[1], v[2]);
       html += sec('آية اليوم') + '<div class="hc"><div class="verse">' + txt.map(x => { const p = x.lastIndexOf(' '); return esc(qd(x.slice(0, p))) + ' <span class="an">' + x.slice(p + 1) + '</span>'; }).join(' ') + '</div>' +
@@ -197,9 +198,9 @@ SCREENS.home = {
       this._verse = v; this._vtxt = '﴿' + txt.map(x => x.slice(0, x.lastIndexOf(' '))).join(' ') + '﴾ [' + Q.S[v[0] - 1].name + ': ' + v[1] + (v[2] > v[1] ? '-' + v[2] : '') + ']';
     }
     const w = NOOR_DATA.DAILY_WISDOM[dayNo(now) % NOOR_DATA.DAILY_WISDOM.length];
-    html += sec('من هدي النبي ﷺ') + '<div class="hc"><div style="font-family:var(--font-d);font-size:19px;line-height:1.95;text-align:center">«' + esc(w.t) + '»</div>' +
+    if (hmOn('hadith')) html += sec('من هدي النبي ﷺ') + '<div class="hc"><div style="font-family:var(--font-d);font-size:19px;line-height:1.95;text-align:center">«' + esc(w.t) + '»</div>' +
       '<div class="vref"><span class="pill green">' + esc(w.src) + '</span></div></div>';
-    html += sec('صلواتك هذا الأسبوع', { t: 'التفاصيل', attr: 'data-go="tracker"' }) + trackerCard(now);
+    if (hmOn('week')) html += sec('صلواتك هذا الأسبوع', { t: 'التفاصيل', attr: 'data-go="tracker"' }) + trackerCard(now);
     box.innerHTML = html;
     const vb = $('#v-open'); if (vb) vb.onclick = () => Router.go('reader', { s: this._verse[0], i: gIndex(this._verse[0], this._verse[1]) });
     const vc = $('#v-copy'); if (vc) vc.onclick = () => copyText(this._vtxt);
@@ -228,14 +229,76 @@ Bus.on('growth', () => {
   if (b) b.textContent = N(L); const s = chip.querySelector('span'); if (s) s.textContent = st.name;
   const land = $('#hero .land'); if (land) land.innerHTML = Garden.render(L, { bare: true, phase: gardenPhase(new Date()), id: 'hl', par: 'xMidYMax slice' });
 });
-function quickGrid() {
-  const items = [['القرآن', 'book', 'emerald', 'data-tab="quran"'], ['الأذكار', 'moonstar', 'teal', 'data-tab="azkar"'], ['القبلة', 'kaaba', 'gold', 'data-go="qibla"'],
-    ['المسبحة', 'beads', 'indigo', 'data-go="tasbih"'], ['الأدعية', 'hands', 'plum', 'data-go="azkarList" data-a=\'{"id":"qduas"}\''], ['الأسماء الحسنى', 'star8', 'amber', 'data-go="names"'],
-    ['التقويم', 'calendar', 'slate', 'data-go="calendar"'], ['المزيد', 'grid', 'neutral', 'data-tab="more"']];
-  const sk = curSkin(), qe = sk && sk.quick;   // وسن 4.5: رموز ثلاثية الأبعاد في الثيمات الكاملة
-  return '<div class="qgrid stagger">' + items.map(([t, ic, hu, at], i) => '<button class="q" ' + at + '>' +
-    (qe && qe[i] ? '<div class="qi qi-emo">' + emoImg(qe[i], i === 7 && sk.quickHue && KW_HUE[sk.quickHue] ? 'filter:' + KW_HUE[sk.quickHue] : '') + '</div>' : '<div class="qi" style="' + hueVars(hu) + '">' + icon(ic) + '</div>') + t + '</button>').join('') + '</div>';
+/* ═══════════════ وسن 7 · تخصيص الشاشة الرئيسية: كل جزء يظهر أو يختفي، والاختصارات كما تحب ═══════════════ */
+const hmOn = k => !(Settings.home && Settings.home[k] === false);
+const HOME_TOP = [['loc', 'اسم المدينة', 'زرّ الموقع تحت الشعار'], ['arc', 'قوس الشمس', 'مسار الشمس بين الصلوات'], ['cd', 'العدّ التنازلي', 'الوقت الباقي للصلاة القادمة'],
+  ['dates', 'التاريخ', 'اليوم والتاريخان الهجري والميلادي'], ['occ', 'المناسبات', 'تذكير بالمناسبات والأيام الفاضلة'], ['art', 'رسومات المشهد', 'البستان وزينة الثيم المتحرّكة'], ['lv', 'شارة البستان', 'مستوى بستانك في أسفل المشهد']];
+const HOME_SECS = [['strip', 'الصلوات الخمس', 'شريط المواقيت مع تسجيل الصلاة'], ['ctx', 'وقتك الآن', 'أذكار الوقت والجمعة والمناسبات'], ['day', 'يومك', 'سقاية البستان والعادات والمهام'],
+  ['quick', 'الوصول السريع', 'اختصاراتك المفضّلة'], ['wird', 'وردك من القرآن', 'تابع من حيث توقفت ووِرد الختمة'], ['ayah', 'آية اليوم', ''], ['hadith', 'من هدي النبي ﷺ', ''], ['week', 'صلواتك هذا الأسبوع', '']];
+const HOME_BRAND = [['logo', 'شعار «وسن»'], ['greet', 'تحية حسب الوقت'], ['salam', 'السلام عليكم'], ['name', 'اسمك'], ['none', 'بلا شيء']];
+/** [مفتاح، الاسم، الرمز، اللون، الوجهة، رمز الثيمات الكاملة] */
+const QUICK_ALL = [['quran', 'القرآن', 'book', 'emerald', 'data-tab="quran"', 'book'], ['azkar', 'الأذكار', 'moonstar', 'teal', 'data-tab="azkar"', 'moon'],
+  ['qibla', 'القبلة', 'kaaba', 'gold', 'data-go="qibla"', 'kaaba'], ['tasbih', 'المسبحة', 'beads', 'indigo', 'data-go="tasbih"', 'beads'],
+  ['duas', 'الأدعية', 'hands', 'plum', 'data-go="azkarList" data-a=\'{"id":"qduas"}\'', 'palms'], ['names', 'الأسماء الحسنى', 'star8', 'amber', 'data-go="names"', 'sparkles'],
+  ['calendar', 'التقويم', 'calendar', 'slate', 'data-go="calendar"', 'calendar'], ['khatma', 'الختمة', 'target', 'emerald', 'data-go="khatma"', 'books'],
+  ['tracker', 'سجل الصلوات', 'chart', 'teal', 'data-go="tracker"', 'mosque'], ['habits', 'العادات', 'sprout', 'gold', 'data-go="habits"', 'seedling'],
+  ['todo', 'المهام', 'list', 'indigo', 'data-go="todo"', 'ribbon'], ['istighfar', 'الاستغفار', 'heart', 'rose', 'data-go="istighfar"', 'sparkheart'],
+  ['qada', 'قضاء الفوائت', 'history', 'plum', 'data-go="qada"', 'alarm'], ['alarms', 'المنبّه', 'alarm', 'amber', 'data-go="alarms"', 'bell'],
+  ['zakat', 'الزكاة', 'calc', 'indigo', 'data-go="zakat"', 'gem'], ['stats', 'إحصاءاتي', 'chart', 'slate', 'data-go="stats"', 'star'],
+  ['gift', 'لوحة الهدية', 'sparkle', 'plum', 'data-go="gift"', 'ribbonheart'], ['downloads', 'التلاوات', 'headphones', 'teal', 'data-go="downloads"', 'books'],
+  ['more', 'المزيد', 'grid', 'neutral', 'data-tab="more"', '*']];
+const QUICK_DEF = ['quran', 'azkar', 'qibla', 'tasbih', 'duas', 'names', 'calendar', 'more'];
+function quickKeys() { const q = Array.isArray(Settings.quick) ? Settings.quick.filter(k => QUICK_ALL.some(x => x[0] === k)) : null; return q && q.length ? q : QUICK_DEF; }
+function hmCls() { return ['arc', 'cd', 'dates', 'occ', 'art', 'lv'].filter(k => !hmOn(k)).map(k => ' hm-x-' + k).join(''); }
+function heroBrand() {
+  const b = (Settings.home && Settings.home.brand) || 'logo', nm = String(Settings.userName || '').trim();
+  if (b === 'none') return '';
+  if (b === 'logo') return wordmark('wm-hero');
+  const hr = new Date().getHours(), gr = hr >= 4 && hr < 12 ? 'صباح الخير' : 'مساء الخير';
+  const t = b === 'salam' ? 'السلام عليكم' + (nm ? '، ' + nm : '') : b === 'greet' ? gr + (nm ? '، ' + nm : '') : (nm || 'وسن');
+  return '<div class="hero-greet">' + esc(t) + '</div>';
 }
+function quickGrid() {
+  const sk = curSkin(), qe = sk && sk.quick;   // وسن 4.5: رموز ثلاثية الأبعاد في الثيمات الكاملة
+  const items = quickKeys().map(k => QUICK_ALL.find(x => x[0] === k));
+  const n = items.length; return '<div class="qgrid stagger' + (n === 6 || n === 9 ? ' qg-3' : n === 5 || n === 10 ? ' qg-5' : '') + '">' + items.map(([k, t, ic, hu, at, em]) => {
+    const di = QUICK_DEF.indexOf(k), e = qe ? (em === '*' ? qe[7] : di >= 0 && di < 7 ? qe[di] : em) : null;
+    return '<button class="q" ' + at + '>' + (e ? '<div class="qi qi-emo">' + emoImg(e, k === 'more' && sk.quickHue && KW_HUE[sk.quickHue] ? 'filter:' + KW_HUE[sk.quickHue] : '') + '</div>' : '<div class="qi" style="' + hueVars(hu) + '">' + icon(ic) + '</div>') + t + '</button>'; }).join('') + '</div>';
+}
+function setHome(k, v) { const h = Object.assign({}, Settings.home || {}); if (v === true && k !== 'brand') delete h[k]; else h[k] = v; setSetting('home', h); }
+/** ملخّص قصير لشكل الرئيسية (في الإعدادات) */
+function homeSummary() {
+  const b = (Settings.home && Settings.home.brand) || 'logo', off = HOME_TOP.concat(HOME_SECS).filter(([k]) => !hmOn(k)).length;
+  return (HOME_BRAND.find(x => x[0] === b) || HOME_BRAND[0])[1] + ' · ' + N(quickKeys().length) + ' اختصارات' + (off ? ' · ' + N(off) + ' مخفي' : ' · كل الأقسام ظاهرة');
+}
+SCREENS.homecfg = {
+  parent: 'settings',
+  render() {
+    const b = (Settings.home && Settings.home.brand) || 'logo', qk = quickKeys();
+    const sw = ([k, t, s]) => '<div class="li"><div class="grow"><div class="t">' + t + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div><button class="switch ' + (hmOn(k) ? 'on' : '') + '" data-hm="' + k + '"></button></div>';
+    return hdr('تخصيص الرئيسية', 'اختر ما يظهر في شاشتك الأولى', { back: true, compact: true }) +
+      sec('أعلى الشاشة') + '<div class="list mx"><div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:100%"><div class="t">ما يظهر مكان الشعار</div><div class="s">شعار «وسن» أو تحية أو اسمك — أو اتركه فارغًا</div></div>' +
+        '<div class="seg hm-br" id="hm-br" style="margin-top:10px;width:100%">' + HOME_BRAND.map(([k, t]) => '<button class="' + (k === b ? 'on' : '') + '" data-v="' + k + '">' + t + '</button>').join('') + '</div></div>' +
+        (b === 'name' || b === 'greet' || b === 'salam' ? '<div class="li"><div class="grow"><div class="t">اسمك</div><div class="s">يظهر في التحية أعلى الشاشة (اختياري)</div></div><input class="hm-nm" id="hm-nm" maxlength="24" placeholder="اكتب اسمك" value="' + esc(Settings.userName || '') + '"></div>' : '') +
+        HOME_TOP.map(sw).join('') + '</div>' +
+      sec('الأقسام') + '<div class="list mx">' + HOME_SECS.map(sw).join('') + '</div>' +
+      sec('الوصول السريع', { t: 'الافتراضي', attr: 'id="hm-qd"' }) + '<div class="sh-s mx" style="margin:-4px 16px 10px">اضغط لإضافة اختصار أو إزالته — يظهر بالترتيب الذي تختاره (من ٤ إلى ١٢)</div>' +
+        '<div class="hm-q mx" id="hm-q">' + QUICK_ALL.map(([k, t, ic, hu]) => { const i = qk.indexOf(k);
+          return '<button class="hm-qi' + (i >= 0 ? ' on' : '') + '" data-q="' + k + '"><span class="qi" style="' + hueVars(hu) + '">' + icon(ic) + '</span><b>' + t + '</b>' + (i >= 0 ? '<i class="num">' + N(i + 1) + '</i>' : '') + '</button>'; }).join('') + '</div>' +
+      '<div class="mx" style="margin-top:18px"><button class="btn gold block" data-go="home">' + icon('home') + 'عرض الشاشة الرئيسية</button>' +
+      '<button class="btn ghost block" id="hm-rs" style="margin-top:8px">' + icon('reset') + 'استعادة الشكل الافتراضي</button></div>';
+  },
+  mount(el) {
+    $$('[data-hm]', el).forEach(b => b.onclick = () => { const k = b.dataset.hm, on = !hmOn(k); setHome(k, on); b.classList.toggle('on', on); vibrate(8); });
+    $('#hm-br', el).onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; setHome('brand', b.dataset.v); vibrate(8); Router.refresh(); };
+    const nm = $('#hm-nm', el); if (nm) nm.addEventListener('input', debounce(() => setSetting('userName', nm.value.trim().slice(0, 24)), 300));
+    $('#hm-q', el).onclick = e => { const b = e.target.closest('[data-q]'); if (!b) return; const k = b.dataset.q; let q = quickKeys().slice(); const i = q.indexOf(k);
+      if (i >= 0) { if (q.length <= 4) { toast('أبقِ ٤ اختصارات على الأقل'); return; } q.splice(i, 1); } else { if (q.length >= 12) { toast('١٢ اختصارًا هو الحد الأقصى'); return; } q.push(k); }
+      setSetting('quick', q); vibrate(8); Router.refresh(); };
+    const qd = $('#hm-qd', el); if (qd) qd.onclick = () => { setSetting('quick', null); Router.refresh(); };
+    $('#hm-rs', el).onclick = () => confirmSheet('استعادة الشكل الافتراضي؟', 'تعود كل أجزاء الشاشة الرئيسية للظهور، والشعار، والاختصارات الأصلية.', 'نعم، استعد', () => { setSetting('home', {}); setSetting('quick', null); Router.refresh(); toast('عادت الرئيسية لشكلها الافتراضي'); });
+  },
+};
 const shortDay = d => ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'][d.getDay()];
 function trackerCard(now) {
   let cells = '';
@@ -351,7 +414,7 @@ function tasSoundSheet(done) {
   const draw = sh => {
     const cur = tasSnd(), mv = Native.has('mediaVolume') ? +Native.call('mediaVolume') : -1, vo = Settings.tasVoice !== false;
     sh.innerHTML = '<div class="grab"></div><div class="sh-t">صوت المسبحة</div><div class="sh-s">أصوات طبيعية هادئة كحبّات المسبحة في يدك — بلا موسيقى</div>' +
-      (mv === 0 ? '<div class="geo-n mx">' + icon('warn') + '<div class="grow"><b>صوت الوسائط في هاتفك مكتوم</b><span>ارفعيه بزرّ الصوت الجانبي — أزرار الصوت داخل وسن تضبطه مباشرة</span></div></div>' : '') +
+      (mv === 0 ? '<div class="geo-n mx">' + icon('warn') + '<div class="grow"><b>صوت الوسائط في هاتفك مكتوم</b><span>ارفعه بزرّ الصوت الجانبي — أزرار الصوت داخل وسن تضبطه مباشرة</span></div></div>' : '') +
       '<div class="list mx" id="tss-l" style="margin-top:10px">' + Object.keys(TAS_SND).map(v => '<button class="li opt' + (v === cur ? ' on' : '') + '" data-v="' + v + '"><div class="ic">' + icon(v === 'off' ? 'x' : 'vol') + '</div><div class="grow"><div class="t">' + TAS_SND[v] + '</div></div>' + (v === cur ? icon('check') : '') + '</button>').join('') + '</div>' +
       '<div class="list mx" style="margin-top:10px"><button class="li" id="tss-v"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">صوت الشيخ فارس عبّاد عند تمام الدورة</div><div class="s">يقول الذكر نفسه (أستغفر الله، الحمد لله، الله أكبر، سبحان الله وبحمده، الصلاة على النبي ﷺ)</div></div>' +
       '<span class="switch ' + (vo ? 'on' : '') + '"></span></button></div>' +
@@ -368,7 +431,7 @@ function tasSoundSheet(done) {
 }
 const TAS_SND = { bead: 'حبّة خشبية', clack: 'حبّتان', stone: 'حبّة حجرية', knock: 'طرقة خشب', drop: 'قطرة ماء', soft: 'نقرة ناعمة', off: 'بلا صوت' };   // وسن 6: لا نغمات موسيقية
 // وسن 4.8: ثلاثة أشكال للمسبحة
-const TAS_STY = { ring: ['دائرة الحبّات', 'اضغطي على الدائرة'], real: ['مسبحة حقيقية', 'اسحبي الحبّة بإصبعك كما في يدك'], string: ['خيط الحبّات', 'اسحبي الحبّة للأسفل أو اضغطي'], press: ['عدّاد كبير', 'اضغطي في أي مكان من البطاقة'] };
+const TAS_STY = { ring: ['دائرة الحبّات', 'اضغط على الدائرة'], real: ['مسبحة حقيقية', 'اسحب الحبّة بإصبعك كما في يدك'], string: ['خيط الحبّات', 'اسحب الحبّة للأسفل أو اضغط'], press: ['عدّاد كبير', 'اضغط في أي مكان من البطاقة'] };
 const tasSty = () => TAS_STY[Settings.tasStyle] ? Settings.tasStyle : 'ring';
 const TB = Object.assign({ sel: 0, count: 0, cycles: 0, total: 0, today: 0, day: '', custom: [], targets: {} }, Store.get('tasbih', {}));
 (function migrateOld() { try { const o = localStorage.getItem('noor_tasbih'); if (o && !Store.get('tasbih', null)) { const v = JSON.parse(o); TB.total = v.total || 0; TB.cycles = v.cycles || 0; } } catch (e) {} })();
@@ -405,9 +468,9 @@ SCREENS.tasbih = {
     if (st === 'string') main = '<div class="tbs" id="t-btn" role="button" tabindex="0" aria-label="تسبيح">' + strandSVG() + '<span class="ripple" id="t-rip"></span><div class="tbs-c">' + cnt + '</div></div>';
     else if (st === 'real') { const bm = MISBAHA_MATS[Settings.beadMat] ? Settings.beadMat : 'wood';
       main = '<div class="tbr" id="t-btn" role="button" tabindex="0" aria-label="تسبيح"><canvas id="t-real"></canvas><div class="tbr-c">' + cnt + '</div>' +
-        (Settings.mbHint ? '' : '<div class="tbr-hint" id="t-hint">' + icon('chev', '', 'transform:rotate(-90deg)') + 'اسحبي الحبّة للأسفل</div>') + '</div>' +
+        (Settings.mbHint ? '' : '<div class="tbr-hint" id="t-hint">' + icon('chev', '', 'transform:rotate(-90deg)') + 'اسحب الحبّة للأسفل</div>') + '</div>' +
         '<div class="chips tbr-mats" id="t-mat">' + Object.keys(MISBAHA_MATS).map(k => '<button class="chip ' + (k === bm ? 'on' : '') + '" data-m="' + k + '"><i class="mdot mdot-' + k + '"></i>' + MISBAHA_MATS[k].n + '</button>').join('') + '</div>'; }
-    else if (st === 'press') main = '<button class="tbp" id="t-btn" aria-label="تسبيح"><span class="ripple" id="t-rip"></span>' + cnt + '<span class="tbp-h">' + icon('beads') + 'اضغطي للتسبيح</span></button>';
+    else if (st === 'press') main = '<button class="tbp" id="t-btn" aria-label="تسبيح"><span class="ripple" id="t-rip"></span>' + cnt + '<span class="tbp-h">' + icon('beads') + 'اضغط للتسبيح</span></button>';
     else main = '<button class="counter" id="t-btn" aria-label="تسبيح">' + (artKey() ? '<img class="kw-tb" src="' + Art.tbURI(artKey()) + '" alt="" aria-hidden="true" draggable="false">' : '') + beadsSVG(tbBeads(tg)) + '<span class="ripple" id="t-rip"></span>' + cnt + '</button>';
     return hdr('المسبحة', TAS_STY[st][1], { back: true, compact: true, actions: [{ id: 't-reset', icon: 'refresh', label: 'تصفير' }] }) +
       '<div class="chips" id="t-chips" style="margin-top:14px">' + L.map((x, i) => '<button class="chip ' + (i === TB.sel ? 'on' : '') + '" data-i="' + i + '">' + esc(x.t) + '</button>').join('') +
@@ -436,7 +499,7 @@ SCREENS.tasbih = {
     $('#t-seq', el).onclick = () => { const on = !Settings.tasSeq; setSetting('tasSeq', on); if (on) { TB.sel = 0; TB.count = 0; tbSave(); toast('تسبيح دبر الصلاة: سبحان الله ٣٣، الحمد لله ٣٣، الله أكبر ٣٤'); } Router.refresh(); };
     $('#t-undo', el).onclick = () => { if (TB.count <= 0) { toast('لا شيء للتراجع عنه'); return; } TB.count--; TB.today = Math.max(0, TB.today - 1); TB.total = Math.max(0, TB.total - 1); try { Growth.add('tas', -1); } catch (e) {} tbSave(); vibrate(8);
       if (tasSty() === 'real') Router.refresh(); else { if (tasSty() === 'string') { this._o = (this._o || 0) - 1; this.layout(false); } this.paint(); } };
-    const vk = $('#t-vk', el); if (vk) vk.onclick = () => { const on = !Settings.tasVolKey; setSetting('tasVolKey', on); Native.call('setVolumeCount', on); toast(on ? 'اضغطي زر الصوت للتسبيح دون النظر إلى الشاشة' : 'عادت أزرار الصوت لضبط الصوت'); Router.refresh(); };
+    const vk = $('#t-vk', el); if (vk) vk.onclick = () => { const on = !Settings.tasVolKey; setSetting('tasVolKey', on); Native.call('setVolumeCount', on); toast(on ? 'اضغط زر الصوت للتسبيح دون النظر إلى الشاشة' : 'عادت أزرار الصوت لضبط الصوت'); Router.refresh(); };
     if (Settings.tasVolKey) Native.call('setVolumeCount', true);
     window.onVolKey = () => { if (!(Router.cur && Router.cur.r === 'tasbih')) return; if (tasSty() === 'real') { try { Misbaha.release(560); } catch (e) { this.inc(); } } else this.inc(); };
     Native.call('keepScreenOn', true);
@@ -493,7 +556,7 @@ SCREENS.tasbih = {
     if (done) { vibrate(220); if (b) { b.classList.remove('done'); void b.offsetWidth; b.classList.add('done'); }
       if (Settings.tasSeq && TB.sel <= 2) {   // الانتقال التلقائي في تسبيح دبر الصلاة
         const L = tbList();
-        if (TB.sel < 2) { TB.sel++; tbSave(); toast('أحسنتِ — التالي: ' + stripTashkeel(L[TB.sel].t)); setTimeout(() => Router.refresh(), 900); }
+        if (TB.sel < 2) { TB.sel++; tbSave(); toast('أحسنت — التالي: ' + stripTashkeel(L[TB.sel].t)); setTimeout(() => Router.refresh(), 900); }
         else { TB.sel = 0; tbSave(); toast('تمّت المئة — «لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير»', 5200); setTimeout(() => Router.refresh(), 1400); }
       } else toast('أتممت ' + N(tg) + ' — بارك الله فيك');
       this._hold = setTimeout(() => this.paint(), 650); }
@@ -760,7 +823,7 @@ SCREENS.more = {
       ['قضاء الفوائت', 'history', 'plum', 'qada', 'الصلوات وأيام الصيام'], ['التقويم الهجري', 'calendar', 'slate', 'calendar', 'المناسبات والأيام البيض'],
       ['الأسماء الحسنى', 'star8', 'amber', 'names', N(99) + ' اسمًا ومعانيها'], ['حاسبة الزكاة', 'calc', 'indigo', 'zakat', 'احسب زكاة مالك'],
       ['المنبّه', 'alarm', 'amber', 'alarms', 'قبل الفجر · قيام الليل · منبّهاتك'], ['لوحة الاستغفار', 'heart', 'rose', 'istighfar', 'لوحة تكتمل مع كل استغفار'],
-      ['لوحة الهدية', 'sparkle', 'plum', 'gift', 'أهدي ثواب ذكرك بلوحة جميلة'], ['النسخ الاحتياطي', 'save', 'emerald', 'backup', 'احفظ بستانك في ملف']];
+      ['لوحة الهدية', 'sparkle', 'plum', 'gift', 'أهدِ ثواب ذكرك بلوحة جميلة'], ['النسخ الاحتياطي', 'save', 'emerald', 'backup', 'احفظ بستانك في ملف']];
     Habits.syncAuto();
     const d = new Date(), hs = Habits.today(d).slice(0, 6), tds = Todo.sorted(Todo.fToday).slice(0, 5), g = Growth.day(d);
     const chip = (ic, v, l) => '<div class="tchip">' + icon(ic) + '<b class="num">' + v + '</b><span>' + l + '</span></div>';
@@ -800,16 +863,16 @@ function segRow(title, sub, key, opts) {
 }
 const THEME_NAMES = Object.assign({ auto: 'حسب النظام', prayer: 'تلقائي حسب المواقيت' }, Object.fromEntries(Object.entries(THEMES).map(([k, v]) => [k, v.n])));
 // وسن 6.1: ثيمات 4.6 أولًا وبترتيبها نفسه، ثم الحيّة المشرقة، ثم البقية
-const THEME_GROUPS = [['kawaii', 'ثيمات كاملة للبنات'], ['scene', 'مشاهد'], ['girls', 'ناعمة وردية'], ['live', 'حيّة مشرقة (جديد)'], ['anim', 'حيّة متحركة'], ['islamic', 'بالصور الحقيقية'], ['calm', 'هادئة'], ['more', 'مختلفة']];
+const THEME_GROUPS = [['kawaii', 'ثيمات كاملة مرسومة'], ['men', 'ثيمات رجالية · جديد'], ['islamic', 'بالصور الحقيقية'], ['live', 'حيّة مشرقة'], ['anim', 'حيّة متحركة'], ['scene', 'مشاهد'], ['girls', 'ناعمة وردية'], ['calm', 'هادئة'], ['more', 'مختلفة']];
 /* وسن 5.1 · الثيمات: القديمة كما كانت (المشاهد والرسوم) + فخامة إسلامية بالصور + ثيمات حيّة متحركة، وخلفية الرئيسية: مشهد الثيم أو صورتك */
 const HERO_MODES = [['theme', 'مشهد الثيم'], ['mine', 'صورتي']];
 function themeSheet() {
   const card = k => { const T = THEMES[k];
     if (T.ph || T.anim) return '<button class="thm thm-ph' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-img"><img src="img/th/' + k + '-t.webp" alt="" loading="lazy" decoding="async" draggable="false">' +
-      '<i style="background:' + T.sw[2] + '"></i>' + (T.anim ? '<b class="thm-live">' + icon('sparkle') + 'حيّ</b>' : '') + '</span><span class="thm-n">' + T.n + '</span></button>';
+      '<i style="background:' + T.sw[2] + '"></i>' + (T.anim ? '<b class="thm-live">' + icon('sparkle') + 'حيّ</b>' : '') + (T.nw ? '<b class="thm-nw">جديد</b>' : '') + '</span><span class="thm-n">' + T.n + '</span></button>';
     const sw = T.sw;
     if (T.skin && typeof Art !== 'undefined' && Art.has(T.skin)) return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-kw thm-art"><img src="' + Art.thumbURI(T.skin) + '" alt="" draggable="false">' +
-      '<i style="position:absolute;left:0;right:0;bottom:0;height:5px;background:' + sw[2] + '"></i></span><span class="thm-n">' + T.n + '</span></button>';
+      '<i style="position:absolute;left:0;right:0;bottom:0;height:5px;background:' + sw[2] + '"></i>' + (T.nw ? '<b class="thm-nw">جديد</b>' : '') + '</span><span class="thm-n">' + T.n + '</span></button>';
     if (T.skin && SKINS[T.skin] && SKINS[T.skin].stickers) { const K = SKINS[T.skin], w = K.wall || [K.e];
       return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-kw" style="background:linear-gradient(160deg,' + sw[0] + ',' + sw[1] + ')">' +
         emoImg(K.e, 'left:50%;top:50%;width:46%;margin:-23% 0 0 -23%;filter:drop-shadow(0 3px 5px rgba(0,0,0,.18))' + (K.bulletHue ? ' ' + KW_HUE[K.bulletHue] : '')) +
@@ -819,12 +882,12 @@ function themeSheet() {
       Garden.render(260, { skin: SKINS[T.skin], phase: T.base === 'dark' ? 'night' : 'day', id: 'ts' + k, par: 'xMidYMax slice' }) + '</span><span class="thm-n">' + T.n + '</span></button>';
     return '<button class="thm' + (Settings.theme === k ? ' on' : '') + '" data-th="' + k + '"><span class="thm-sw" style="background:' + sw[0] + '"><i style="background:' + sw[1] + '"></i><b style="background:' + sw[2] + '"></b><s style="background:' + sw[3] + '"></s></span><span class="thm-n">' + T.n + '</span></button>'; };
   const draw = () => { const hm = heroMode();
-    return '<div class="sh-t">الثيمات</div><div class="sh-s">اختاري ما يريح عينيك ويناسب ذوقك</div>' +
+    return '<div class="sh-t">الثيمات</div><div class="sh-s">اختر ما يريح عينيك ويناسب ذوقك</div>' +
       '<div class="thm-g">خلفية الصفحة الرئيسية</div><div class="seg hm-seg" id="hm-seg">' + HERO_MODES.map(([v, t]) => '<button data-hm="' + v + '" class="' + (hm === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
       '<div class="thm-g">سماء المشهد</div><div class="seg hm-seg" id="sky-seg">' + [['bright', 'مشرقة دائمًا'], ['live', 'تتبع الوقت: ليل ونهار']].map(([v, t]) => '<button data-sky="' + v + '" class="' + ((Settings.skyMode === 'live' ? 'live' : 'bright') === v ? 'on' : '') + '">' + t + '</button>').join('') + '</div>' +
       '<div class="hm-hint faint">' + (Settings.skyMode === 'live' ? 'تُظلم السماء بعد المغرب وتُشرق مع الفجر كما في 4.6' : 'مشاهد الثيمات الفاتحة تبقى نهارية مشرقة في كل وقت') + '</div>' +
-      (Settings.heroImg ? '<div class="hm-mine' + (hm === 'mine' ? ' on' : '') + '"><img src="' + esc(Settings.heroImg) + '" alt=""><div class="grow"><div class="t">صورتك من الهاتف</div><div class="s">حرّكيها واضبطي تعتيمها لتبقى الكتابة واضحة</div></div>' +
-        '<button class="btn sm" data-hm-act="adjust">ضبط</button><button class="btn sm ghost" data-hm-act="pick">تغيير</button></div>' : '<div class="hm-hint faint">اختاري «صورتي» لتضعي صورة من معرض هاتفك</div>') +
+      (Settings.heroImg ? '<div class="hm-mine' + (hm === 'mine' ? ' on' : '') + '"><img src="' + esc(Settings.heroImg) + '" alt=""><div class="grow"><div class="t">صورتك من الهاتف</div><div class="s">حرّكها واضبط تعتيمها لتبقى الكتابة واضحة</div></div>' +
+        '<button class="btn sm" data-hm-act="adjust">ضبط</button><button class="btn sm ghost" data-hm-act="pick">تغيير</button></div>' : '<div class="hm-hint faint">اختر «صورتي» لتضع صورة من معرض هاتفك</div>') +
       THEME_GROUPS.map(([g, t]) => '<div class="thm-g">' + t + '</div><div class="thm-grid">' + Object.keys(THEMES).filter(k => THEMES[k].g === g).map(card).join('') + '</div>').join('') +
       '<div class="thm-g">تلقائي</div><div class="list mx">' + [['prayer', 'داكن من المغرب إلى الشروق وفاتح نهارًا'], ['auto', 'يتبع إعداد الهاتف']].map(([v, s]) =>
         '<button class="li opt ' + (Settings.theme === v ? 'on' : '') + '" data-th="' + v + '"><div class="grow"><div class="t">' + THEME_NAMES[v] + '</div><div class="s">' + s + '</div></div><span class="rad"></span></button>').join('') + '</div>'; };
@@ -889,7 +952,7 @@ function pickHeroImage(done) {
 function heroAdjustSheet() {
   if (!Settings.heroImg) { pickHeroImage(); return; }
   const st = { p: Object.assign({ x: 50, y: 50 }, Settings.heroPos || {}), z: +Settings.heroZoom || 1, d: +Settings.heroDim || 0, ink: Settings.heroInk === 'd' ? 'd' : 'w' };
-  const html = '<div class="sh-t">ضبط صورة الصفحة الرئيسية</div><div class="sh-s">اسحبي الصورة لتحريكها</div>' +
+  const html = '<div class="sh-t">ضبط صورة الصفحة الرئيسية</div><div class="sh-s">اسحب الصورة لتحريكها</div>' +
     '<div class="ha-prev scene photo ink-' + st.ink + '" id="ha-p"><div class="ph-w"><img class="ph" id="ha-img" src="' + esc(Settings.heroImg) + '" alt="" draggable="false"></div><div class="ph-dim" id="ha-dim"></div><div class="ph-sh"></div>' +
     '<div class="ha-demo"><div class="lbl">الصلاة القادمة</div><div class="name">العصر</div><div class="at num">15:41</div></div></div>' +
     '<div class="mx form"><label>التكبير</label><input type="range" id="ha-z" min="100" max="200" step="1" value="' + Math.round(st.z * 100) + '">' +
@@ -941,6 +1004,9 @@ SCREENS.settings = {
     return hdr('الإعدادات', 'خصّص وسن كما تحب', { back: true, compact: true }) +
       sec('المظهر') + '<div class="list mx">' +
       '<button class="li" id="s-th"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">السمة</div><div class="s">' + THEME_NAMES[Settings.theme] + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
+      // وسن 7: الشاشة الرئيسية كما تحب — وإظهار الشعار أو إخفاؤه بلمسة
+      '<button class="li" data-go="homecfg"><div class="ic g">' + icon('home') + '</div><div class="grow"><div class="t">تخصيص الشاشة الرئيسية</div><div class="s">' + esc(homeSummary()) + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
+      '<div class="li"><div class="ic">' + icon('eye') + '</div><div class="grow"><div class="t">إظهار شعار «وسن»</div><div class="s">أعلى الشاشة الرئيسية فوق المواقيت</div></div><button class="switch ' + (((Settings.home && Settings.home.brand) || 'logo') === 'logo' ? 'on' : '') + '" id="s-logo"></button></div>' +
       '<div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:120px"><div class="t">لون التطبيق</div><div class="s">' + (Settings.accent === 'custom' ? 'لون من اختيارك' : (ACCENTS.find(a => a[0] === Settings.accent) || [0, 0, 'لون الثيم'])[2]) + '</div></div>' +
       '<div class="accents" id="s-acc">' + ACCENTS.map(([k, c]) => '<button class="' + (Settings.accent === k ? 'on' : '') + '" data-acc="' + k + '" style="background:' + c + '" aria-label="' + k + '"></button>').join('') +
       '<button class="acc-any' + (Settings.accent === 'custom' ? ' on' : '') + '" id="s-acc-c" aria-label="لون من اختيارك"' + (Settings.accent === 'custom' ? ' style="--c:' + Settings.accentHex + '"' : '') + '>' + icon('plus') + '</button></div></div>' +
@@ -973,6 +1039,8 @@ SCREENS.settings = {
       '<button class="li" id="s-rd"><div class="ic">' + icon('text') + '</div><div class="grow"><div class="t">مظهر المصحف</div><div class="s">' + esc(readerSummary()) + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
       segRow('طريقة العرض', '', 'readMode', [['surah', 'سورة'], ['page', 'صفحات']]) +
       '<button class="li" id="s-rec"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">القارئ</div><div class="s">' + esc(reciterName(Settings.reciter)) + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
+      '<div class="li"><div class="ic">' + icon('layers') + '</div><div class="grow"><div class="t">إكمال المصحف تلقائيًا</div><div class="s">السورة التي لا تسجيل لها بصوت قارئك تُتلى بصوت قارئ قريب من أسلوبه</div></div><button class="switch ' + (Settings.recFill !== false ? 'on' : '') + '" id="s-fill"></button></div>' +
+      (Settings.recFill !== false ? '<button class="li" id="s-fillw"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">القارئ المكمِّل</div><div class="s">' + esc(Settings.recFillWith ? reciterName(Settings.recFillWith) : 'تلقائي — الأقرب إلى أسلوب قارئك') + '</div></div><div class="end">' + icon('chev') + '</div></button>' : '') +
       '<button class="li" data-go="downloads"><div class="ic">' + icon('save') + '</div><div class="grow"><div class="t">تنزيلات التلاوة</div><div class="s">استمع دون إنترنت</div></div><div class="end">' + icon('chev') + '</div></button>' +
       '</div>' +
       sec('بياناتك') + '<div class="list mx">' +
@@ -1018,6 +1086,9 @@ SCREENS.settings = {
     $$('[data-pin]', el).forEach(b => b.onclick = () => { const ok = Native.has('canPinWidget') && Native.call('canPinWidget') && Native.call('pinWidget', b.dataset.pin);
       if (!ok) toast('اضغط مطوّلًا على الشاشة الرئيسية ← الأدوات (Widgets) ← وسن', 4200); });
     const rec = $('#s-rec', el); if (rec) rec.onclick = () => reciterSheet(() => Router.refresh());
+    const lg = $('#s-logo', el); if (lg) lg.onclick = () => { const on = ((Settings.home && Settings.home.brand) || 'logo') !== 'logo'; setHome('brand', on ? 'logo' : 'none'); lg.classList.toggle('on', on); vibrate(8); toast(on ? 'سيظهر شعار «وسن» في الرئيسية' : 'أُخفي الشعار من الرئيسية'); };
+    const fl = $('#s-fill', el); if (fl) fl.onclick = () => { setSetting('recFill', Settings.recFill === false); vibrate(8); Router.refresh(); };
+    const fw = $('#s-fillw', el); if (fw) fw.onclick = () => fillWithSheet(() => Router.refresh());
     bindRemindVoice(el); if ($('#rv-tts', el) && Settings.remVoice && Native.has('ttsCheck')) Native.call('ttsCheck');
   },
 };
@@ -1042,7 +1113,7 @@ function soundSheet() {
   try { info = Object.assign(info, JSON.parse(Native.call('soundInfo') || '{}')); } catch (e) {}
   const pv = v => v === 'custom' || v === 'silent' ? '' : '<button class="act pv" data-pv="' + v + '" aria-label="استماع">' + icon('play') + '</button>';
   const opt = (v, t, s) => '<div class="li opt ' + (v === info.mode ? 'on' : '') + '" data-v="' + v + '"><div class="grow"><div class="t">' + t + '</div><div class="s">' + s + '</div></div>' + pv(v) + '<span class="rad"></span></div>';
-  const voices = '<div class="snd-voice" id="sd-vo"' + (['adhan', 'takbir'].includes(info.mode) ? '' : ' hidden') + '><div class="snd-vl">' + icon('wave') + 'المؤذّن · اضغطي للاستماع</div><div class="snd-vg">' +
+  const voices = '<div class="snd-voice" id="sd-vo"' + (['adhan', 'takbir'].includes(info.mode) ? '' : ' hidden') + '><div class="snd-vl">' + icon('wave') + 'المؤذّن · اضغط للاستماع</div><div class="snd-vg">' +
     ADHAN_VOICES.map(([v, t, sb]) => '<button data-vo="' + v + '" class="' + (v === info.voice ? 'on' : '') + '"><b>' + t + '</b><small>' + sb + '</small></button>').join('') + '</div></div>';
   const html = '<div class="sh-t">صوت الأذان</div><div class="sh-s">يُرفع عند دخول وقت كل صلاة فعّلت تنبيهها</div>' +
     '<div class="snd-g">الأذان</div>' + opt('adhan', 'الأذان كاملًا', 'بصوت المؤذّن حتى نهايته، مع زر «إيقاف» في الإشعار') + opt('takbir', 'التكبير فقط', '«الله أكبر» الأولى ثم يسكت — تنبيه قصير') + voices +
@@ -1075,15 +1146,19 @@ function soundSheet() {
 window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.textContent = j.title || SOUND_NAMES[j.mode] || ''; toast('صوت الأذان: ' + (j.title || '')); } catch (e) {} };
 
 /* ═══════════════ عن التطبيق ═══════════════ */
-const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '6.3';
+const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '7.0';
 const WHATS_NEW = [
+  ['7.0', [['palette', 'الكتاكيت والأرانب', 'ثيمان كاملان مرسومان بالكامل مثل الفراشات: كتاكيت تمشي على العشب وتفقس من البيض بين عبّاد الشمس، وأرانب تقفز في مرج ليلكيّ مع الجزر والنفل — بمسبحتهما وزينتهما وبستانهما'],
+    ['star8', 'ثيمات رجالية بصور حقيقية', 'صقر الصحراء، والخيل العربية، والأسد، وليل الصحراء بدرب التبّانة، والربع الخالي، وشراع الغروب، وجبل شمس، والقمر، وحافة العالم — بألوان مشتقة من كل صورة'],
+    ['home', 'الشاشة الرئيسية كما تحب', 'أظهر شعار «وسن» أو أخفِه أو ضع مكانه تحية باسمك، وأخفِ أي جزء من الرئيسية (قوس الشمس، العدّ التنازلي، التاريخ، الأقسام…) واختر اختصاراتك من ٤ إلى ١٢ بالترتيب الذي تريده'],
+    ['headphones', 'المصحف كاملًا مع كل قارئ', 'السورة التي لا يوجد لها تسجيل بصوت قارئك تُتلى تلقائيًا بصوت قارئ قريب من أسلوبه (أو من تختاره) ثم يعود إلى قارئك — و٢٤ قارئًا جديدًا آية بآية، وتراويح الحرمين كاملة من ١٤٤٢ إلى ١٤٤٧ هـ، والشحات محمد أنور وعزيز عليلي ومحمد حسان وعبدالرزاق الدليمي، مع تصفية سريعة للقرّاء']]],
   ['6.3', [['bell', 'الأذان في دقيقته تمامًا', 'يُرفع الأذان الآن بأولوية المنبّه فلا يؤخّره توفير البطارية، ويُضبط على الدقيقة المعروضة نفسها. وإن نقص إذن نعرض لك خطوة الإصلاح بوضوح (الإشعارات، المنبّهات، البطارية، التشغيل التلقائي) مع سجلّ «آخر ما وصل» لتتأكد بنفسك'],
     ['target', 'ضبط المواقيت على مسجدك', 'أدخل مواقيت اليوم كما في تقويم مسجدك أو وزارة بلدك، فيستنتج وسن زاويتي الفجر والعشاء وفروق الدقائق ويحسب بها مواقيت كل الأيام والأذان'],
     ['globe', 'مواقيت دقيقة في كل البلدان', 'طرق الحساب الرسمية بفروقها (الأردن وفلسطين، تركيا، المغرب، الإمارات…) مطابقة للجهات الرسمية بالدقيقة، و٧٣٠٠ مدينة في ٢٤٤ دولة بالعربية واللاتينية، وتحديد الموقع يخبرك بالسبب إن تعذّر (الموقع مغلق أو الإذن مرفوض) مع زرّ الإصلاح'],
     ['headphones', 'قرّاء أكثر', 'عبدالله أحمد شعبان صار ٥٧ سورة (منها البقرة ويوسف ومريم وطه)، وعبدالرحمن مسعد ٣٦ (منها هود والإسراء والفرقان)، و٣٠ قارئًا جديدًا منهم عبدالعزيز التركي وأحمد عيسى المعصراوي وإبراهيم الدوسري وعبدالله الجهني وطارق محمد — مع قسم «الأشهر والأحدث»']]],
   ['6.2', [['shield', 'جاهز لمتجر Google Play وأندرويد 16', 'يستهدف أندرويد 16 كما يشترط المتجر، وتتلوّن أشرطة النظام مع ثيمك في كل إصدارات أندرويد، ولوحة المفاتيح لا تغطي الحقول — وأذونات أقل: إذن المنبّهات الدقيقة يُطلب منك عند الحاجة فقط']]],
   ['6.1', [['palette', 'ثيمات 4.6 المشرقة في المقدمة', 'الفراشات الزرقاء، والورد، والنجمة، والفراولة، والأزهار، ثم المشاهد (أزهار الكرز، حديقة الورود، حقل الخزامى) والناعمة الوردية — برسومها وألوانها وترتيبها كما كانت في 4.6 تمامًا، في أول قائمة الثيمات'],
-    ['sun', 'مشرقة دائمًا', 'مشاهد الثيمات الفاتحة تبقى نهارية مشرقة حتى في الليل — ومن «الثيمات ← سماء المشهد» اختاري «تتبع الوقت» إن أحببتِ أن تُظلم السماء بعد المغرب كما في 4.6'],
+    ['sun', 'مشرقة دائمًا', 'مشاهد الثيمات الفاتحة تبقى نهارية مشرقة حتى في الليل — ومن «الثيمات ← سماء المشهد» اختر «تتبع الوقت» إن أحببت أن تُظلم السماء بعد المغرب كما في 4.6'],
     ['sparkle', 'ستة ثيمات حيّة مشرقة', 'حديقة الفراشات (فراشات ملوّنة ترفرف وتطير)، وفقاعات، وقوس قزح، وربيع الكرز، وبالونات، وبحر مشمس — نهارية بكتابة داكنة واضحة، وتتوقف حركتها حين لا تظهر لتبقى البطارية بخير']]],
   ['6.0', [['headphones', 'سور أكثر بأصوات قرّائك — مع متابعة الآيات', 'أحمد خضر ٦٩ سورة، ومحمود الشحات أنور ٦٤، وعبدالرحمن مسعد ١٧، وعبدالله شعبان ٣٠ — تُسمَع من أرشيف الإنترنت أو تُنزَّل لتعمل دون إنترنت، وتوقيت كل آية محسوب من التسجيل نفسه فيتابعها المصحف. وإن لم تتوفّر سورة بصوت قارئك اقترحنا لها وحدها صوتًا بديلًا ثم نعود إلى قارئك'],
     ['palette', 'الفراشات كما كانت — وثيمات حيّة جديدة', 'عاد ثيم الفراشات الزرقاء بحركته وألوانه الأصلية تمامًا، ومعه «فراشة المورفو» بصورتها الحقيقية، وأربعة ثيمات حيّة جديدة: ليلة النجوم بشهبها، والفوانيس، والثلج، وبتلات الورد'],
@@ -1092,23 +1167,23 @@ const WHATS_NEW = [
     ['beads', 'مسبحة أذكى', 'تسبيح «دبر الصلاة» تلقائيًّا ٣٣ / ٣٣ / ٣٤، وزرّ «تراجع» للعدّة الخاطئة، والعدّ بزرّ الصوت دون النظر إلى الشاشة، وصوت الشيخ بالذكر نفسه عند تمام كل دورة، وأصوات حبّات طبيعية بلا نغمات — والشاشة لا تنطفئ أثناء التسبيح']]],
   ['5.1', [['palette', 'عادت ثيماتك القديمة — وأجمل', 'رجعت الثيمات المرسومة التي أحببتِها (الفراشات، الساكورا، الوردي، الليلي…) كما كانت بمشاهدها، ومعها ١٠ صور إسلامية بأعلى دقة متاحة'],
     ['waves', 'ثيمات متحرّكة', 'موج، وغيم، وأوراق الشجر، ومطر، وشفق قطبي — حركة ناعمة تتوقف تلقائيًّا حين لا تظهر لتبقى البطارية بخير'],
-    ['grid', 'لوحة الاستغفار بالتلوين', 'اختاري صورة أو كلمة (أستغفر الله، الله، اسمٌ تحبّينه…) فتبدأ رمادية كصفحة تلوين، ومع كل استغفار يتلوّن مربّع حتى تكتمل الصورة — ١٠٠ أو ٣٠٠ أو ١٠٠٠ مربّع'],
+    ['grid', 'لوحة الاستغفار بالتلوين', 'اختر صورة أو كلمة (أستغفر الله، الله، اسمٌ تحبّه…) فتبدأ رمادية كصفحة تلوين، ومع كل استغفار يتلوّن مربّع حتى تكتمل الصورة — ١٠٠ أو ٣٠٠ أو ١٠٠٠ مربّع'],
     ['globe', 'المواقيت لكل العالم', 'طريقة الحساب تُختار تلقائيًّا لكل دول العالم، وتوقيت المدينة البعيدة بساعتها المحلية، ومعالجة المناطق القطبية، وإدخال الإحداثيات يدويًّا، وتحديث الموقع عند السفر — و٣٧٠ مدينة في ١٣٧ دولة'],
-    ['headphones', 'كل القرّاء مع المصحف', 'القرّاء الذين لا توقيت لهم (ومنهم القرّاء المدمجون) صاروا يبدؤون من الآية التي تختارينها ويتابعون الآيات والصفحات — وإن تقدّمت المتابعة أو تأخّرت فاضغطي على الآية: «الشيخ يقرأ هذه الآن»']]],
+    ['headphones', 'كل القرّاء مع المصحف', 'القرّاء الذين لا توقيت لهم (ومنهم قرّاؤك المختارون) صاروا يبدؤون من الآية التي تختارها ويتابعون الآيات والصفحات — وإن تقدّمت المتابعة أو تأخّرت فاضغط على الآية: «الشيخ يقرأ هذه الآن»']]],
   ['5.0', [['palette', 'ثيمات بصور حقيقية عالية الدقة', '٣٦ ثيمًا بصور فوتوغرافية فائقة الوضوح: مكة المكرمة، المدينة المنوّرة، المسجد الأقصى، جامع الجزائر، أقواس قرطبة، قبّة أصفهان، المسجد الوردي… وألوان كل ثيم مأخوذة من صورته نفسها'],
-    ['image', 'صورتك من الهاتف', 'ضعي أي صورة من معرض هاتفك خلفيةً للصفحة الرئيسية، ثم حرّكيها وكبّريها واضبطي تعتيمها ولون الكتابة فوقها'],
-    ['beads', 'مسبحة حقيقية', 'حبّات على خيط تسحبينها بإصبعك فتسقط وتطقطق كالمسبحة في يدك، مع الفواصل والإمام والشُّرّابة — خشب الصندل، الكهرمان، اللؤلؤ، الفيروز، العقيق اليماني، الأونيكس، وذهب الثيم'],
+    ['image', 'صورتك من الهاتف', 'ضع أي صورة من معرض هاتفك خلفيةً للصفحة الرئيسية، ثم حرّكها وكبّرها واضبط تعتيمها ولون الكتابة فوقها'],
+    ['beads', 'مسبحة حقيقية', 'حبّات على خيط تسحبها بإصبعك فتسقط وتطقطق كالمسبحة في يدك، مع الفواصل والإمام والشُّرّابة — خشب الصندل، الكهرمان، اللؤلؤ، الفيروز، العقيق اليماني، الأونيكس، وذهب الثيم'],
     ['sparkle', 'شعار جديد', '«وسن» بخط النستعليق، وقد صارت نقطة النون نجمة ثمانية يحضنها قوس النون كالهلال'],
-    ['leaf', 'أهدأ وأخفّ وأسلس', 'لا حركة دائمة في الخلفيات ولا ضبابية مكلفة: المعالج يرتاح وأنتِ على الصفحة الرئيسية، والتمرير أنعم، والبطارية تدوم أطول'],
+    ['leaf', 'أهدأ وأخفّ وأسلس', 'لا حركة دائمة في الخلفيات ولا ضبابية مكلفة: المعالج يرتاح وأنت على الصفحة الرئيسية، والتمرير أنعم، والبطارية تدوم أطول'],
     ['heart', 'لوحة الهدية بالصور', 'لوحات الهدية صارت بصور الثيمات الحقيقية، وتتبع ثيمك تلقائيًّا']]],
   ['4.8', [['palette', 'تسعة ثيمات فخمة إسلامية', 'ليل مكة، المدينة المنوّرة، قبّة الصخرة، قصر الحمراء، إزنيك العثماني، ذهب المماليك، لازورد أصفهان، فوانيس رمضان، والتذهيب — لكل ثيم مشهده المرسوم ونقشته وحبّاته'],
-    ['headphones', 'قرّاء مدمجون داخل التطبيق', 'أحمد خضر، عبدالله شعبان، عبدالرحمن مسعد، ومحمود الشحات أنور — أكثر من ست ساعات من التلاوة تعمل دون إنترنت ودون تنزيل'],
-    ['vol', 'صوت بشري حقيقي للأذكار', 'اختاري الأذكار التي تُقرأ بصوت الشيخ فارس عبّاد حين تظهر («اللهم صلّ وسلّم على نبينا محمد»، «أستغفر الله وأتوب إليه»، «سبحان الله وبحمده»…) وتبقى البقية بنغمتها الهادئة'],
-    ['beads', 'مسبحة بثلاثة أشكال', 'دائرة الحبّات، ومسبحة حبّات حقيقية تنزلقين حبّاتها بإصبعك، وعدّاد كبير — مع نغمة هادئة مريحة وزينة الثيم مع كل تسبيحة'],
+    ['headphones', 'قرّاؤك المختارون دون إنترنت', 'أحمد خضر، عبدالله شعبان، عبدالرحمن مسعد، ومحمود الشحات أنور — أكثر من ست ساعات من التلاوة تعمل دون إنترنت ودون تنزيل'],
+    ['vol', 'صوت بشري حقيقي للأذكار', 'اختر الأذكار التي تُقرأ بصوت الشيخ فارس عبّاد حين تظهر («اللهم صلّ وسلّم على نبينا محمد»، «أستغفر الله وأتوب إليه»، «سبحان الله وبحمده»…) وتبقى البقية بنغمتها الهادئة'],
+    ['beads', 'مسبحة بثلاثة أشكال', 'دائرة الحبّات، ومسبحة حبّات حقيقية تُحرّك حبّاتها بإصبعك، وعدّاد كبير — مع نغمة هادئة مريحة وزينة الثيم مع كل تسبيحة'],
     ['alarm', 'المنبّه', 'منبّه قبل الفجر يتغيّر مع المواقيت كل يوم، ومنبّه قيام الليل، ومنبّهاتك بأيام التكرار — بشاشة كاملة فوق القفل وصوت يعلو بلطف وغفوة'],
     ['minaret', 'ثلاثة أصوات جديدة للأذان', 'صباح فخري، وأذان صافٍ، وأذان خاشع — مع التكبير القصير لكل صوت'],
     ['heart', 'لوحة الاستغفار', 'فسيفساء إسلامية من مئة قطعة تُضاء مع كل استغفار وتكتمل بنجمة ذهبية — لكل يوم تصميم، ومعرضٌ للوحاتك المكتملة'],
-    ['sparkle', 'لوحة الهدية', 'بطاقة دعاء وإهداء بمشهد من ثيمات وسن وأدعية مأثورة لمن تحبّين — شاركيها صورةً جميلة'],
+    ['sparkle', 'لوحة الهدية', 'بطاقة دعاء وإهداء بمشهد من ثيمات وسن وأدعية مأثورة لمن تحبّ — شاركها صورةً جميلة'],
     ['target', 'العادات والمهام أذكى', 'عادات الصباح والمساء، وبطاقة لكل عادة بأطول سلسلة ونسبة الالتزام وخريطة ١٢ أسبوعًا — ومهام بخطوات وتكرار وبحث وقسم للمتأخرة']]],
   ['4.7', [['bell', 'الأذكار المنبثقة', 'ذكرٌ لطيف يظهر لك كل مدة تختارها (من… إلى…) وفي الأيام التي تحدّدها، مع عدد التكرار — إشعارًا منبثقًا أو نافذة عائمة فيها زرّ للعدّ'],
     ['vol', 'التذكير الصوتي', 'يُقرأ الذكر أو عنوان التذكير بصوت هادئ (أذكار الصباح والمساء، الكهف، العادات…) — بصوت النطق العربي في هاتفك'],
@@ -1143,14 +1218,14 @@ SCREENS.about = {
       '<div class="li"><div class="ic">' + icon('book') + '</div><div class="grow"><div class="t">نص القرآن الكريم</div><div class="s">الرسم العثماني برواية حفص عن عاصم، بخط مجمّع الملك فهد (KFGQPC Uthmanic Hafs)</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('text') + '</div><div class="grow"><div class="t">الخطوط</div><div class="s">IBM Plex Sans Arabic وReem Kufi وAmiri وAmiri Quran — رخصة SIL Open Font License 1.1</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">الرسوم والرموز</div><div class="s">رسوم البستان مرسومة خصيصًا لوسن، والرموز ثلاثية الأبعاد من Fluent Emoji (مايكروسوفت) برخصة MIT</div></div></div>' +
-      '<button class="li" id="ab-ph"><div class="ic">' + icon('image') + '</div><div class="grow"><div class="t">صور الثيمات</div><div class="s">١١ صورة بأعلى دقة من ويكيميديا كومنز برخص حرّة (CC0، ملك عام، CC BY، CC BY-SA) — اضغطي لرؤية اسم كل مصوّر ورخصته</div></div>' + icon('chev', 'faint') + '</button>' +
+      '<button class="li" id="ab-ph"><div class="ic">' + icon('image') + '</div><div class="grow"><div class="t">صور الثيمات</div><div class="s">١١ صورة بأعلى دقة من ويكيميديا كومنز برخص حرّة (CC0، ملك عام، CC BY، CC BY-SA) — اضغط لرؤية اسم كل مصوّر ورخصته</div></div>' + icon('chev', 'faint') + '</button>' +
       '<div class="li"><div class="ic">' + icon('sparkle') + '</div><div class="grow"><div class="t">الشعار (5.0)</div><div class="s">«وسن» بخط Noto Nastaliq Urdu من Google برخصة SIL Open Font License</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">بيانات المدن</div><div class="s">إحداثيات المدن ومناطقها الزمنية من GeoNames.org برخصة CC BY 4.0، وأسماؤها العربية من ويكي بيانات Wikidata (CC0)</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('hands') + '</div><div class="grow"><div class="t">الأذكار والأدعية</div><div class="s">من كتاب «حصن المسلم» وكتب السنة مع ذكر المصدر لكل ذكر</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('clock') + '</div><div class="grow"><div class="t">المواقيت والتقويم</div><div class="s">حساب فلكي محلي، والتاريخ الهجري وفق تقويم أم القرى مع إمكانية التعديل</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('minaret') + '</div><div class="grow"><div class="t">تسجيلات الأذان</div><div class="s">«أذان هادئ»: Adam-synagda — ملك عام CC0 · «من المسجد النبوي»: ejaz215 (Freesound) — CC BY 3.0 · «صباح فخري»: ملك عام · «أذان صافٍ»: Aaqib Azeez عبر Atcovi — CC BY-SA 4.0 · «أذان خاشع»: Andrewler — CC BY-SA 4.0 · كلها عبر ويكيميديا كومنز</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('vol') + '</div><div class="grow"><div class="t">الصوت البشري للأذكار (4.8)</div><div class="s">مقاطع قصيرة من تسجيل «أذكار الصباح والمساء» بصوت الشيخ فارس عبّاد، ومن دعائه «الله أكبر الله أكبر مما نخاف ونحذر» — من أرشيف الإنترنت archive.org (موسومة بعلامة الملكية العامة من رافعها)</div></div></div>' +
-      '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">التلاوات المدمجة (4.8)</div><div class="s">أحمد خضر · عبدالله شعبان · عبدالرحمن مسعد · محمود الشحات أنور — من مجموعات منشورة للاستماع العام في أرشيف الإنترنت archive.org (وبقية سور عبدالرحمن مسعد من way2quran.com، وعبدالله الجهني وطارق محمد من الأرشيف)، ضُغطت داخل وسن أو تُسمع منها مباشرة. الحقوق لأصحابها، وسنحذف أي تلاوة إن طلب صاحبها ذلك.</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">تلاوات قرّائك المختارين (4.8)</div><div class="s">أحمد خضر · عبدالله شعبان · عبدالرحمن مسعد · محمود الشحات أنور — من مجموعات منشورة للاستماع العام في أرشيف الإنترنت archive.org (وبقية سور عبدالرحمن مسعد من way2quran.com، وعبدالله الجهني وطارق محمد من الأرشيف)، ضُغطت داخل وسن أو تُسمع منها مباشرة. الحقوق لأصحابها، وسنحذف أي تلاوة إن طلب صاحبها ذلك.</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">التلاوات</div><div class="s">«آية بآية» من EveryAyah.com، والسور الكاملة وتوقيتات الآيات من mp3quran.net</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('leaf') + '</div><div class="grow"><div class="t">أصوات الطبيعة (4.7)</div><div class="s">من Freesound وSoundBible عبر مشروع Blanket، ونقّاها وسن من الحدّة: العصافير: kvgarlic (CC0) · الجدول: gluckose (CC0) · النسيم: felix.blume (CC0) · المطر: alex36917 (CC BY) · الأمواج: Luftrum (CC BY) · صراصير الليل: Lisa Redfern (ملك عام) · «هدوء عميق» ونغمة الأذكار المنبثقة وأصوات المسبحة: مولّدة داخل وسن</div></div></div></div>' +
       '<div class="foot-note">صُنع بحبّ لخدمة المسلمين · اللهم اجعله خالصًا لوجهك الكريم</div>';
@@ -1253,13 +1328,15 @@ Bus.on('resume', () => { try { if (Onboarding.el && Onboarding.step === 3) setTi
 function whatsNewSheet() {
   if (document.querySelector('.onb') || document.getElementById('splash') || Sheet.el) { setTimeout(whatsNewSheet, 2500); return; }
   if (!Router.cur || Router.cur.r !== 'home') { setTimeout(whatsNewSheet, 4000); return; }
-  Store.set('wnSeen', '6.3');
+  Store.set('wnSeen', '7.0');
   const items = WHATS_NEW[0][1];
   const bad = (() => { try { const s = NotifHealth.state(); return NotifHealth.broken(s) || !s.loc; } catch (e) { return false; } })();
-  const html = '<div class="sh-t">الجديد في وسن ' + N('6.3') + '</div><div class="sh-s">أذان في دقيقته، ومواقيت مضبوطة على مسجدك، وقرّاء أكثر</div>' +
+  const html = '<div class="sh-t">الجديد في وسن ' + N('7.0') + '</div><div class="sh-s">ثيمات جديدة، وتخصيص كامل للرئيسية، والمصحف كاملًا مع كل قارئ</div>' +
     '<div class="list mx">' + items.map(([ic, t, s]) => '<div class="li"><div class="ic g">' + icon(ic) + '</div><div class="grow"><div class="t">' + t + '</div><div class="s">' + s + '</div></div></div>').join('') + '</div>' +
-    '<div class="mx" style="margin-top:14px">' + (bad ? '<button class="btn gold block" id="wn-nh">' + icon('bell') + 'تأكّد أن الأذان سيصلك في وقته</button>' : '') +
-    '<button class="btn primary block" id="wn-cb" style="margin-top:8px">' + icon('target') + 'اضبط المواقيت على مسجدك</button><button class="btn ghost block" id="wn-x" style="margin-top:8px">لاحقًا</button></div>';
+    '<div class="mx" style="margin-top:14px"><button class="btn gold block" id="wn-th">' + icon('palette') + 'جرّب الثيمات الجديدة</button>' +
+    '<button class="btn primary block" id="wn-hm" style="margin-top:8px">' + icon('home') + 'خصّص شاشتك الرئيسية</button>' +
+    (bad ? '<button class="btn ghost block" id="wn-nh" style="margin-top:8px">' + icon('bell') + 'تأكّد أن الأذان سيصلك في وقته</button>' : '') +
+    '<button class="btn ghost block" id="wn-x" style="margin-top:8px">لاحقًا</button></div>';
   Sheet.open(html, el => { const nh = $('#wn-nh', el); if (nh) nh.onclick = () => Sheet.close(() => notifHealthSheet());
-    $('#wn-cb', el).onclick = () => Sheet.close(() => Router.go('calib')); $('#wn-x', el).onclick = () => Sheet.close(); });
+    $('#wn-th', el).onclick = () => Sheet.close(() => themeSheet()); $('#wn-hm', el).onclick = () => Sheet.close(() => Router.go('homecfg')); $('#wn-x', el).onclick = () => Sheet.close(); });
 }

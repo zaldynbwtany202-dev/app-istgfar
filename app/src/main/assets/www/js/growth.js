@@ -176,6 +176,8 @@ function dayPlant(A, d, lv, th, glow, k) {
     else if (th === 'kstar') s += A.star(d, { x: 20, y, s: 5.6 * sc, glow: big });
     else if (th === 'kberry') s += A.berry(d, { x: 20, y: y + 2, s: 0.2 * sc, r: (k % 3 - 1) * 10 });
     else if (th === 'kbloom') s += A.tulip(d, { x: 20, y: y - 3, h: 1, s: 0.42 * sc, pal: ['pink', 'yellow', 'lilac'][k % 3] });
+    else if (th === 'kchick' && A.sunflower) s += A.sunflower(d, { x: 20, y, h: 0, s: 0.55 * sc });
+    else if (th === 'kbunny') s += A.daisy(d, { x: 20, y, r: 6 * sc, pal: ['pink', 'white', 'lilac'][k % 3] });
     else s += A.daisy(d, { x: 20, y, r: 6 * sc, pal: ['white', 'lemon', 'pink'][k % 3] });
   }
   if (glow) s += A.sparkle(d, { x: 31, y: 12, s: 3.4, c: '#FFE38A' }) + A.sparkle(d, { x: 9, y: 18, s: 2.4, c: '#FFE38A' });

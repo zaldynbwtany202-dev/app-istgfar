@@ -207,6 +207,62 @@ const KW = (() => {
       wall: ['butterfly', 'sparkles', 'blossom'], wallHue: ['pink', 'none', 'none'], bullet: 'butterfly', bulletHue: 'pink', quick: Q.concat('butterfly'), quickHue: 'pink',
       cards: { strip: ['butterfly', 'pink'], ctx: ['blossom', ''], hdr: ['butterfly', 'blue'] },
     },
+    // وسن 7 · الكتاكيت: سماء ربيعية صافية، ومرج أخضر، وعبّاد الشمس، وكتاكيت تمشي حول البستان
+    kchick: {
+      n: 'الكتاكيت', e: 'chick', beads: ['#FFF8D2', '#FFD54A', '#E39A0C'],
+      sky: {
+        night: { c: ['#10213F', '#1C3561', '#2F5186'], st: 1, g: 'rgba(255,230,160,.2)' }, predawn: { c: ['#1B2C58', '#3A5690', '#7D8FC0'], st: 0.72, g: 'rgba(255,225,180,.24)' },
+        dawn: { c: ['#5E86C8', '#B9CFEA', '#FFE3C0'], st: 0.1, g: 'rgba(255,230,190,.55)' }, morning: { c: ['#6DB8EE', '#B9E1FA', '#FFF4D6'], st: 0, g: 'rgba(255,250,230,.6)' },
+        day: { c: ['#63B3EE', '#B5DEFA', '#FFF6DC'], st: 0, g: 'rgba(255,252,236,.6)' }, noon: { c: ['#5FAEEC', '#B0DBF9', '#FFF7E0'], st: 0, g: 'rgba(255,252,238,.62)' },
+        afternoon: { c: ['#6AB0E6', '#BCDDF4', '#FFF0D0'], st: 0, g: 'rgba(255,245,220,.6)' }, golden: { c: ['#6FA4DA', '#E2D2B8', '#FFD9A0'], st: 0, g: 'rgba(255,220,160,.62)' },
+        sunset: { c: ['#3F4F98', '#D08A7C', '#FFC078'], st: 0.05, g: 'rgba(255,190,130,.62)' }, dusk: { c: ['#182B5C', '#34508E', '#7A8CC0'], st: 0.5, g: 'rgba(255,220,170,.3)' },
+      },
+      garden: {
+        leaves: ['#7CC45E', '#8ED06C', '#A2DB7E', '#6AB74E', '#84CB64', '#98D674', '#5AA842'], shade: '#1E3A10', base: ['#5A9A3E', '#3E7A2A'], hi: '#F4FFD8', bark: '#7A5230',
+        hillA: '#E4F2BE', hillB: '#A9D98A', ground: '#9BCF7C', grass: '#5DA848', stem: '#4E9A48', bloom: ['#FFF3B0', '#FFFFFF', '#FFE08A'], bloomMid: '#F2A516', fruit: false,
+        flowers: ['#FFD84A', '#FFFFFF', '#FFB347', '#F7A6C1'], bfMin: 0, palm: false, nightTint: '#10213F',
+        fx: {
+          ground({ rng, cx, GY }) { if (typeof Art === 'undefined' || !Art._.chick) return ''; const r = rng(71), d = Art._.doc('gck'); let s = '';
+            [[-118, 'yellow', 'stand'], [-72, 'lemon', 'peck'], [70, 'cream', 'stand'], [112, 'yellow', 'hop']].forEach(([dx, pal, pose], j) => { const x = cx + dx + (r() - 0.5) * 10;
+              s += Art._.chick(d, { x, y: GY + 3 + r() * 6, s: 0.26 + r() * 0.05, pal, pose, flip: j % 2 === 1, eye: j === 2 ? 'happy' : 'o' }); });
+            s += Art._.nest(d, { x: cx + 150, y: GY + 12, s: 0.36, eggs: [[-8, -3, .7, -12, 'cream'], [6, -4, .74, 10, 'brown']] });
+            return '<defs>' + d.defs() + '</defs>' + s; },
+        },
+      },
+      beadEmo: ['chick'], beadHue: ['none'], beadTop: 'chick', ink: '#3A2A0C',
+      fx: { type: 'fly', k: 'butterfly', n: 3, hue: ['none', 'none', 'pink'], tw: ['sparkles'], tn: 4 },
+      stickers: [{ k: 'chick', x: 16, y: 80, s: 40, r: -8 }, { k: 'hatch', x: 88, y: 82, s: 38, r: 6 }, { k: 'sunflower', x: 90, y: 40, s: 30, r: 10 }],
+      wall: ['chick', 'sunflower', 'hatch'], wallHue: ['none', 'none', 'none'], bullet: 'chick', bulletHue: '', quick: Q.concat('chick'), quickHue: '',
+      cards: { strip: ['chick', ''], ctx: ['sunflower', ''], hdr: ['hatch', ''] },
+    },
+    // وسن 7 · الأرانب: سماء ورديّة ليلكية، ومرج نعناعيّ، وجزر ونفل، وأرانب تجلس تحت الشجرة
+    kbunny: {
+      n: 'الأرانب', e: 'rabbit', beads: ['#FFF4FA', '#F4C2DA', '#C47AA6'],
+      sky: {
+        night: { c: ['#1E1638', '#33265A', '#523F86'], st: 1, g: 'rgba(230,200,255,.22)' }, predawn: { c: ['#2A1F4E', '#4E3D84', '#8E7BC0'], st: 0.72, g: 'rgba(240,210,255,.26)' },
+        dawn: { c: ['#8A78C8', '#E0B8DA', '#FFDCD2'], st: 0.1, g: 'rgba(255,215,225,.55)' }, morning: { c: ['#C9A9EC', '#F2CFE6', '#FFF0F6'], st: 0, g: 'rgba(255,245,250,.6)' },
+        day: { c: ['#C2A6EE', '#EFCFEA', '#FFF2F8'], st: 0, g: 'rgba(255,248,252,.62)' }, noon: { c: ['#BDA2EC', '#EDCDEA', '#FFF4FA'], st: 0, g: 'rgba(255,250,253,.62)' },
+        afternoon: { c: ['#C4A4E6', '#F2C8E0', '#FFEEF2'], st: 0, g: 'rgba(255,240,246,.6)' }, golden: { c: ['#B494DE', '#F4BCD2', '#FFD8C8'], st: 0, g: 'rgba(255,215,200,.62)' },
+        sunset: { c: ['#5B3E96', '#D987B8', '#FFB1A8'], st: 0.05, g: 'rgba(255,175,185,.62)' }, dusk: { c: ['#281D4C', '#4A3782', '#8A72BE'], st: 0.5, g: 'rgba(230,200,255,.3)' },
+      },
+      garden: {
+        leaves: ['#6CC98E', '#7ED49C', '#94DEAE', '#5ABB7E', '#72CD94', '#88D8A6', '#4AAE70'], shade: '#12361F', base: ['#4E9E6C', '#357A50'], hi: '#E8FFF0', bark: '#7A5A48',
+        hillA: '#EAD6F2', hillB: '#A8DFC0', ground: '#98D2B2', grass: '#55AE7A', stem: '#4E9A66', bloom: ['#FFE0EE', '#FFFFFF', '#F2D6FF'], bloomMid: '#F7A6C8', fruit: false,
+        flowers: ['#F7A6C8', '#FFFFFF', '#D6BDF7', '#FFD3E4'], bfMin: 0, palm: false, nightTint: '#1E1638',
+        fx: {
+          ground({ rng, cx, GY }) { if (typeof Art === 'undefined' || !Art._.bunny) return ''; const r = rng(83), d = Art._.doc('gbn'); let s = '';
+            [[-122, 'white', 'o'], [-80, 'grey', 'happy'], [86, 'cream', 'happy'], [128, 'caramel', 'o']].forEach(([dx, pal, eye], j) => { const x = cx + dx + (r() - 0.5) * 10;
+              s += Art._.bunny(d, { x, y: GY + 2 + r() * 5, s: 0.2 + r() * 0.04, pal, eye, flip: j % 2 === 1, ear: j === 2 ? 'flop' : 'up' }); });
+            [[-150, 0.36], [-140, 0.3], [154, 0.34]].forEach(([dx, z]) => { s += Art._.carrotTop(d, { x: cx + dx, y: GY + 12, s: z }); });
+            return '<defs>' + d.defs() + '</defs>' + s; },
+        },
+      },
+      beadEmo: ['rabbit'], beadHue: ['none'], beadTop: 'rabbit', ink: '#2C2140',
+      fx: { type: 'fly', k: 'butterfly', n: 3, hue: ['pink', 'purple', 'pink'], tw: ['sparkles'], tn: 4 },
+      stickers: [{ k: 'rabbit', x: 16, y: 80, s: 40, r: -8 }, { k: 'carrot', x: 88, y: 82, s: 34, r: 16 }, { k: 'clover', x: 90, y: 40, s: 28, r: 10 }],
+      wall: ['rabbit', 'carrot', 'clover'], wallHue: ['none', 'none', 'none'], bullet: 'rabbit', bulletHue: '', quick: Q.concat('rabbit'), quickHue: '',
+      cards: { strip: ['rabbit', ''], ctx: ['carrot', ''], hdr: ['clover', ''] },
+    },
     krose: {
       n: 'الورد', e: 'rose', beads: ['#FFF1F5', '#F7A8C0', '#D6336C'],
       sky: {
@@ -340,6 +396,8 @@ Object.assign(SKINS, KW);
 (function () {
   const M = {
     kbfly: { meadow: ['hyd:blue', 'fmn', 'daisy:white', 'hyd:sky', 'fmn', 'hyd:peri'], bloomArt: ['white', 'lilac', 'white'], birds: ['blue', 'blue', 'canary'], bflyArt: ['morpho', 'sky', 'royal', 'ice'] },
+    kchick: { meadow: ['daisy:white', 'chick', 'tulip:yellow', 'daisy:lemon', 'sunflower', 'fmn', 'chick', 'daisy:white'], bloomArt: ['white', 'white', 'pink'], birds: ['canary', 'canary', 'robin'], bflyArt: ['lemon', 'sky', 'pink'] },
+    kbunny: { meadow: ['clover', 'daisy:pink', 'carrot', 'tulip:pink', 'daisy:white', 'clover', 'tulip:lilac', 'bunny'], bloomArt: ['pink', 'white', 'pink'], birds: ['rose', 'blue', 'canary'], bflyArt: ['pink', 'lilac', 'sky'] },
     krose: { meadow: ['rose:red', 'rtop:pink', 'daisy:white', 'rose:pink', 'bud:red', 'rtop:blush'], bloomArt: ['pink', 'white'], birds: ['rose', 'robin', 'canary'], bflyArt: ['pink', 'lemon', 'pink'] },
     kstar: { meadow: ['star', 'fmn:lilac', 'sparkle', 'daisy:lilac'], bloomArt: false, birds: ['blue', 'canary', 'rose'], bflyArt: ['gold', 'lemon', 'lilac'] },
     kberry: { meadow: ['berry', 'blossom', 'berry', 'daisy:white'], bloomArt: ['white'], birds: ['robin', 'rose', 'canary'], bflyArt: ['pink', 'lemon', 'sky'] },

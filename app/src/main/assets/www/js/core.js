@@ -47,6 +47,8 @@ const DEFAULTS = {
   ambVol: 0.45, ambRecite: 'pause', ambLast: '', libReciter: '', qSrc: 'ayah', sleepMin: 0, asSpeed: 4,
   // وسن 6.3: ضبط المواقيت على تقويم مسجدك (null = طريقة البلد)
   calib: null,
+  // وسن 7: تخصيص كامل — أجزاء الرئيسية (home) والاختصارات (quick) والتحية (userName) · إكمال المصحف مع كل قارئ
+  home: {}, quick: null, userName: '', recFill: true, recFillWith: '',
 };
 const Settings = Object.assign({}, DEFAULTS, Store.get('settings', {}));
 Settings.adjust = Object.assign({}, DEFAULTS.adjust, Settings.adjust || {});
@@ -347,6 +349,9 @@ const THEMES = {
   violet: { n: 'بنفسجي حالم', base: 'dark', tone: 'violet', g: 'girls', acc: 'lilac', bar: '#110E1F', sw: ['#110E1F', '#211B38', '#7E63B8', '#C9B3F2'] },
   // وسن 4.6 · «ثيمات كاملة» برسوم «ريشة وسن» (art.js): لكل ثيم مشهده المرسوم وألوانه وزينة بطاقاته ومسبحته — skins.js
   kbfly: { n: 'الفراشات الزرقاء', base: 'light', tone: 'bfly', g: 'kawaii', acc: 'morpho', skin: 'kbfly', rt: 'sky', bar: '#EEF5FF', sw: ['#EEF5FF', '#A9D2FF', '#2D6FE0', '#7FC6FF'] },
+  // وسن 7 · ثيمان كاملان مرسومان بالكامل: الكتاكيت والأرانب (art.js · skins.js)
+  kchick: { n: 'الكتاكيت', base: 'light', tone: 'chick', g: 'kawaii', acc: 'chick', skin: 'kchick', rt: 'cream', bar: '#FFF8E6', sw: ['#FFF8E6', '#FFE58A', '#E5820C', '#8CCB6A'], nw: 1 },
+  kbunny: { n: 'الأرانب', base: 'light', tone: 'bunny', g: 'kawaii', acc: 'bunny', skin: 'kbunny', rt: 'pink', bar: '#FAF5FF', sw: ['#FAF5FF', '#F4C9E0', '#9369D8', '#8FD3AE'], nw: 1 },
   kmorpho: { n: 'فراشة المورفو', base: 'dark', g: 'islamic', acc: 'kmorpho', bar: '#08110F', sw: ['#08110F', '#172120', '#3D82D6', '#A0D4F7'], ph: 1, ink: 'w', top: '#141906', hb: '#202D21' },   // وسن 6: فراشة 5.0 بصورتها الحقيقية
   krose: { n: 'الورد', base: 'light', tone: 'rosy', g: 'kawaii', acc: 'rosered', skin: 'krose', rt: 'pink', bar: '#FFF0F3', sw: ['#FFF0F3', '#F8CFDC', '#D6336C', '#8FC89A'] },
   kstar: { n: 'النجمة', base: 'dark', tone: 'starry', g: 'kawaii', acc: 'starry', skin: 'kstar', rt: 'blue', bar: '#0E1130', sw: ['#0E1130', '#1F2454', '#5B4FC4', '#F5C94E'] },
@@ -374,6 +379,16 @@ const THEMES = {
   kalger: { n: 'جامع الجزائر', base: 'dark', g: 'islamic', acc: 'kalger', bar: '#07090A', sw: ['#07090A', '#171918', '#1D7A57', '#D8B36C'], ph: 1, ink: 'w', top: '#010203', hb: '#0A0A09' },
   kcordoba: { n: 'أقواس قرطبة', base: 'dark', g: 'islamic', acc: 'kcordoba', bar: '#120B07', sw: ['#120B07', '#221B16', '#A8482F', '#E6C8A0'], ph: 1, ink: 'w', top: '#190F08', hb: '#231914' },
   knasir: { n: 'المسجد الوردي', base: 'light', g: 'islamic', acc: 'knasir', bar: '#F7EFF2', sw: ['#F7EFF2', '#FDFCFC', '#94476B', '#C29A5C'], ph: 1, ink: 'w', top: '#2F292A', hb: '#7E425C' },
+  // وسن 7 · «ثيمات رجالية» بصور حقيقية عالية الدقة وطابع قوي هادئ — ألوان كل ثيم مشتقة من صورته (css/themes.css)
+  mfalcon: { n: 'صقر الصحراء', base: 'dark', g: 'men', acc: 'mfalcon', bar: '#0A0B0F', sw: ['#0A0B0F', '#171921', '#4557A0', '#8998D1'], ph: 1, ink: 'w', top: '#373B57', hb: '#52577F', nw: 1 },
+  mhorse: { n: 'الخيل العربية', base: 'dark', g: 'men', acc: 'mhorse', bar: '#0E0B09', sw: ['#0E0B09', '#201A15', '#A86F3D', '#D8AB83'], ph: 1, ink: 'w', top: '#080605', hb: '#0C0907', nw: 1 },
+  mlion: { n: 'الأسد', base: 'dark', g: 'men', acc: 'mlion', bar: '#0E0C09', sw: ['#0E0C09', '#201B15', '#B38833', '#E0BE7B'], ph: 1, ink: 'w', top: '#546164', hb: '#7A8D92', nw: 1 },
+  mnight: { n: 'ليل الصحراء', base: 'dark', g: 'men', acc: 'mnight', bar: '#0A0D0F', sw: ['#0A0D0F', '#171C21', '#3A6FAC', '#81AADA'], ph: 1, ink: 'w', top: '#132B3C', hb: '#224766', nw: 1 },
+  mdunes: { n: 'الربع الخالي', base: 'dark', g: 'men', acc: 'mdunes', bar: '#0C0B0B', sw: ['#0C0B0B', '#1C1A19', '#B17B35', '#DEB47C'], ph: 1, ink: 'w', top: '#6F6556', hb: '#87745C', nw: 1 },
+  mdhow: { n: 'شراع الغروب', base: 'dark', g: 'men', acc: 'mdhow', bar: '#0D090E', sw: ['#0D090E', '#1D1520', '#B7532F', '#E39478'], ph: 1, ink: 'w', top: '#38281C', hb: '#503425', nw: 1 },
+  mpeak: { n: 'جبل شمس', base: 'dark', g: 'men', acc: 'mpeak', bar: '#0E0A09', sw: ['#0E0A09', '#201815', '#7C9650', '#B5C992'], ph: 1, ink: 'w', top: '#766E5B', hb: '#90866E', nw: 1 },
+  mmoon: { n: 'القمر', base: 'dark', g: 'men', acc: 'mmoon', bar: '#0A0C0F', sw: ['#0A0C0F', '#171B21', '#5E6F87', '#9DAABE'], ph: 1, ink: 'w', top: '#020204', hb: '#030406', nw: 1 },
+  medge: { n: 'حافة العالم', base: 'dark', g: 'men', acc: 'medge', bar: '#0E0B09', sw: ['#0E0B09', '#201A15', '#A6623F', '#D6A085'], ph: 1, ink: 'w', top: '#5E5851', hb: '#8E8171', nw: 1 },
   // وسن 5.1 · ثيمات حيّة متحركة (css/anim.css + js/anim.js): حركة ناعمة بالمعالج الرسومي وتتوقف حين لا تُرى
   awave: { n: 'موج', base: 'light', g: 'anim', anim: 'wave', acc: 'awave', bar: '#ECF6F7', sw: ['#ECF6F7', '#1C5F7E', '#177E8E', '#E6AC62'], ink: 'w', top: '#1C5F7E' },
   acloud: { n: 'غيم', base: 'light', g: 'anim', anim: 'cloud', acc: 'acloud', bar: '#EEF3FA', sw: ['#EEF3FA', '#3F73B4', '#4879BF', '#EDB977'], ink: 'w', top: '#3F73B4' },
