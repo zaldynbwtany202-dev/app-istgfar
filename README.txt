@@ -1,3 +1,11 @@
+وسن · Wasan 6.2 — «جاهز لمتجر Google Play»
+=====================================================
+  - targetSdk 36 (platform android-36 · aapt2 35.0.2 aarch64 · WASAN_AAPT2/WASAN_PLATFORM/WASAN_BUNDLETOOL في build.sh).
+  - MainActivity: FrameLayout root + statusScrim/navScrim + ViewCompat.setOnApplyWindowInsetsListener (systemBars|displayCutout|ime) و WindowCompat.setDecorFitsSystemWindows(false)؛ AlarmActivity تُزاح عن الأشرطة على API 35+.
+  - build_apk.py خطوة aab: aapt2 link --proto-format --stable-ids ← base-module.zip ← bundletool build-bundle (BundleConfig: الوسائط غير مضغوطة) ← jarsigner.
+  - AndroidManifest: حُذف USE_EXACT_ALARM و REQUEST_IGNORE_BATTERY_OPTIMIZATIONS؛ requestBatteryExemption يفتح ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS.
+  - PRIVACY.md + حزمة المتجر (Wasan-Play-Kit-6.2.zip). الإصدار 6.2 (versionCode 17).
+
 وسن · Wasan 6.1 — «ثيماتك المشرقة»
 =====================================================
   - THEME_GROUPS بترتيب 4.6 أولًا (kawaii · scene · girls) ثم live (جديد) ثم anim · islamic · calm · more. kmorpho → g:'islamic'.

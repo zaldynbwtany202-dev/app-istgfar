@@ -10,13 +10,16 @@ MAIN = os.path.join(APP, 'src', 'main')
 BUILD = os.path.join(PROJ, 'build')
 SDK = os.environ.get('WASAN_SDK', r'D:\app modif\tools\sdkroot')
 BT = os.path.join(SDK, 'build-tools', '34.0.0')
-PLATFORM = os.path.join(SDK, 'platforms', 'android-34', 'android.jar')
+# وسن 6.2: Google Play يشترط منذ ٣١ أغسطس ٢٠٢٦ استهداف أندرويد 16 (API 36)
+PLATFORM = os.environ.get('WASAN_PLATFORM', os.path.join(SDK, 'platforms', 'android-36', 'android.jar'))
+MIN_SDK, TARGET_SDK = '23', '36'
+BUNDLETOOL = os.environ.get('WASAN_BUNDLETOOL', os.path.join(SDK, 'bundletool.jar'))   # لبناء ملف AAB للمتجر
 DEPS = os.path.join(PROJ, '.deps')                   # يملؤه: python fetch_deps.py
 KOTLIN_LIB = os.environ.get('WASAN_KOTLIN_LIB', r'D:\app modif\tools\kotlinc\lib')
 JAVA = os.environ.get('WASAN_JAVA', r'C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot\bin\java.exe')
 
 # الإصدار
-VERSION_CODE, VERSION_NAME = '16', '6.1'
+VERSION_CODE, VERSION_NAME = '17', '6.2'
 
 # التوقيع: افتراضياً مفتاح «وسن» المرفق في signing/ (نفس مفتاح النسخ الجاهزة 2.0 و3.0 و4.0 و4.1 و4.2،
 # فيُثبَّت التحديث فوقهما مباشرة). لاستعمال مفتاحك الأصلي بدلاً منه:
@@ -25,12 +28,13 @@ VERSION_CODE, VERSION_NAME = '16', '6.1'
 KEYSTORE = os.environ.get('WASAN_KEYSTORE', os.path.join(PROJ, 'signing', 'noor2-release.jks'))
 KS_ALIAS = os.environ.get('WASAN_KS_ALIAS', 'noor')
 KS_PASS = os.environ.get('WASAN_KS_PASS', 'Noor2026!sign')
-OUT_APK = os.path.join(PROJ, 'wasan-6.1-release.apk')
+OUT_APK = os.path.join(PROJ, 'wasan-6.2-release.apk')
+OUT_AAB = os.path.join(PROJ, 'wasan-6.2-release.aab')   # لمتجر Google Play
 
 # أدوات build-tools: aapt2/zipalign تنفيذيان؛ d8 وapksigner نستدعيهما عبر java مباشرة
 # (أوثق من ملفات .bat، ولا مشكلة مع الرموز الخاصة في كلمة المرور).
 EXE = '.exe' if os.name == 'nt' else ''
-AAPT2 = os.path.join(BT, 'aapt2' + EXE)
+AAPT2 = os.environ.get('WASAN_AAPT2', os.path.join(BT, 'aapt2' + EXE))
 ZIPALIGN = os.path.join(BT, 'zipalign' + EXE)
 D8_JAR = os.path.join(BT, 'lib', 'd8.jar')
 APKSIGNER_JAR = os.path.join(BT, 'lib', 'apksigner.jar')
@@ -172,11 +176,12 @@ def main():
                '--java', os.path.join(BUILD, 'obj'),
                '--auto-add-overlay',
                '-A', os.path.join(MAIN, 'assets'),
-               '--min-sdk-version', '23',
-               '--target-sdk-version', '34',
+               '--min-sdk-version', MIN_SDK,
+               '--target-sdk-version', TARGET_SDK,
                '--version-code', VERSION_CODE,
                '--version-name', VERSION_NAME,
                '--no-version-vectors',
+               '--emit-ids', os.path.join(BUILD, 'bin', 'res-ids.txt'),   # لتطابق معرّفات الموارد في ملف AAB
                flatzip]
         if not run(cmd, 'aapt2 link'):
             return 1
@@ -529,6 +534,54 @@ def main():
         if not run(cmd, 'apksigner', env=env):
             return 1
         print(f'\n✓ APK جاهز: {OUT_APK} ({os.path.getsize(OUT_APK) / 1e6:.2f} MB)')
+
+    # ────────────────── 6) ملف AAB لمتجر Google Play (bundletool + jarsigner) ──────────────────
+    if step in ('all', 'aab'):
+        if not os.path.exists(BUNDLETOOL):
+            print('⚠ bundletool غير موجود — تخطّي ملف AAB:', BUNDLETOOL)
+            return 0
+        proto = os.path.join(BUILD, 'bin', 'base-proto.apk')
+        cmd = [AAPT2, 'link', '--proto-format', '-o', proto,
+               '--manifest', os.path.join(MAIN, 'AndroidManifest.xml'), '-I', PLATFORM, '--auto-add-overlay',
+               '-A', os.path.join(MAIN, 'assets'), '--min-sdk-version', MIN_SDK, '--target-sdk-version', TARGET_SDK,
+               '--version-code', VERSION_CODE, '--version-name', VERSION_NAME, '--no-version-vectors',
+               '--stable-ids', os.path.join(BUILD, 'bin', 'res-ids.txt'), os.path.join(BUILD, 'bin', 'allflats.zip')]
+        if not run(cmd, 'aapt2 link (proto)'):
+            return 1
+        modzip = os.path.join(BUILD, 'bin', 'base-module.zip')
+        with zipfile.ZipFile(proto) as zin, zipfile.ZipFile(modzip, 'w', zipfile.ZIP_DEFLATED) as zout:
+            for item in zin.infolist():
+                name = item.filename.replace('\\', '/')
+                if name.endswith('/'):
+                    continue
+                data = _raw_zip_read(zin, item)
+                if name == 'AndroidManifest.xml':
+                    dst = 'manifest/AndroidManifest.xml'
+                elif name == 'resources.pb' or name.startswith(('res/', 'assets/')):
+                    dst = name
+                else:
+                    dst = 'root/' + name
+                zout.writestr(dst, data)
+            for d in sorted(glob.glob(os.path.join(BUILD, 'bin', 'dex', '*.dex'))):
+                zout.write(d, 'dex/' + os.path.basename(d))
+        cfg = os.path.join(BUILD, 'bin', 'BundleConfig.json')
+        import json
+        with open(cfg, 'w') as fo:
+            json.dump({'compression': {'uncompressedGlob': ['assets/**/*.ogg', 'assets/**/*.mp3', 'assets/**/*.wav', 'assets/**/*.webp',
+                                                            'assets/**/*.png', 'assets/**/*.jpg', 'res/raw/**']}}, fo)
+        unsigned = os.path.join(BUILD, 'bin', 'wasan-unsigned.aab')
+        if os.path.exists(unsigned):
+            os.remove(unsigned)
+        cmd = [JAVA, '-jar', BUNDLETOOL, 'build-bundle', '--modules=' + modzip, '--output=' + unsigned, '--config=' + cfg]
+        if not run(cmd, 'bundletool build-bundle'):
+            return 1
+        shutil.copy(unsigned, OUT_AAB)
+        jarsigner = os.path.join(os.path.dirname(JAVA), 'jarsigner' + EXE)
+        cmd = [jarsigner, '-keystore', KEYSTORE, '-storepass', KS_PASS, '-keypass', KS_PASS,
+               '-sigalg', 'SHA256withRSA', '-digestalg', 'SHA-256', OUT_AAB, KS_ALIAS]
+        if not run(cmd, 'jarsigner (AAB)'):
+            return 1
+        print(f'\n✓ AAB جاهز لمتجر Google Play: {OUT_AAB} ({os.path.getsize(OUT_AAB) / 1e6:.2f} MB)')
     return 0
 
 

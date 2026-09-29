@@ -1,5 +1,10 @@
 package com.noor.app.ui.screens
 
+import android.view.Gravity
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.DownloadManager
@@ -116,6 +121,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var pageReady = false
     @Volatile private var audioActive = false
     private var chime: MediaPlayer? = null
+
+    // وسن 6.2 · أندرويد 15/16 (targetSdk 36): الرسم تحت أشرطة النظام إلزامي، فنلوّن شريطين خلفهما بدل window.statusBarColor
+
+    private lateinit var root: FrameLayout
+
+    private var statusScrim: View? = null
+
+    private var navScrim: View? = null
+
+    private var barStatus = 0xFF0B5D4B.toInt()
+
+    private var barNav = 0xFF07110E.toInt()
 
     private lateinit var web: WebView
     private var coords: NoorLocation.Coords = NoorLocation.Coords.DEFAULT
@@ -334,7 +351,23 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
             it.addJavascriptInterface(NoorBridge(), "NoorBridge")
         }
-        setContentView(web)
+        // وسن 6.2: الواجهة داخل حاوية تُزاح عن أشرطة النظام ولوحة المفاتيح، وخلف الشريطين لونان تضبطهما الواجهة
+        root = FrameLayout(this).also { r ->
+            r.setBackgroundColor(barNav)
+            r.addView(web, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+            statusScrim = View(this).also { v -> v.setBackgroundColor(barStatus); r.addView(v, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, Gravity.TOP)) }
+            navScrim = View(this).also { v -> v.setBackgroundColor(barNav); r.addView(v, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, Gravity.BOTTOM)) }
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val lp = web.layoutParams as FrameLayout.LayoutParams
+            lp.setMargins(bars.left, bars.top, bars.right, maxOf(bars.bottom, ime.bottom)); web.layoutParams = lp
+            statusScrim?.let { v -> val p = v.layoutParams as FrameLayout.LayoutParams; p.height = bars.top; v.layoutParams = p }
+            navScrim?.let { v -> val p = v.layoutParams as FrameLayout.LayoutParams; p.height = bars.bottom; v.layoutParams = p }
+            WindowInsetsCompat.CONSUMED
+        }
+        setContentView(root)
         web.loadUrl("file:///android_asset/www/index.html")
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -399,9 +432,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun styleSystemBars(status: Int, lightStatus: Boolean, nav: Int, lightNav: Boolean) {
         try {
+            barStatus = status; barNav = nav
+            WindowCompat.setDecorFitsSystemWindows(window, false)
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.statusBarColor = status
-            window.navigationBarColor = nav
+            if (Build.VERSION.SDK_INT < 35) {
+                @Suppress("DEPRECATION") window.statusBarColor = Color.TRANSPARENT
+                @Suppress("DEPRECATION") window.navigationBarColor = Color.TRANSPARENT
+            }
+            if (Build.VERSION.SDK_INT >= 29) { window.isStatusBarContrastEnforced = false; window.isNavigationBarContrastEnforced = false }
+            statusScrim?.setBackgroundColor(status); navScrim?.setBackgroundColor(nav)
+            if (::root.isInitialized) root.setBackgroundColor(nav)
             val ctl = WindowInsetsControllerCompat(window, window.decorView)
             ctl.isAppearanceLightStatusBars = lightStatus
             ctl.isAppearanceLightNavigationBars = lightNav
@@ -682,12 +722,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             Build.VERSION.SDK_INT < 23 || (getSystemService(POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(packageName)
         } catch (_: Exception) { true }
 
-        @SuppressLint("BatteryLife")
+        /** وسن 6.2: متوافق مع سياسة Google Play — نفتح قائمة «تحسين البطارية» ليختار المستخدم «وسن» (دون إذن مقيَّد) */
         @JavascriptInterface fun requestBatteryExemption() {
             if (Build.VERSION.SDK_INT < 23) return
             runOnUiThread {
-                try { startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))) }
-                catch (_: Exception) { try { startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) } catch (_: Exception) { } }
+                try { startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
+                catch (_: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (_: Exception) { } }
             }
         }
 
@@ -906,7 +946,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/6.1 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/6.2 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }
@@ -1053,7 +1093,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface fun setStatusBar(color: String, lightIcons: Boolean) {
             runOnUiThread {
                 try {
-                    window.statusBarColor = parseColor(color, 0xFF0B5D4B.toInt())
+                    val c = parseColor(color, 0xFF0B5D4B.toInt()); barStatus = c
+                    statusScrim?.setBackgroundColor(c)
                     WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = lightIcons
                 } catch (_: Exception) { }
             }
@@ -1062,8 +1103,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface fun setNavBar(color: String, lightIcons: Boolean) {
             runOnUiThread {
                 try {
-                    val c = parseColor(color, 0xFF07110E.toInt())
-                    window.navigationBarColor = c
+                    val c = parseColor(color, 0xFF07110E.toInt()); barNav = c
+                    navScrim?.setBackgroundColor(c); if (::root.isInitialized) root.setBackgroundColor(c)
                     WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = lightIcons
                     web.setBackgroundColor(c)
                 } catch (_: Exception) { }

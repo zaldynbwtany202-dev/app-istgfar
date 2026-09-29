@@ -10,14 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble APK
+      - name: Assemble files
         run: |
           set -euo pipefail
           VER="$(tr -d ' \n\r' < parts/VERSION)"
           cat parts/Wasan-"$VER".apk.part* > "Wasan-$VER.apk"
           echo "$(tr -d ' \n\r' < parts/Wasan-$VER.apk.sha256)  Wasan-$VER.apk" | sha256sum -c -
-          ls -l "Wasan-$VER.apk"
+          FILES="Wasan-$VER.apk"
+          if ls parts/Wasan-"$VER".aab.part* >/dev/null 2>&1; then
+            cat parts/Wasan-"$VER".aab.part* > "Wasan-$VER.aab"
+            echo "$(tr -d ' \n\r' < parts/Wasan-$VER.aab.sha256)  Wasan-$VER.aab" | sha256sum -c -
+            FILES="$FILES Wasan-$VER.aab"
+          fi
+          if [ -d parts/extra ]; then for f in parts/extra/*; do [ -f "$f" ] && FILES="$FILES $f"; done; fi
+          ls -l $FILES
           echo "VER=$VER" >> "$GITHUB_ENV"
+          echo "FILES=$FILES" >> "$GITHUB_ENV"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -26,4 +34,4 @@ jobs:
           if ! gh release view "v$VER" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release create "v$VER" -R "$GITHUB_REPOSITORY" --target main --title "Wasan $VER" --notes-file parts/NOTES.md
           fi
-          gh release upload "v$VER" "Wasan-$VER.apk" -R "$GITHUB_REPOSITORY" --clobber
+          gh release upload "v$VER" $FILES -R "$GITHUB_REPOSITORY" --clobber

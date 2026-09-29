@@ -1,6 +1,6 @@
 <div dir="rtl">
 
-# وسن · Wasan 6.1
+# وسن · Wasan 6.2
 
 **رفيقك اليومي للصلاة والقرآن والذكر** — تطبيق أندرويد يعمل دون إنترنت ودون إعلانات.
 
@@ -8,8 +8,17 @@
 
 ## التحميل
 
-- **التطبيق الجاهز:** [Wasan-6.1.apk](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.1/Wasan-6.1.apk) (من صفحة الإصدارات Releases) — يُثبَّت فوق النسخ السابقة مباشرة وتبقى بياناتك.
-- النسخ السابقة: [الإصدار 6.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.0) · [الإصدار 5.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.1) · [الإصدار 5.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.0) · [الإصدار 4.8](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v4.8) · [release/Wasan-4.7.apk](release/Wasan-4.7.apk).
+- **التطبيق الجاهز:** [Wasan-6.2.apk](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.2/Wasan-6.2.apk) · لمتجر Google Play: [Wasan-6.2.aab](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.2/Wasan-6.2.aab) (من صفحة الإصدارات Releases) — يُثبَّت فوق النسخ السابقة مباشرة وتبقى بياناتك.
+- النسخ السابقة: [الإصدار 6.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.1) · [الإصدار 6.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.0) · [الإصدار 5.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.1) · [الإصدار 5.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.0) · [الإصدار 4.8](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v4.8) · [release/Wasan-4.7.apk](release/Wasan-4.7.apk).
+
+## ما الجديد في 6.2 · «جاهز لمتجر Google Play»
+
+- **يستهدف أندرويد 16 (API 36)** كما يشترط Google Play منذ ٣١ أغسطس ٢٠٢٦ (build_apk.py: platform android-36، TARGET_SDK 36، aapt2 35.0.2).
+- **أشرطة النظام بالطريقة الجديدة:** على أندرويد 15/16 يُلغى window.statusBarColor، فصارت الواجهة داخل حاوية تُزاح عن الأشرطة ولوحة المفاتيح (WindowInsets)، وخلف الشريطين لونان تضبطهما الواجهة — المظهر نفسه في كل الإصدارات، وشاشة المنبّه تُزاح عن الأشرطة.
+- **ملف AAB للمتجر** (Wasan-6.2.aab): ربط aapt2 بصيغة proto بمعرّفات الموارد نفسها (--emit-ids/--stable-ids) ثم bundletool 1.18.3 وتوقيع jarsigner بالمفتاح نفسه (يصبح «مفتاح الرفع» في Play).
+- **أذونات أقل تقيّدها سياسة المتجر:** حُذف USE_EXACT_ALARM (يبقى SCHEDULE_EXACT_ALARM ويُطلب من المستخدم عند الحاجة، مع بديل غير دقيق) و REQUEST_IGNORE_BATTERY_OPTIMIZATIONS (يُفتح إعداد البطارية العام بدلًا منه).
+- **سياسة الخصوصية** في [PRIVACY.md](PRIVACY.md)، و«حزمة المتجر» (أيقونة 512، صورة الميزة 1024×500، ٨ لقطات 1080×1920، نصوص البطاقة، ودليل النشر PDF) مرفقة بالإصدار.
+- الإصدار 6.2 (versionCode 17)، بالتوقيع نفسه — يُثبَّت فوق السابق وتبقى بياناتك.
 
 ## ما الجديد في 6.1 · «ثيماتك المشرقة»
 
