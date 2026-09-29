@@ -131,3 +131,48 @@
 /* وسن 6: حبّات المسبحة في الثيمات الحيّة بلون الثيم (لا الأخضر الثابت للداكن) */
 [data-anim] .beads .bd{fill:var(--card-3)}
 [data-anim] .beads .bd.on{fill:url(#bdG)}
+
+/* ═══════════ وسن 6.3 · ضبط المواقيت · وصول الأذان · الموقع ═══════════ */
+.nh-warn.gloc{background:color-mix(in srgb,var(--gold) 14%,var(--card));border-color:color-mix(in srgb,var(--gold) 38%,var(--line))}
+.nh-warn.gloc>.i:first-child{color:var(--gold)}
+.nh-warn.soft{background:var(--card-2);border-color:var(--line)}
+.nh-warn.soft>.i:first-child{color:var(--tx-2)}
+.nh-row.soft .ic{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.nh-log{margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--card-2);border:1px solid var(--line)}
+.nh-lt{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--tx-2);margin-bottom:6px}
+.nh-lt .i{width:15px;height:15px}
+.nh-li{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed var(--line);font-size:13px}
+.nh-li:first-of-type{border-top:0}
+.nh-li b{font-weight:700;min-width:64px}
+.nh-li span{flex:1;color:var(--tx-3);font-size:12.3px}
+.nh-li i{font-style:normal;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.nh-li.late i{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.cb-day{padding-bottom:12px}
+.cb-dh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.cb-dh b{font-size:15px;white-space:nowrap}
+.cb-dh .cb-date{height:40px;flex:1;min-width:0;font-size:14px;padding:0 10px;color:var(--tx);font-family:inherit}
+.cb-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cb-f{display:flex;flex-direction:column;gap:5px;padding:9px 10px 8px;border-radius:14px;background:var(--card-2);border:1px solid var(--line)}
+.cb-f span{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--tx-2)}
+.cb-f span .i{width:16px;height:16px;color:var(--gold)}
+.cb-f input{width:100%;height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--field);color:var(--tx);font-size:17px;font-weight:700;text-align:center;font-family:inherit;outline:none;padding:0 6px}
+.cb-f input:focus{border-color:var(--gold)}
+.btn.cb-add{width:calc(100% - 32px);margin:12px 16px 0;white-space:normal;height:auto;min-height:48px;padding:10px 16px;line-height:1.55;font-size:14px}
+.cb-rt{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15.5px;margin-bottom:8px}
+.cb-rt .i{width:19px;height:19px;color:var(--ok)}
+.cb-l{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
+.cb-l .i{width:17px;height:17px;color:var(--gold);flex:none}
+.cb-l span{color:var(--tx-2);min-width:88px}
+.cb-l b{flex:1;font-weight:700;text-align:left;direction:rtl}
+.cb-ok{display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;border-radius:13px;font-size:13px;font-weight:600;background:color-mix(in srgb,var(--ok) 13%,transparent);color:var(--ok)}
+.cb-ok.warn{background:color-mix(in srgb,var(--warn) 13%,transparent);color:var(--warn)}
+.cb-ok .i,.cb-w .i{width:17px;height:17px;flex:none}
+.cb-w{display:flex;align-items:flex-start;gap:8px;margin-top:8px;padding:9px 12px;border-radius:13px;font-size:12.8px;line-height:1.7;background:color-mix(in srgb,var(--bad) 11%,transparent);color:var(--bad)}
+.cb-pt{margin:14px 0 8px;font-size:12.5px;font-weight:700;color:var(--tx-2)}
+.cb-tab{border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.cb-tab table.tt{font-size:12px}
+.cb-on .cb-rt .i{color:var(--gold)}
+
+.rk.nw{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok);border-color:transparent}
+
+.nh-warn .grow{min-width:0;white-space:normal;line-height:1.55}

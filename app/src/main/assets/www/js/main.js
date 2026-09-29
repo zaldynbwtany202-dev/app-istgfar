@@ -57,6 +57,8 @@
 
   const sp = $('#splash');
   setTimeout(() => { sp.classList.add('out'); setTimeout(() => sp.remove(), 600); }, 850);
-  if (!Store.get('onboarded', 0)) { Store.set('wnSeen', '6.2'); setTimeout(() => Onboarding.show(), 900); }
-  else if (Store.get('wnSeen', '') !== '6.2') setTimeout(() => { try { whatsNewSheet(); } catch (e) { console.error(e); } }, 2400);   // وسن 6.1
+  if (!Store.get('onboarded', 0)) { Store.set('wnSeen', '6.3'); setTimeout(() => Onboarding.show(), 900); }
+  else if (Store.get('wnSeen', '') !== '6.3') setTimeout(() => { try { whatsNewSheet(); } catch (e) { console.error(e); } }, 2400);   // وسن 6.1
+  // وسن 6.3: إن كان الأذان لن يصل في وقته (أذونات ناقصة أو موقع تقريبي) نعرض خطوات الإصلاح — مرة كل ثلاثة أيام على الأكثر
+  else setTimeout(() => { try { NotifHealth.maybeAsk(); } catch (e) { console.error(e); } }, 4200);
 })();

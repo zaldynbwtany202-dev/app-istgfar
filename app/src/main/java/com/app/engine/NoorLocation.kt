@@ -37,6 +37,17 @@ object NoorLocation {
 
     private const val FRESH_MS = 2 * 60 * 60 * 1000L
     private const val TIMEOUT_MS = 10_000L
+    /** وسن 6.3: طلب صريح من المستخدم — مهلة أطول (التقاط GPS داخل المباني قد يتأخر) */
+    const val USER_TIMEOUT_MS = 22_000L
+
+    /** هل خدمة الموقع (GPS/الشبكة) مفعّلة في الهاتف؟ */
+    fun isEnabled(ctx: Context): Boolean {
+        val lm = ctx.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return false
+        return try {
+            if (android.os.Build.VERSION.SDK_INT >= 28) lm.isLocationEnabled
+            else lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        } catch (_: Exception) { true }
+    }
 
     fun hasPermission(ctx: Context): Boolean =
         ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION) ==
@@ -45,7 +56,7 @@ object NoorLocation {
                 PackageManager.PERMISSION_GRANTED
 
     @SuppressLint("MissingPermission")
-    suspend fun getLastKnownLocation(context: Context): Coords? {
+    suspend fun getLastKnownLocation(context: Context, timeoutMs: Long = TIMEOUT_MS, freshMs: Long = FRESH_MS): Coords? {
         if (!hasPermission(context)) return null
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return null
 
@@ -58,18 +69,19 @@ object NoorLocation {
             if (b == null || l.time > b.time + 60_000L || (Math.abs(l.time - b.time) <= 60_000L && l.accuracy < b.accuracy)) best = l
         }
         val last = best
-        if (last != null && System.currentTimeMillis() - last.time < FRESH_MS) return Coords(last.latitude, last.longitude)
+        if (last != null && System.currentTimeMillis() - last.time < freshMs) return Coords(last.latitude, last.longitude)
 
         // 2) قراءة جديدة واحدة، ثم الرجوع للقديم عند الفشل
-        val live = requestSingle(lm, enabled)
+        val live = requestSingle(lm, enabled, timeoutMs)
         if (live != null) return Coords(live.latitude, live.longitude)
         return last?.let { Coords(it.latitude, it.longitude) }
     }
 
     @SuppressLint("MissingPermission")
-    private suspend fun requestSingle(lm: LocationManager, enabled: List<String>): Location? =
+    private suspend fun requestSingle(lm: LocationManager, enabled: List<String>, timeoutMs: Long): Location? =
         suspendCancellableCoroutine { cont ->
-            val order = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER).filter { it in enabled }
+            // وسن 6.3: «fused» (أندرويد 12+) يجمع الشبكة والـGPS والواي فاي — أسرع وأدق داخل المباني
+            val order = listOf("fused", LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER).filter { it in enabled }
             if (order.isEmpty()) { cont.resume(null); return@suspendCancellableCoroutine }
             val main = Handler(Looper.getMainLooper())
             val listeners = ArrayList<LocationListener>()
@@ -95,7 +107,7 @@ object NoorLocation {
                     catch (_: Exception) { }
                 }
                 if (listeners.isEmpty()) finish(null)
-                else main.postDelayed({ finish(null) }, TIMEOUT_MS)
+                else main.postDelayed({ finish(null) }, timeoutMs)
             }
             cont.invokeOnCancellation { main.post { finish(null) } }
         }

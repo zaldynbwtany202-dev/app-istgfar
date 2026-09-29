@@ -12,6 +12,7 @@ import android.content.Intent
  *  ─ إقلاع الجهاز (ومنه الإقلاع السريع في بعض الهواتف) أو تحديث التطبيق ← إعادة الجدولة.
  *  ─ تغيير الساعة ← إعادة الجدولة · تغيير المنطقة الزمنية ← إعادة حساب الأذان (WasanTimes).
  *  ─ وسن 4.7: منبّه «الأذكار المنبثقة» وزرّا «ذكرتُ ✓» و«إيقاف اليوم»، والتذكير الصوتي.
+ *  ─ وسن 6.3: نقاط التحقّق قبل الأذان، ومنح إذن المنبّهات الدقيقة ← إعادة الجدولة.
  * ════════════════════════════════════════════════════════════════
  */
 class BootReceiver : BroadcastReceiver() {
@@ -25,6 +26,8 @@ class BootReceiver : BroadcastReceiver() {
                 else WasanVoice.speak(context.applicationContext, say, 0.9f) { try { pr.finish() } catch (_: Exception) { } }
             }
             AdhanScheduler.ACTION_PRAYED -> AdhanScheduler.markPrayed(context, intent)
+            // وسن 6.3: نقطة تحقّق تقترب من الأذان (حين لا تُسمح المنبّهات الدقيقة)
+            AdhanScheduler.ACTION_TICK -> AdhanScheduler.tick(context, intent)
             // وسن 4.7 · الأذكار المنبثقة
             DhikrPop.ACTION_POP -> { val pr = goAsync(); DhikrPop.fire(context, intent) { try { pr.finish() } catch (_: Exception) { } } }
             DhikrPop.ACTION_DONE -> DhikrPop.markDone(context, intent)
@@ -40,6 +43,8 @@ class BootReceiver : BroadcastReceiver() {
             }
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
+            // وسن 6.3: منحت المستخدمة إذن «المنبّهات والتذكيرات» ← نعيد الجدولة فورًا بالدقة الكاملة
+            "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED",
             Intent.ACTION_TIME_CHANGED,
             "android.intent.action.QUICKBOOT_POWERON",
             "com.htc.intent.action.QUICKBOOT_POWERON" -> {

@@ -8,6 +8,7 @@ import androidx.core.view.WindowCompat
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.DownloadManager
+import android.content.ComponentName
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ContentResolver
@@ -165,10 +166,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val granted = res.values.any { it }
         pendingGeo?.let { (origin, cb) -> cb.invoke(origin, granted, false) }
         pendingGeo = null
-        if (granted) refreshLocation() else if (awaitingUserLocation) { awaitingUserLocation = false; notifyLocation(false) }
+        if (granted) refreshLocation() else if (awaitingUserLocation) { awaitingUserLocation = false; notifyLocation(false, "denied") }
     }
 
-    private val notifPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    /** وسن 6.3: نتيجة إذن الإشعارات تصل للواجهة (لتكمل خطوة «الأذان في وقته») */
+    private val notifPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        AdhanScheduler.ensureChannels(this)
+        js("try{window.onNotifPerm&&onNotifPerm(" + (if (ok) "true" else "false") + ")}catch(e){}")
+    }
+    @Volatile private var awaitingLocSettings = false
 
     /** وسن 5 · صورة الصفحة الرئيسية من معرض الهاتف (منتقي الصور الآمن — دون أي إذن إضافي) */
     private val photoPicker = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -407,6 +413,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (compassOn || qiblaLegacy) registerSensors()
         // وسن 5.1: تحديث صامت للموقع عند العودة للتطبيق (كل ٣٠ دقيقة على الأكثر) — للمسافرين حول العالم
         if (lastLocAt > 0 && SystemClock.elapsedRealtime() - lastLocAt > 30 * 60_000L && NoorLocation.hasPermission(this)) refreshLocation()
+        // وسن 6.3: ربما منحت المستخدمة إذن المنبّهات/الإشعارات من الإعدادات الآن — نعيد ضبط المنبّهات بالدقة الكاملة
+        val app = applicationContext
+        Thread { try { AdhanScheduler.scheduleNext(app); DhikrPop.scheduleNext(app); WasanAlarm.scheduleAll(app) } catch (_: Exception) { } }.start()
+        if (awaitingLocSettings) { awaitingLocSettings = false; if (NoorLocation.isEnabled(this)) js("try{window.onLocSettingsBack&&onLocSettingsBack(true)}catch(e){}") }
     }
 
     override fun onPause() {
@@ -487,8 +497,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun refreshLocation() {
         lastLocAt = SystemClock.elapsedRealtime()
+        val user = awaitingUserLocation
         CoroutineScope(Dispatchers.IO).launch {
-            val c = try { NoorLocation.getLastKnownLocation(this@MainActivity) } catch (e: Exception) { null }
+            // وسن 6.3: الطلب الصريح يأخذ قراءة حديثة (أقل من ١٥ دقيقة) بمهلة أطول، والتحديث الصامت يكتفي بالمعروف
+            val c = try {
+                if (user) NoorLocation.getLastKnownLocation(this@MainActivity, NoorLocation.USER_TIMEOUT_MS, 15 * 60_000L)
+                else NoorLocation.getLastKnownLocation(this@MainActivity)
+            } catch (e: Exception) { null }
             if (c != null) {
                 coords = c
                 realLocation = true
@@ -503,7 +518,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 updateDeclination()
             }
             awaitingUserLocation = false
-            notifyLocation(c != null)
+            notifyLocation(c != null, if (c != null) null else if (!NoorLocation.isEnabled(this@MainActivity)) "off" else "timeout")
             sendPrayers()
         }
     }
@@ -518,8 +533,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     } catch (_: Exception) { null }
 
-    private fun locationJson(ok: Boolean = true): String = JSONObject().apply {
+    private fun locationJson(ok: Boolean = true, reason: String? = null): String = JSONObject().apply {
         put("ok", ok)
+        if (reason != null) put("reason", reason)
         put("lat", coords.lat)
         put("lng", coords.lng)
         put("isDefault", !realLocation)
@@ -527,8 +543,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         geoCC?.let { put("cc", it) }
     }.toString()
 
-    private fun notifyLocation(ok: Boolean) {
-        val j = locationJson(ok)
+    private fun notifyLocation(ok: Boolean, reason: String? = null) {
+        val j = locationJson(ok, reason)
         js("try{window.onNativeLocation&&onNativeLocation($j)}catch(e){}")
     }
 
@@ -669,7 +685,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         @JavascriptInterface fun requestLocation() {
             awaitingUserLocation = true
-            if (NoorLocation.hasPermission(this@MainActivity)) refreshLocation() else askLocationPermission()
+            if (!NoorLocation.hasPermission(this@MainActivity)) { askLocationPermission(); return }
+            // وسن 6.3: خدمة الموقع مغلقة؟ نخبر الواجهة فورًا لتعرض زر «افتح إعدادات الموقع»
+            if (!NoorLocation.isEnabled(this@MainActivity)) { awaitingUserLocation = false; notifyLocation(false, "off"); return }
+            refreshLocation()
+        }
+        @JavascriptInterface fun locationEnabled(): Boolean = NoorLocation.isEnabled(this@MainActivity)
+        @JavascriptInterface fun locationPermitted(): Boolean = NoorLocation.hasPermission(this@MainActivity)
+        @JavascriptInterface fun openLocationSettings() {
+            awaitingLocSettings = true
+            runOnUiThread { try { startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) } catch (_: Exception) { awaitingLocSettings = false } }
+        }
+        @JavascriptInterface fun openAppSettings() {
+            runOnUiThread { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { } }
         }
 
         @JavascriptInterface fun detectLocation() = requestLocation()
@@ -726,7 +754,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface fun requestBatteryExemption() {
             if (Build.VERSION.SDK_INT < 23) return
             runOnUiThread {
-                try { startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
+                // وسن 6.3: أندرويد 12+ — صفحة التطبيق مباشرة (البطارية ← «غير مقيّد»)، وما قبله قائمة تحسين البطارية
+                try { if (Build.VERSION.SDK_INT >= 31) startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) else startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
                 catch (_: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (_: Exception) { } }
             }
         }
@@ -763,6 +792,44 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         @JavascriptInterface fun notifEnabled(): Boolean = AdhanScheduler.notificationsEnabled(this@MainActivity)
+        /** وسن 6.3: هل طُلب إذن الإشعارات من قبل ورُفض نهائيًا؟ (نفتح الإعدادات بدل النافذة) */
+        @JavascriptInterface fun notifAskable(): Boolean = Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        @JavascriptInterface fun openNotifSettings() {
+            runOnUiThread { try { startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName)) }
+                catch (_: Exception) { try { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (_: Exception) { } } }
+        }
+        @JavascriptInterface fun adhanLog(): String = AdhanScheduler.log(this@MainActivity)
+        @JavascriptInterface fun adhanMode(): String = AdhanScheduler.mode(this@MainActivity)
+        @JavascriptInterface fun adhanStrong(): Boolean = AdhanScheduler.strong(this@MainActivity)
+        @JavascriptInterface fun setAdhanStrong(on: Boolean) { AdhanScheduler.setStrong(this@MainActivity, on) }
+        @JavascriptInterface fun sdkInt(): Int = Build.VERSION.SDK_INT
+        @JavascriptInterface fun oem(): String = (Build.MANUFACTURER ?: "").lowercase(Locale.US)
+        /** وسن 6.3: «التشغيل التلقائي» في هواتف شاومي وأوبو وفيفو وهواوي… (وإلا صفحة التطبيق) */
+        @JavascriptInterface fun openAutostart(): Boolean {
+            val cands = listOf(
+                ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"),
+                ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity"),
+                ComponentName("com.coloros.safecenter", "com.coloros.safecenter.startupapp.StartupAppListActivity"),
+                ComponentName("com.oplus.safecenter", "com.oplus.safecenter.permission.startup.StartupAppListActivity"),
+                ComponentName("com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity"),
+                ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"),
+                ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"),
+                ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"),
+                ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity"),
+                ComponentName("com.hihonor.systemmanager", "com.hihonor.systemmanager.startupmgr.ui.StartupNormalAppListActivity"),
+                ComponentName("com.samsung.android.lool", "com.samsung.android.sm.battery.ui.BatteryActivity"),
+                ComponentName("com.asus.mobilemanager", "com.asus.mobilemanager.autostart.AutoStartActivity"),
+                ComponentName("com.letv.android.letvsafe", "com.letv.android.letvsafe.AutobootManageActivity")
+            )
+            for (c in cands) {
+                try {
+                    val i = Intent().setComponent(c).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    if (packageManager.resolveActivity(i, 0) != null) { runOnUiThread { try { startActivity(i) } catch (_: Exception) { } }; return true }
+                } catch (_: Exception) { }
+            }
+            openAppSettings(); return false
+        }
 
         // ── وسن 4.7 · الأذكار المنبثقة ──
         // ── وسن 4.8 · المنبّه ──
@@ -932,7 +999,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         @JavascriptInterface fun dlStart(k: String, url: String, rel: String, title: String) {
             try {
                 val host = try { Uri.parse(url).host ?: "" } catch (_: Exception) { "" }
-                if (!url.startsWith("https://") || !(host.endsWith("mp3quran.net") || host == "archive.org" || host.endsWith(".archive.org"))) { dlFail(k); return }
+                if (!url.startsWith("https://") || !(host.endsWith("mp3quran.net") || host == "archive.org" || host.endsWith(".archive.org") || host == "media.way2quran.com")) { dlFail(k); return }
                 val f = recitFile(rel) ?: run { dlFail(k); return }
                 f.parentFile?.mkdirs()
                 if (f.exists()) f.delete()
@@ -946,7 +1013,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     .setDestinationInExternalFilesDir(this@MainActivity, "recit", rel)
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                req.addRequestHeader("User-Agent", "Wasan/6.2 (Android)")
+                req.addRequestHeader("User-Agent", "Wasan/6.3 (Android)")
                 val id = dm.enqueue(req)
                 dlPrefs.edit().putLong(k, id).putString("$k.rel", rel).apply()
             } catch (e: Exception) { Log.w("Wasan", "dlStart", e); dlFail(k) }

@@ -1,3 +1,15 @@
+وسن · Wasan 6.3 — «الأذان في دقيقته، ومواقيت مسجدك»
+=====================================================
+  - AdhanScheduler.scheduleNext: الأذان setAlarmClock (strong، افتراضي) والتذكيرات setExactAndAllowWhileIdle؛ دون إذن: setAndAllowWhileIdle + ACTION_TICK في منتصف المدة المتبقية (REQ_TICK 7202)؛ mode/log (آخر ٢٠ وصولًا) + جسور adhanLog/adhanMode/adhanStrong/setAdhanStrong/sdkInt/oem/openAutostart/notifAskable/openNotifSettings.
+  - BootReceiver: ACTION_TICK و android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED (والبيان)؛ MainActivity.onResume يعيد جدولة الأذان/الأذكار/المنبّه؛ notifPerm يعيد النتيجة لـ window.onNotifPerm.
+  - NoorLocation: fused + USER_TIMEOUT_MS 22s + isEnabled؛ notifyLocation(ok, reason off|denied|timeout)؛ locationEnabled/locationPermitted/openLocationSettings/openAppSettings؛ requestBatteryExemption يفتح صفحة التطبيق على API 31+.
+  - engine.js: METHODS.jordan + off (turkey/morocco/gulf/jordan)، COUNTRY_METHOD JO/PS/IL → jordan، toDate لأقرب دقيقة، calibrate(refs,o) و calibMethod(c)؛ WasanTimes.forDay لأقرب دقيقة؛ Notif.config يرسل adjust = Settings.adjust + m.off.
+  - prayer.js: Times.calib/custom/eff/asr، SCREENS.calib، CitySearch، locFailSheet/locRetry، NotifHealth.maybeAsk + notifHealthSheet الجديدة، Loc.major (العاصمة للموقع الافتراضي).
+  - screens.js: خطوة الترحيب ٣ «ليصلك الأذان في وقته» (٥ خطوات)، صف «ضبط المواقيت» في الإعدادات، WHATS_NEW 6.3.
+  - cities.js: 7335 مدينة/244 دولة + NOOR_TZL (c[4] فهرس المنطقة الزمنية، c[5] الاسم اللاتيني).
+  - reciters.js: +30 (rd = رقم التوقيتات، nw = جديد) + WASAN_FEATURED؛ xrec.js: شعبان +27، مسعد +11 كاملة و+8 [رابط، من، إلى]؛ dlStart يقبل media.way2quran.com.
+  - الإصدار 6.3 (versionCode 18) · targetSdk 36.
+
 وسن · Wasan 6.2 — «جاهز لمتجر Google Play»
 =====================================================
   - targetSdk 36 (platform android-36 · aapt2 35.0.2 aarch64 · WASAN_AAPT2/WASAN_PLATFORM/WASAN_BUNDLETOOL في build.sh).

@@ -1,6 +1,6 @@
 <div dir="rtl">
 
-# وسن · Wasan 6.2
+# وسن · Wasan 6.3
 
 **رفيقك اليومي للصلاة والقرآن والذكر** — تطبيق أندرويد يعمل دون إنترنت ودون إعلانات.
 
@@ -8,8 +8,17 @@
 
 ## التحميل
 
-- **التطبيق الجاهز:** [Wasan-6.2.apk](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.2/Wasan-6.2.apk) · لمتجر Google Play: [Wasan-6.2.aab](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.2/Wasan-6.2.aab) (من صفحة الإصدارات Releases) — يُثبَّت فوق النسخ السابقة مباشرة وتبقى بياناتك.
-- النسخ السابقة: [الإصدار 6.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.1) · [الإصدار 6.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.0) · [الإصدار 5.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.1) · [الإصدار 5.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.0) · [الإصدار 4.8](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v4.8) · [release/Wasan-4.7.apk](release/Wasan-4.7.apk).
+- **التطبيق الجاهز:** [Wasan-6.3.apk](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.3/Wasan-6.3.apk) · لمتجر Google Play: [Wasan-6.3.aab](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v6.3/Wasan-6.3.aab) (من صفحة الإصدارات Releases) — يُثبَّت فوق النسخ السابقة مباشرة وتبقى بياناتك.
+- النسخ السابقة: [الإصدار 6.2](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.2) · [الإصدار 6.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.1) · [الإصدار 6.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.0) · [الإصدار 5.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.1) · [الإصدار 5.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.0) · [الإصدار 4.8](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v4.8) · [release/Wasan-4.7.apk](release/Wasan-4.7.apk).
+
+## ما الجديد في 6.3 · «الأذان في دقيقته، ومواقيت مسجدك»
+
+- **الأذان في وقته تمامًا:** كان أندرويد 14+ يمنع «المنبّهات الدقيقة» افتراضيًا فيؤخّر المنبّه التقريبي الأذان حتى ساعة (ويُسقطه إن تجاوز ٢٠ دقيقة)، ولم يكن الترحيب يطلب إذن الإشعارات على أندرويد 13+. الآن: الأذان بـ `setAlarmClock` (لا يؤجّله Doze ولا حدود App Standby) والتذكيرات بـ `setExactAndAllowWhileIdle`، ودون الإذن «نقاط تحقّق» تقترب من الوقت (ACTION_TICK)، وإعادة الجدولة عند منح الإذن (SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED) وعند العودة للتطبيق، وخطوة «ليصلك الأذان في وقته» في الترحيب، وورقة «وصول الأذان» (الموقع · الإشعارات · المنبّهات · البطارية · التشغيل التلقائي لشاومي/أوبو/فيفو/هواوي/سامسونج · أذان بأولوية المنبّه · سجلّ «آخر ما وصل» بالتأخير الفعلي) تظهر وحدها مرة كل ٣ أيام إن نقص شيء.
+- **المواقيت لأقرب دقيقة** (الثانية صفر) في الواجهة و WasanTimes معًا، فيُرفع الأذان عند الدقيقة المعروضة.
+- **طرق الحساب بفروقها الرسمية:** الأردن وفلسطين (18°/18° والمغرب +5)، تركيا (الشروق −7، الظهر +5، العصر +4، المغرب +7)، المغرب (الظهر والمغرب +5)، الإمارات (الظهر والمغرب +3) — مطابقة لـ Aladhan بالدقيقة في 18 مدينة × 4 تواريخ، والنواة الأصلية تطابق الواجهة (اختُبرت WasanTimes بـ kotlinc).
+- **ضبط المواقيت على مسجدك** (`calib`): تُدخل مواقيت يوم (أو ثلاثة) من تقويم مسجدك أو الوزارة، فيستنتج `NoorEngine.calibrate` زاويتي الفجر والعشاء (أو دقائق العشاء بعد المغرب) ومذهب العصر وفروق الدقائق، ويعرض مطابقة الإدخال وجدول ٧ أيام، ثم تُحسب به كل الأيام والأذان (Settings.calib، يُطبَّق ضمن ٦٠ كم من مكان الضبط).
+- **الموقع حول العالم:** ٧٣٣٥ مدينة في ٢٤٤ دولة (GeoNames + أسماء Wikidata العربية، العواصم أولًا، ومنطقة كل مدينة الزمنية) وبحث بالعربية أو اللاتينية؛ مزوّد «fused» ومهلة ٢٢ ثانية للطلب الصريح؛ سبب الفشل واضح (الموقع مغلق ← زرّ إعدادات الموقع، الإذن مرفوض ← إعدادات التطبيق) مع إعادة المحاولة بعد العودة؛ ولافتة «المواقيت تقريبية» حين لا يُحدَّد الموقع.
+- **قرّاء أكثر:** عبدالله أحمد شعبان ٥٧ سورة (+٢٧ منها البقرة ويوسف ومريم وطه والصافات)، عبدالرحمن مسعد ٣٦ (+١١ كاملة منها هود والحجر والإسراء والفرقان من way2quran.com، و+٨ مقاطع «ما تيسّر» بمداها)، و٣٠ قارئًا جديدًا في المكتبة (٢٨ من mp3quran منهم عبدالعزيز التركي وأحمد عيسى المعصراوي وإبراهيم الدوسري وعبدالرشيد صوفي، ٦ منهم بمتابعة دقيقة، وعبدالله عواد الجهني كاملًا وطارق محمد ٣٠ سورة من أرشيف الإنترنت)، وقسم «الأشهر والأحدث».
 
 ## ما الجديد في 6.2 · «جاهز لمتجر Google Play»
 
