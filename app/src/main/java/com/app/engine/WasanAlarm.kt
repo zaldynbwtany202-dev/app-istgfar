@@ -1,5 +1,7 @@
 package com.noor.app.engine
 
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.Notification
@@ -337,7 +339,10 @@ class AlarmActivity : Activity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         try { window.statusBarColor = Color.parseColor("#071D26"); window.navigationBarColor = Color.parseColor("#071D26") } catch (_: Exception) { }
         val o = try { JSONObject(intent?.getStringExtra("json") ?: "{}") } catch (_: Exception) { JSONObject() }
-        setContentView(build(o))
+        val v = build(o)
+        // وسن 6.2 (targetSdk 36): الخلفية تمتد تحت الأشرطة، والمحتوى يُزاح عنها
+        if (Build.VERSION.SDK_INT >= 35) ViewCompat.setOnApplyWindowInsetsListener(v) { view, ins -> val b = ins.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()); view.setPadding(b.left, b.top, b.right, b.bottom); ins }
+        setContentView(v)
     }
 
     private fun dp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, resources.displayMetrics)

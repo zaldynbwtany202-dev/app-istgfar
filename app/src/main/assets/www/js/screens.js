@@ -1074,8 +1074,9 @@ function soundSheet() {
 window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.textContent = j.title || SOUND_NAMES[j.mode] || ''; toast('صوت الأذان: ' + (j.title || '')); } catch (e) {} };
 
 /* ═══════════════ عن التطبيق ═══════════════ */
-const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '6.1';
+const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '6.2';
 const WHATS_NEW = [
+  ['6.2', [['shield', 'جاهز لمتجر Google Play وأندرويد 16', 'يستهدف أندرويد 16 كما يشترط المتجر، وتتلوّن أشرطة النظام مع ثيمك في كل إصدارات أندرويد، ولوحة المفاتيح لا تغطي الحقول — وأذونات أقل: إذن المنبّهات الدقيقة يُطلب منك عند الحاجة فقط']]],
   ['6.1', [['palette', 'ثيمات 4.6 المشرقة في المقدمة', 'الفراشات الزرقاء، والورد، والنجمة، والفراولة، والأزهار، ثم المشاهد (أزهار الكرز، حديقة الورود، حقل الخزامى) والناعمة الوردية — برسومها وألوانها وترتيبها كما كانت في 4.6 تمامًا، في أول قائمة الثيمات'],
     ['sun', 'مشرقة دائمًا', 'مشاهد الثيمات الفاتحة تبقى نهارية مشرقة حتى في الليل — ومن «الثيمات ← سماء المشهد» اختاري «تتبع الوقت» إن أحببتِ أن تُظلم السماء بعد المغرب كما في 4.6'],
     ['sparkle', 'ستة ثيمات حيّة مشرقة', 'حديقة الفراشات (فراشات ملوّنة ترفرف وتطير)، وفقاعات، وقوس قزح، وربيع الكرز، وبالونات، وبحر مشمس — نهارية بكتابة داكنة واضحة، وتتوقف حركتها حين لا تظهر لتبقى البطارية بخير']]],
@@ -1227,9 +1228,9 @@ const Onboarding = {
 function whatsNewSheet() {
   if (document.querySelector('.onb') || document.getElementById('splash') || Sheet.el) { setTimeout(whatsNewSheet, 2500); return; }
   if (!Router.cur || Router.cur.r !== 'home') { setTimeout(whatsNewSheet, 4000); return; }
-  Store.set('wnSeen', '6.1');
-  const items = WHATS_NEW[0][1];
-  const html = '<div class="sh-t">الجديد في وسن ' + N('6.1') + '</div><div class="sh-s">عادت ثيماتك المشرقة إلى أول القائمة</div>' +
+  Store.set('wnSeen', '6.2');
+  const items = WHATS_NEW[1][1].concat(WHATS_NEW[0][1]);   // ثيماتك المشرقة (6.1) ثم الجاهزية للمتجر (6.2)
+  const html = '<div class="sh-t">الجديد في وسن ' + N('6.2') + '</div><div class="sh-s">عادت ثيماتك المشرقة إلى أول القائمة</div>' +
     '<div class="list mx">' + items.map(([ic, t, s]) => '<div class="li"><div class="ic g">' + icon(ic) + '</div><div class="grow"><div class="t">' + t + '</div><div class="s">' + s + '</div></div></div>').join('') + '</div>' +
     '<div class="mx" style="margin-top:14px"><button class="btn primary block" id="wn-th">' + icon('palette') + 'اختاري ثيمًا مشرقًا</button><button class="btn ghost block" id="wn-x" style="margin-top:8px">لاحقًا</button></div>';
   Sheet.open(html, el => { $('#wn-th', el).onclick = () => Sheet.close(() => themeSheet()); $('#wn-x', el).onclick = () => Sheet.close(); });
