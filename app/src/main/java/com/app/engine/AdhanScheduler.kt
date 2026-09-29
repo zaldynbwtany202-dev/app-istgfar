@@ -50,6 +50,8 @@ import kotlin.math.abs
 object AdhanScheduler {
     const val ACTION_ALARM = "com.noor.app.action.ADHAN"
     const val ACTION_PRAYED = "com.noor.app.action.PRAYED"
+    /** وسن 6.3: «نقطة تحقّق» تقترب من الأذان حين لا يُسمح بالمنبّهات الدقيقة */
+    const val ACTION_TICK = "com.noor.app.action.ADHAN_TICK"
     private const val TAG = "WasanAdhan"
     private const val CH_PRE = "noor_remind"          // التذكير قبل الصلاة (معرّف 2.0 محفوظ)
     private const val CH_DAILY = "wasan_daily"         // الأذكار · الكهف · الصيام
@@ -57,6 +59,8 @@ object AdhanScheduler {
     private const val LEGACY_ADHAN = "noor_adhan"
     private const val PREFS = "noor_adhan"
     private const val REQ_ALARM = 7201
+    private const val REQ_TICK = 7202
+    private const val REQ_SHOW = 7203
     const val NID_ADHAN = 7301
     private const val NID_PRE = 7302
     val FIVE = AdhanPlan.FIVE
@@ -195,6 +199,24 @@ object AdhanScheduler {
         return PendingIntent.getBroadcast(ctx, REQ_ALARM, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
+    private fun tickIntent(ctx: Context): PendingIntent {
+        val i = Intent(ctx, BootReceiver::class.java).setAction(ACTION_TICK).putExtra("token", token(ctx))
+        return PendingIntent.getBroadcast(ctx, REQ_TICK, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+
+    /** ما يُفتح عند لمس رمز المنبّه في شريط الحالة */
+    private fun showIntent(ctx: Context): PendingIntent {
+        val i = Intent(ctx, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .putExtra(MainActivity.EXTRA_ROUTE, "prayer").putExtra(MainActivity.EXTRA_ARGS, "{}")
+        return PendingIntent.getActivity(ctx, REQ_SHOW, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+
+    /** وسن 6.3: «أذان بأولوية المنبّه» (setAlarmClock) — لا يؤجّله توفير البطارية ولا حدود النظام للتطبيقات قليلة الاستعمال */
+    fun strong(ctx: Context): Boolean = prefs(ctx).getBoolean("strong", true)
+    fun setStrong(ctx: Context, on: Boolean) { prefs(ctx).edit().putBoolean("strong", on).apply(); scheduleNext(ctx) }
+    /** كيف جُدول المنبّه التالي: clock | exact | inexact */
+    fun mode(ctx: Context): String = prefs(ctx).getString("mode", "") ?: ""
+
     fun scheduleNext(ctx: Context) {
         try {
             val am = ctx.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
@@ -203,14 +225,29 @@ object AdhanScheduler {
             val next = all.firstOrNull { it.at > now + 1500 }
             val ed = prefs(ctx).edit()
             if (next == null) {
-                am.cancel(alarmIntent(ctx, 0L))
+                am.cancel(alarmIntent(ctx, 0L)); am.cancel(tickIntent(ctx))
                 ed.remove("nextAt").remove("nextKey").remove("nextName").apply()
                 updateTile(ctx)
                 return
             }
             val pi = alarmIntent(ctx, next.at)
-            if (canExact(ctx)) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.at, pi)
-            else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.at, pi)
+            var mode = "inexact"
+            if (canExact(ctx)) {
+                try {
+                    // الأذان نفسه بأولوية المنبّه (أدقّ وأضمن)، والتذكيرات بمنبّه دقيق عادي
+                    if (next.ch == "adhan" && strong(ctx)) { am.setAlarmClock(AlarmManager.AlarmClockInfo(next.at, showIntent(ctx)), pi); mode = "clock" }
+                    else { am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.at, pi); mode = "exact" }
+                } catch (se: SecurityException) { Log.w(TAG, "exact alarm refused", se) }
+            }
+            val tick = tickIntent(ctx)
+            if (mode == "inexact") {
+                // وسن 6.3: دون إذن «المنبّهات والتذكيرات» (يمنعه أندرويد 14+ افتراضيًا) يؤخّر النظام المنبّه التقريبي
+                // حتى ساعة. نضيف «نقاط تحقّق» في منتصف المدة المتبقية، فيُعاد الضبط كلما اقترب الوقت ويضيق هامش التأخير.
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.at, pi)
+                val lead = next.at - now
+                if (lead > 12_000L) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, now + lead / 2, tick) else am.cancel(tick)
+            } else am.cancel(tick)
+            ed.putString("mode", mode)
             val np = all.firstOrNull { it.at > now && it.ch == "adhan" && it.key != "test" }
             if (np != null) ed.putLong("nextAt", np.at).putString("nextKey", np.key).putString("nextName", np.name)
             ed.apply()
@@ -219,6 +256,29 @@ object AdhanScheduler {
             Log.w(TAG, "schedule failed", e)
         }
     }
+
+    /** نقطة تحقّق: نتأكد من الرمز ثم نعيد الجدولة (المنبّه يقترب) */
+    fun tick(ctx: Context, intent: Intent) {
+        if (intent.getStringExtra("token") != token(ctx)) return
+        scheduleNext(ctx)
+    }
+
+    // ── وسن 6.3 · سجلّ وصول التنبيهات (يعرضه «وصول الأذان في وقته» للتحقق) ──
+    private fun logFired(ctx: Context, list: List<AdhanEntry>, now: Long) {
+        try {
+            val p = prefs(ctx)
+            val a = try { JSONArray(p.getString("log", "[]")) } catch (_: Exception) { JSONArray() }
+            val m = mode(ctx)
+            list.filter { it.ch == "adhan" || it.ch == "pre" }.forEach { e ->
+                a.put(JSONObject().put("k", e.key).put("n", e.name).put("ch", e.ch).put("at", e.at).put("f", now).put("m", m))
+            }
+            val keep = JSONArray(); val from = maxOf(0, a.length() - 20)
+            for (i in from until a.length()) keep.put(a.get(i))
+            p.edit().putString("log", keep.toString()).apply()
+        } catch (_: Exception) { }
+    }
+
+    fun log(ctx: Context): String = prefs(ctx).getString("log", "[]") ?: "[]"
 
     /** يُرجع نصًّا يُقرأ بالصوت (وسن 4.7: «التذكير الصوتي» للتذكيرات اليومية) أو null */
     fun fire(ctx: Context, intent: Intent): String? {
@@ -231,6 +291,7 @@ object AdhanScheduler {
             val due = entries(ctx).filter { abs(it.at - at) < 60_000 && now - it.at < 20 * 60_000 }
             if (due.any { it.key == "test" }) prefs(ctx).edit().remove("test").apply()
             due.forEach { show(ctx, it) }
+            logFired(ctx, due, now)
             if (voiceRemind(ctx) && canPlayAloud(ctx) && !AdhanService.playing) {
                 val r = due.filter { it.ch == "remind" }
                 if (r.isNotEmpty()) speak = "تذكيرٌ لطيف: " + r.joinToString("، ") { it.title }

@@ -26,13 +26,14 @@ const NoorEngine = (() => {
     mwl:      { name: 'رابطة العالم الإسلامي',          fajr: 18,   isha: 17 },
     makkah:   { name: 'أم القرى — مكة المكرمة',          fajr: 18.5, isha: { min: 90 }, ramadanIsha: { min: 120 } },
     egypt:    { name: 'الهيئة المصرية العامة للمساحة',   fajr: 19.5, isha: 17.5 },
-    morocco:  { name: 'المغرب — وزارة الأوقاف',          fajr: 19,   isha: 17 },
+    morocco:  { name: 'المغرب — وزارة الأوقاف',          fajr: 19,   isha: 17, off: { dhuhr: 5, maghrib: 5 } },
     tunisia:  { name: 'تونس',                            fajr: 18,   isha: 18 },
     karachi:  { name: 'جامعة العلوم الإسلامية بكراتشي',  fajr: 18,   isha: 18 },
-    gulf:     { name: 'الخليج — دبي',                    fajr: 18.2, isha: 18.2 },
+    gulf:     { name: 'الإمارات والخليج — دبي',           fajr: 18.2, isha: 18.2, off: { dhuhr: 3, maghrib: 3 } },
     kuwait:   { name: 'الكويت',                          fajr: 18,   isha: 17.5 },
     qatar:    { name: 'قطر',                             fajr: 18,   isha: { min: 90 } },
-    turkey:   { name: 'تركيا — رئاسة الشؤون الدينية',     fajr: 18,   isha: 17 },
+    turkey:   { name: 'تركيا — رئاسة الشؤون الدينية',     fajr: 18,   isha: 17, off: { sunrise: -7, dhuhr: 5, asr: 4, maghrib: 7 } },
+    jordan:   { name: 'الأردن وفلسطين — وزارة الأوقاف',   fajr: 18,   isha: 18, off: { maghrib: 5 } },
     singapore:{ name: 'سنغافورة وماليزيا وإندونيسيا',    fajr: 20,   isha: 18 },
     russia:   { name: 'روسيا — الإدارة الدينية لمسلمي روسيا', fajr: 16, isha: 15 },
     france:   { name: 'فرنسا — اتحاد المنظمات (12°)',     fajr: 12,   isha: 12 },
@@ -40,10 +41,10 @@ const NoorEngine = (() => {
     tehran:   { name: 'معهد الجيوفيزياء — طهران',        fajr: 17.7, isha: 14, maghrib: 4.5, midnight: 'jafari' },
     jafari:   { name: 'الجعفري — مؤسسة ليفا',            fajr: 16,   isha: 14, maghrib: 4,   midnight: 'jafari' },
   };
-  const METHOD_ORDER = ['algeria','mwl','makkah','egypt','morocco','tunisia','karachi','gulf','kuwait','qatar','turkey','singapore','russia','france','isna','tehran','jafari'];
+  const METHOD_ORDER = ['algeria','mwl','makkah','egypt','morocco','tunisia','jordan','karachi','gulf','kuwait','qatar','turkey','singapore','russia','france','isna','tehran','jafari'];
   /* الطريقة المقترحة حسب الدولة — وسن 5.1: لكل دول العالم (ما لم يُذكر هنا فرابطة العالم الإسلامي) */
   const COUNTRY_METHOD = { DZ:'algeria', MA:'morocco', TN:'tunisia', LY:'egypt', EG:'egypt', SD:'egypt', SS:'egypt', SA:'makkah', YE:'makkah',
-    AE:'gulf', OM:'gulf', BH:'gulf', QA:'qatar', KW:'kuwait', IQ:'mwl', SY:'egypt', JO:'egypt', LB:'egypt', PS:'egypt', IL:'egypt',
+    AE:'gulf', OM:'gulf', BH:'gulf', QA:'qatar', KW:'kuwait', IQ:'mwl', SY:'egypt', JO:'jordan', LB:'egypt', PS:'jordan', IL:'jordan',
     TR:'turkey', CY:'turkey', AZ:'turkey', BA:'turkey', AL:'turkey', XK:'turkey', MK:'turkey', ME:'turkey', RS:'turkey', BG:'turkey',
     PK:'karachi', IN:'karachi', BD:'karachi', AF:'karachi', LK:'karachi', NP:'karachi', MV:'karachi', BT:'karachi',
     MY:'singapore', SG:'singapore', ID:'singapore', BN:'singapore', TH:'singapore', PH:'singapore', MM:'singapore', KH:'singapore', VN:'singapore', LA:'singapore', TL:'singapore',
@@ -83,7 +84,7 @@ const NoorEngine = (() => {
   function calcTimes(date, o) {
     const lat = +o.lat, lng = +o.lng;
     const tz = (o.tz != null) ? o.tz : -date.getTimezoneOffset() / 60;
-    const m = METHODS[o.method] || METHODS.mwl;
+    const m = o.custom || METHODS[o.method] || METHODS.mwl;
     const asrF = o.asr === 'hanafi' ? 2 : 1;
     const jDate = julian(date.getFullYear(), date.getMonth() + 1, date.getDate()) - lng / (15 * 24);
 
@@ -138,6 +139,9 @@ const NoorEngine = (() => {
       if (isNaN(T.isha) || timeDiff(T.sunset, T.isha) > lim) T.isha = T.sunset + lim;
     }
 
+    // وسن 6.3: فروق الجهة الرسمية بالدقائق (تركيا، المغرب، دبي، الأردن…) ثم ضبط المستخدم
+    const off = m.off || {};
+    for (const k of ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']) if (off[k]) T[k] += off[k] / 60;
     // تعديلات يدوية بالدقائق
     const adj = o.adjust || {};
     for (const k of ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']) if (adj[k]) T[k] += adj[k] / 60;
@@ -158,7 +162,8 @@ const NoorEngine = (() => {
   function toDate(day, hours) {
     if (hours == null || isNaN(hours)) return null;
     const d = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0, 0);
-    return new Date(d.getTime() + Math.round(hours * 3600) * 1000);
+    // وسن 6.3: تقريب لأقرب دقيقة كالتقاويم الرسمية — فيُرفع الأذان عند الدقيقة المعروضة تمامًا (الثانية صفر)
+    return new Date(d.getTime() + Math.round(hours * 60) * 60000);
   }
 
   /* ─────────────── القبلة ─────────────── */
@@ -277,9 +282,100 @@ const NoorEngine = (() => {
   ];
   const occasionOn = h => OCCASIONS.find(o => o.m === h.month && o.d === h.day) || null;
 
+
+  /* ─────────────── وسن 6.3 · ضبط المواقيت على تقويم مسجدك أو الجهة الرسمية ───────────────
+     refs: [{ date: Date, tz: فرق التوقيت بالساعات (اختياري), t: { fajr, sunrise, dhuhr, asr, maghrib, isha } بساعات عشرية محلية (أو null) }]
+     o:    { lat, lng, method: الطريقة الأساس, highLat, ishaMode: 'auto' | 'angle' | 'min' }
+     يستنتج زاويتي الفجر والعشاء (أو دقائق العشاء بعد المغرب) ومذهب العصر وفروق الشروق والظهر والعصر والمغرب
+     بالدقائق، فتنطبق المواقيت على هذا اليوم تمامًا ثم تُحسب بها كل الأيام. */
+  function calibMethod(c) {
+    if (!c || typeof c.fajr !== 'number') return null;
+    const base = METHODS[c.base] || METHODS.mwl;
+    const m = { name: 'مضبوطة على مواقيتك', fajr: c.fajr, isha: typeof c.isha === 'number' ? c.isha : { min: c.ishaMin || 90 },
+      maghrib: base.maghrib, midnight: base.midnight, off: Object.assign({}, c.off || {}) };
+    if (typeof c.isha !== 'number' && c.ramIshaMin) m.ramadanIsha = { min: c.ramIshaMin };
+    return m;
+  }
+  function calibrate(refs, o) {
+    const base = METHODS[o.method] || METHODS.mwl;
+    const R = (refs || []).filter(r => r && r.date && r.t);
+    if (!R.length) return null;
+    const hl = o.highLat || 'angle';
+    const probe = (r, m, asr) => prayerTimes(r.date, { lat: o.lat, lng: o.lng, tz: r.tz, custom: m, asr, highLat: hl });
+    const plain = (fajr, isha) => ({ fajr, isha, maghrib: base.maghrib, midnight: base.midnight });
+    const has = (r, k) => typeof r.t[k] === 'number' && !isNaN(r.t[k]);
+    const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+    const raw = R.map(r => probe(r, plain(18, 17), 'shafii'));
+    const rawH = R.map(r => probe(r, plain(18, 17), 'hanafi'));
+    const warn = [];
+    // الزاوية التي تعطي وقتًا معيّنًا — بحث ثنائي (الفجر يبكر كلما كبرت الزاوية، والعشاء يتأخر)
+    const solve = (r, key, target) => {
+      const f = a => probe(r, key === 'fajr' ? plain(a, 17) : plain(18, a), 'shafii')[key];
+      let lo = 6, hi = 24; const flo = f(lo), fhi = f(hi);
+      if (isNaN(flo) || isNaN(fhi)) return NaN;
+      const sg = key === 'fajr' ? -1 : 1, tol = 1 / 120;
+      if ((target - flo) * sg < -tol || (fhi - target) * sg < -tol) return NaN;
+      for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2, fm = f(mid); if (isNaN(fm)) return NaN; if ((fm - target) * sg < 0) lo = mid; else hi = mid; }
+      return (lo + hi) / 2;
+    };
+    const span = R.length > 1 ? (Math.max(...R.map(r => +r.date)) - Math.min(...R.map(r => +r.date))) / 864e5 : 0;
+    const out = { v: 1, base: o.method, n: R.length, off: {} };
+    // ── الفجر ──
+    const RF = R.filter(r => has(r, 'fajr'));
+    if (RF.length) {
+      let best = { d: 0, a: mean(RF.map(r => solve(r, 'fajr', r.t.fajr))), s: 0 };
+      if (RF.length > 1 && span >= 40) {
+        best = null;
+        for (let d = -8; d <= 8; d++) { const A = RF.map(r => solve(r, 'fajr', r.t.fajr - d / 60)); if (A.some(isNaN)) continue;
+          const s = Math.max(...A) - Math.min(...A) + Math.abs(d) * 0.01; if (!best || s < best.s) best = { d, a: mean(A), s }; }
+        if (!best) best = { d: 0, a: NaN, s: 0 };
+      }
+      if (isNaN(best.a)) { out.fajr = base.fajr; out.off.fajr = Math.round(mean(RF.map((r, i) => (r.t.fajr - raw[R.indexOf(r)].fajr) * 60))); warn.push('fajr'); }
+      else { out.fajr = +best.a.toFixed(2); if (best.d) out.off.fajr = best.d; if (out.fajr < 9.5 || out.fajr > 21.5) warn.push('fajr'); }
+    } else out.fajr = base.fajr;
+    // ── العشاء: زاوية أو دقائق بعد المغرب ──
+    const RI = R.filter(r => has(r, 'isha'));
+    const minsAfter = RI.map(r => (r.t.isha - raw[R.indexOf(r)].maghrib) * 60);
+    let mode = o.ishaMode || 'auto';
+    if (mode === 'auto') mode = typeof base.isha === 'object' ? 'min' : 'angle';
+    if (RI.length) {
+      let ang = NaN;
+      if (mode === 'angle') { const A = RI.map(r => solve(r, 'isha', r.t.isha)); ang = A.some(isNaN) ? NaN : mean(A); if (isNaN(ang)) mode = 'min'; }
+      if (mode === 'angle' && RI.length > 1 && span >= 40 && (o.ishaMode || 'auto') === 'auto') {
+        // يومان متباعدان: نختار الأدقّ من الطريقتين
+        const mm = Math.round(mean(minsAfter)), eMin = Math.max(...minsAfter.map(x => Math.abs(x - mm)));
+        const A = RI.map(r => solve(r, 'isha', r.t.isha)), eAng = (Math.max(...A) - Math.min(...A)) * 4;
+        if (eMin + 0.5 < eAng) mode = 'min';
+      }
+      if (mode === 'angle') { out.isha = +ang.toFixed(2); out.ishaMin = 0; if (out.isha < 9.5 || out.isha > 21.5) warn.push('isha'); }
+      else { out.isha = null; out.ishaMin = Math.round(mean(minsAfter)); if (out.ishaMin < 45 || out.ishaMin > 150) warn.push('isha');
+        if (base.ramadanIsha && typeof base.isha === 'object') out.ramIshaMin = out.ishaMin + (base.ramadanIsha.min - base.isha.min); }
+    } else if (typeof base.isha === 'object') { out.isha = null; out.ishaMin = base.isha.min; if (base.ramadanIsha) out.ramIshaMin = base.ramadanIsha.min; }
+    else out.isha = base.isha;
+    // ── العصر: المذهب الأقرب ثم الفرق بالدقائق ──
+    const RA = R.filter(r => has(r, 'asr'));
+    if (RA.length) {
+      const dS = RA.map(r => r.t.asr - raw[R.indexOf(r)].asr), dH = RA.map(r => r.t.asr - rawH[R.indexOf(r)].asr);
+      const hanafi = mean(dH.map(Math.abs)) < mean(dS.map(Math.abs));
+      out.asr = hanafi ? 'hanafi' : 'shafii';
+      // فرق دقيقة واحدة في العصر أثر تقريب لا فرق حقيقي
+      const a = Math.round(mean(hanafi ? dH : dS) * 60); if (Math.abs(a) >= 2) out.off.asr = a; if (Math.abs(a) > 12) warn.push('asr');
+    } else { out.asr = o.asr || 'shafii'; if ((base.off || {}).asr) out.off.asr = base.off.asr; }
+    // ── الشروق والظهر والمغرب: فروق بالدقائق ──
+    [['sunrise', 12], ['dhuhr', 12], ['maghrib', 12]].forEach(([k, lim]) => {
+      const RK = R.filter(r => has(r, k)); if (!RK.length) { const b = (base.off || {})[k]; if (b) out.off[k] = b; return; }
+      const d = Math.round(mean(RK.map(r => (r.t[k] - raw[R.indexOf(r)][k]) * 60))); if (d) out.off[k] = d; if (Math.abs(d) > lim) warn.push(k);
+    });
+    // ── التحقق: الفرق بين المُدخل والمحسوب بعد الضبط (بالدقائق) ──
+    const cm = calibMethod(out);
+    out.fit = R.map(r => { const T = probe(r, cm, out.asr), f = {}; ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'].forEach(k => { if (has(r, k) && !isNaN(T[k])) f[k] = Math.round(T[k] * 60) - Math.round(r.t[k] * 60); }); return f; });
+    out.warn = warn;
+    return out;
+  }
+
   return {
     METHODS, METHOD_ORDER, COUNTRY_METHOD, methodFor, KAABA,
-    prayerTimes, toDate, qibla, kaabaDistance, distanceKm, locateFromQibla,
+    prayerTimes, toDate, qibla, kaabaDistance, distanceKm, locateFromQibla, calibrate, calibMethod,
     hijri, hijriMonthDays, HMONTHS, GMONTHS, GMONTHS_DZ, WEEKDAYS, OCCASIONS, occasionOn,
     usesUmmAlQura: !!_fmt,
   };

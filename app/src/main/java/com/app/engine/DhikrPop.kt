@@ -118,8 +118,9 @@ object DhikrPop {
             val at = c?.let { nextAt(it, System.currentTimeMillis(), prefs(ctx).getLong("muteUntil", 0L)) }
             if (at == null) { am.cancel(alarmPI(ctx)); prefs(ctx).edit().remove("nextAt").apply(); return }
             val pi = alarmPI(ctx)
-            if (AdhanScheduler.canExact(ctx)) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-            else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+            var ok = false
+            if (AdhanScheduler.canExact(ctx)) try { am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi); ok = true } catch (_: SecurityException) { }
+            if (!ok) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
             prefs(ctx).edit().putLong("nextAt", at).apply()
         } catch (e: Exception) { Log.w(TAG, "schedule", e) }
     }

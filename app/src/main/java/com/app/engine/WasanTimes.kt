@@ -137,6 +137,7 @@ object WasanTimes {
     fun forDay(y: Int, m: Int, d: Int, p: Params, ramadan: Boolean, zone: TimeZone = TimeZone.getDefault()): Map<String, Long?> {
         val mid = midnight(y, m, d, zone)
         val tz = zone.getOffset(mid) / 3600000.0
-        return hours(y, m, d, tz, p, ramadan).mapValues { (_, h) -> if (h.isNaN()) null else mid + Math.round(h * 3600) * 1000L }
+        // وسن 6.3: لأقرب دقيقة (مطابق لـ toDate في الواجهة) — الأذان عند الدقيقة المعروضة تمامًا
+        return hours(y, m, d, tz, p, ramadan).mapValues { (_, h) -> if (h.isNaN()) null else mid + Math.round(h * 60) * 60_000L }
     }
 }

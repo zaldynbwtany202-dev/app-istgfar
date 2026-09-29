@@ -953,6 +953,7 @@ SCREENS.settings = {
       '<button class="li" id="s-m"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">طريقة الحساب</div><div class="s">' + esc(Times.methodName()) + (Settings.method ? '' : ' · تلقائي') + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
       segRow('وقت العصر', '', 'asr', [['shafii', 'الجمهور'], ['hanafi', 'الحنفي']]) +
       '<button class="li" id="s-hl"><div class="ic">' + icon('moon') + '</div><div class="grow"><div class="t">خطوط العرض العليا</div><div class="s">' + hl + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
+      '<button class="li" data-go="calib"><div class="ic g">' + icon('target') + '</div><div class="grow"><div class="t">ضبط المواقيت على مسجدك</div><div class="s">' + (Times.calib() ? 'مفعّل · ' + esc(calibSummary(Settings.calib)) : 'أدخل مواقيت اليوم الرسمية فنحسب بها كل الأيام') + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
       '<button class="li" id="s-adj"><div class="ic">' + icon('clock') + '</div><div class="grow"><div class="t">تعديل يدوي للأوقات</div><div class="s">' + adjSummary() + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
       '<button class="li" id="s-hj"><div class="ic">' + icon('calendar') + '</div><div class="grow"><div class="t">تعديل التاريخ الهجري</div><div class="s">' + fmtH(hijriOf(new Date())) + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
       '<button class="li" data-go="location"><div class="ic">' + icon('pin') + '</div><div class="grow"><div class="t">الموقع</div><div class="s">' + esc(Loc.eff().label) + '</div></div><div class="end">' + icon('chev') + '</div></button></div>' +
@@ -1074,8 +1075,12 @@ function soundSheet() {
 window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.textContent = j.title || SOUND_NAMES[j.mode] || ''; toast('صوت الأذان: ' + (j.title || '')); } catch (e) {} };
 
 /* ═══════════════ عن التطبيق ═══════════════ */
-const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '6.2';
+const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '6.3';
 const WHATS_NEW = [
+  ['6.3', [['bell', 'الأذان في دقيقته تمامًا', 'يُرفع الأذان الآن بأولوية المنبّه فلا يؤخّره توفير البطارية، ويُضبط على الدقيقة المعروضة نفسها. وإن نقص إذن نعرض لك خطوة الإصلاح بوضوح (الإشعارات، المنبّهات، البطارية، التشغيل التلقائي) مع سجلّ «آخر ما وصل» لتتأكد بنفسك'],
+    ['target', 'ضبط المواقيت على مسجدك', 'أدخل مواقيت اليوم كما في تقويم مسجدك أو وزارة بلدك، فيستنتج وسن زاويتي الفجر والعشاء وفروق الدقائق ويحسب بها مواقيت كل الأيام والأذان'],
+    ['globe', 'مواقيت دقيقة في كل البلدان', 'طرق الحساب الرسمية بفروقها (الأردن وفلسطين، تركيا، المغرب، الإمارات…) مطابقة للجهات الرسمية بالدقيقة، و٧٣٠٠ مدينة في ٢٤٤ دولة بالعربية واللاتينية، وتحديد الموقع يخبرك بالسبب إن تعذّر (الموقع مغلق أو الإذن مرفوض) مع زرّ الإصلاح'],
+    ['headphones', 'قرّاء أكثر', 'عبدالله أحمد شعبان صار ٥٧ سورة (منها البقرة ويوسف ومريم وطه)، وعبدالرحمن مسعد ٣٦ (منها هود والإسراء والفرقان)، و٣٠ قارئًا جديدًا منهم عبدالعزيز التركي وأحمد عيسى المعصراوي وإبراهيم الدوسري وعبدالله الجهني وطارق محمد — مع قسم «الأشهر والأحدث»']]],
   ['6.2', [['shield', 'جاهز لمتجر Google Play وأندرويد 16', 'يستهدف أندرويد 16 كما يشترط المتجر، وتتلوّن أشرطة النظام مع ثيمك في كل إصدارات أندرويد، ولوحة المفاتيح لا تغطي الحقول — وأذونات أقل: إذن المنبّهات الدقيقة يُطلب منك عند الحاجة فقط']]],
   ['6.1', [['palette', 'ثيمات 4.6 المشرقة في المقدمة', 'الفراشات الزرقاء، والورد، والنجمة، والفراولة، والأزهار، ثم المشاهد (أزهار الكرز، حديقة الورود، حقل الخزامى) والناعمة الوردية — برسومها وألوانها وترتيبها كما كانت في 4.6 تمامًا، في أول قائمة الثيمات'],
     ['sun', 'مشرقة دائمًا', 'مشاهد الثيمات الفاتحة تبقى نهارية مشرقة حتى في الليل — ومن «الثيمات ← سماء المشهد» اختاري «تتبع الوقت» إن أحببتِ أن تُظلم السماء بعد المغرب كما في 4.6'],
@@ -1140,12 +1145,12 @@ SCREENS.about = {
       '<div class="li"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">الرسوم والرموز</div><div class="s">رسوم البستان مرسومة خصيصًا لوسن، والرموز ثلاثية الأبعاد من Fluent Emoji (مايكروسوفت) برخصة MIT</div></div></div>' +
       '<button class="li" id="ab-ph"><div class="ic">' + icon('image') + '</div><div class="grow"><div class="t">صور الثيمات</div><div class="s">١١ صورة بأعلى دقة من ويكيميديا كومنز برخص حرّة (CC0، ملك عام، CC BY، CC BY-SA) — اضغطي لرؤية اسم كل مصوّر ورخصته</div></div>' + icon('chev', 'faint') + '</button>' +
       '<div class="li"><div class="ic">' + icon('sparkle') + '</div><div class="grow"><div class="t">الشعار (5.0)</div><div class="s">«وسن» بخط Noto Nastaliq Urdu من Google برخصة SIL Open Font License</div></div></div>' +
-      '<div class="li"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">بيانات المدن</div><div class="s">إحداثيات من GeoNames.org برخصة CC BY 4.0</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('globe') + '</div><div class="grow"><div class="t">بيانات المدن</div><div class="s">إحداثيات المدن ومناطقها الزمنية من GeoNames.org برخصة CC BY 4.0، وأسماؤها العربية من ويكي بيانات Wikidata (CC0)</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('hands') + '</div><div class="grow"><div class="t">الأذكار والأدعية</div><div class="s">من كتاب «حصن المسلم» وكتب السنة مع ذكر المصدر لكل ذكر</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('clock') + '</div><div class="grow"><div class="t">المواقيت والتقويم</div><div class="s">حساب فلكي محلي، والتاريخ الهجري وفق تقويم أم القرى مع إمكانية التعديل</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('minaret') + '</div><div class="grow"><div class="t">تسجيلات الأذان</div><div class="s">«أذان هادئ»: Adam-synagda — ملك عام CC0 · «من المسجد النبوي»: ejaz215 (Freesound) — CC BY 3.0 · «صباح فخري»: ملك عام · «أذان صافٍ»: Aaqib Azeez عبر Atcovi — CC BY-SA 4.0 · «أذان خاشع»: Andrewler — CC BY-SA 4.0 · كلها عبر ويكيميديا كومنز</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('vol') + '</div><div class="grow"><div class="t">الصوت البشري للأذكار (4.8)</div><div class="s">مقاطع قصيرة من تسجيل «أذكار الصباح والمساء» بصوت الشيخ فارس عبّاد، ومن دعائه «الله أكبر الله أكبر مما نخاف ونحذر» — من أرشيف الإنترنت archive.org (موسومة بعلامة الملكية العامة من رافعها)</div></div></div>' +
-      '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">التلاوات المدمجة (4.8)</div><div class="s">أحمد خضر · عبدالله شعبان · عبدالرحمن مسعد · محمود الشحات أنور — من مجموعات منشورة للاستماع العام في أرشيف الإنترنت archive.org، ضُغطت داخل وسن. الحقوق لأصحابها، وسنحذف أي تلاوة إن طلب صاحبها ذلك.</div></div></div>' +
+      '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">التلاوات المدمجة (4.8)</div><div class="s">أحمد خضر · عبدالله شعبان · عبدالرحمن مسعد · محمود الشحات أنور — من مجموعات منشورة للاستماع العام في أرشيف الإنترنت archive.org (وبقية سور عبدالرحمن مسعد من way2quran.com، وعبدالله الجهني وطارق محمد من الأرشيف)، ضُغطت داخل وسن أو تُسمع منها مباشرة. الحقوق لأصحابها، وسنحذف أي تلاوة إن طلب صاحبها ذلك.</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('headphones') + '</div><div class="grow"><div class="t">التلاوات</div><div class="s">«آية بآية» من EveryAyah.com، والسور الكاملة وتوقيتات الآيات من mp3quran.net</div></div></div>' +
       '<div class="li"><div class="ic">' + icon('leaf') + '</div><div class="grow"><div class="t">أصوات الطبيعة (4.7)</div><div class="s">من Freesound وSoundBible عبر مشروع Blanket، ونقّاها وسن من الحدّة: العصافير: kvgarlic (CC0) · الجدول: gluckose (CC0) · النسيم: felix.blume (CC0) · المطر: alex36917 (CC BY) · الأمواج: Luftrum (CC BY) · صراصير الليل: Lisa Redfern (ملك عام) · «هدوء عميق» ونغمة الأذكار المنبثقة وأصوات المسبحة: مولّدة داخل وسن</div></div></div></div>' +
       '<div class="foot-note">صُنع بحبّ لخدمة المسلمين · اللهم اجعله خالصًا لوجهك الكريم</div>';
@@ -1157,7 +1162,7 @@ const Onboarding = {
   el: null, step: 0,
   show() { this.step = 0; if (this.el) this.el.remove(); this.el = document.createElement('div'); this.el.className = 'onb'; document.body.appendChild(this.el); this.draw(); },
   done() { Store.set('onboarded', 1); if (this.el) { this.el.style.transition = 'opacity .4s'; this.el.style.opacity = '0'; const e = this.el; setTimeout(() => e.remove(), 420); this.el = null; } Router.refresh(); },
-  dots() { return '<div class="dots">' + [0, 1, 2, 3].map(i => '<i class="' + (i === this.step ? 'on' : '') + '"></i>').join('') + '</div>'; },
+  dots() { return '<div class="dots">' + [0, 1, 2, 3, 4].map(i => '<i class="' + (i === this.step ? 'on' : '') + '"></i>').join('') + '</div>'; },
   draw() {
     const e = this.el; if (!e) return;
     if (this.step === 0) {
@@ -1171,15 +1176,15 @@ const Onboarding = {
         '<button class="btn gold block" id="o-gps" style="margin-top:18px">' + icon('gps') + 'استخدم موقعي الحالي</button>' +
         '<div class="search" style="margin-top:14px;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.16);color:#fff">' + icon('search') + '<input id="o-q" placeholder="أو ابحث عن مدينتك…" autocomplete="off"></div>' +
         '<div class="list" id="o-l" style="margin-top:10px"></div>' + this.dots() + '<button class="btn ghost block" id="o-skip">لاحقًا</button>';
-      const draw = q => { const nq = normAr(q || ''); let arr = (window.NOOR_CITIES || []).map((c, i) => ({ c, i }));
-        arr = nq ? arr.filter(x => normAr(x.c[0]).includes(nq) || normAr(NOOR_COUNTRIES[x.c[1]] || '').includes(nq)) : arr.filter(x => x.c[1] === 'DZ');
-        $('#o-l', e).innerHTML = arr.slice(0, 40).map(x => '<button class="li" data-c="' + x.i + '"><div class="ic">' + icon('pin') + '</div><div class="grow"><div class="t">' + esc(x.c[0]) + '</div><div class="s">' + esc(NOOR_COUNTRIES[x.c[1]] || '') + '</div></div></button>').join(''); };
+      // وسن 6.3: مدن العالم (عربي/لاتيني)، وتبدأ القائمة بمدن بلد الهاتف
+      const draw = q => { const arr = CitySearch.find(q, 40);
+        $('#o-l', e).innerHTML = arr.length ? arr.map(i => CitySearch.row(i, 'data-c', false)).join('') : '<div class="empty" style="color:rgba(255,255,255,.75)">لا نتائج — جرّب الاسم بالعربية أو اللاتينية</div>'; };
       draw('');
       $('#o-q', e).addEventListener('input', debounce(ev => draw(ev.target.value), 160));
-      $('#o-l', e).onclick = ev => { const b = ev.target.closest('[data-c]'); if (!b) return; const c = NOOR_CITIES[+b.dataset.c];
-        Loc.set({ lat: c[2], lng: c[3], label: c[0], cc: c[1], src: 'city', ts: Date.now() }); this.step = 2; this.draw(); };
+      $('#o-l', e).onclick = ev => { const b = ev.target.closest('[data-c]'); if (!b) return;
+        Loc.set(CitySearch.loc(+b.dataset.c)); this.step = 2; this.draw(); };
       $('#o-gps', e).onclick = () => { const b = $('#o-gps', e); b.innerHTML = icon('refresh', '', 'animation:spin 1s linear infinite') + 'جارٍ التحديد…';
-        Loc.request(ok => { if (ok) { toast('موقعك: ' + Loc.eff().label); this.step = 2; this.draw(); } else { b.innerHTML = icon('gps') + 'حاول مجددًا'; toast('تعذّر التحديد التلقائي — اختر مدينتك من القائمة'); } }); };
+        Loc.request((ok, why) => { if (ok) { toast('موقعك: ' + Loc.eff().label); this.step = 2; this.draw(); } else { b.innerHTML = icon('gps') + 'حاول مجددًا'; if (why === 'off' || why === 'denied') return; toast('تعذّر التحديد التلقائي — اختر مدينتك من القائمة'); } }); };
       $('#o-skip', e).onclick = () => { this.step = 2; this.draw(); };
     } else if (this.step === 2) {
       const M = NoorEngine.METHODS, sug = (Loc.get() && NoorEngine.COUNTRY_METHOD[Loc.get().cc]) || 'mwl';
@@ -1190,7 +1195,24 @@ const Onboarding = {
         this.dots() + '<button class="btn gold block" id="o-done">' + icon('check') + 'التالي</button>';
       let pick = sug;
       $$('[data-m]', e).forEach(b => b.onclick = () => { pick = b.dataset.m; $$('[data-m]', e).forEach(x => x.classList.toggle('on', x === b)); });
-      $('#o-done', e).onclick = () => { setSetting('method', pick === sug ? '' : pick); this.step = 3; this.draw(); };
+      $('#o-done', e).onclick = () => { setSetting('method', pick === sug ? '' : pick); this.step = Notif.supported() ? 3 : 4; this.draw(); };
+    } else if (this.step === 3) {
+      // وسن 6.3: «ليصلك الأذان في وقته» — الإشعارات ثم المنبّهات الدقيقة (أندرويد 13/14+ يمنعهما افتراضيًا)
+      const s = NotifHealth.state(), sdk = Native.has('sdkInt') ? +Native.call('sdkInt') : 0, needE = sdk === 0 || sdk >= 31, ready = s.notif && (s.exact || !needE);
+      const st = (ok, t, d) => '<div class="li onb-perm ' + (ok ? 'ok' : '') + '"><div class="ic">' + icon(ok ? 'check' : 'bell') + '</div><div class="grow"><div class="t">' + t + '</div><div class="s">' + d + '</div></div></div>';
+      e.innerHTML = '<div class="art" style="flex:none;min-height:0;padding-top:48px"><div class="q"><div class="qi" style="' + hueVars('gold') + ';width:84px;height:84px;border-radius:28px">' + icon('bell', '', 'width:40px;height:40px') + '</div></div>' +
+        '<h2>ليصلك الأذان في وقته</h2><p>اسمح لوسن بالإشعارات والمنبّهات الدقيقة، فيُرفع الأذان عند دخول الوقت تمامًا ولو كان التطبيق مغلقًا.</p></div>' +
+        '<div class="list" style="margin-top:14px">' + st(s.notif, 'الإشعارات', s.notif ? 'مسموحة' : 'لإظهار الأذان والتذكيرات') + (needE ? st(s.exact, 'المنبّهات والتذكيرات', s.exact ? 'مسموحة — الأذان في دقيقته' : 'ليُرفع الأذان في الدقيقة نفسها') : '') + '</div>' +
+        this.dots() + (ready ? '<button class="btn gold block" id="o-nx">' + icon('check') + 'التالي</button>' :
+        '<button class="btn gold block" id="o-al">' + icon('bell') + 'السماح الآن</button><button class="btn ghost block" id="o-nx">لاحقًا</button>');
+      const nx = () => { Onboarding._perm = null; this.step = 4; this.draw(); };
+      $('#o-nx', e).onclick = nx;
+      const al = $('#o-al', e);
+      if (al) al.onclick = () => {
+        Onboarding._perm = true;
+        const exact = () => { if (needE && !NotifHealth.state().exact) Native.call('requestExactAlarm'); else this.draw(); };
+        if (!NotifHealth.state().notif) askNotif(ok => { if (this.el && this.step === 3) { this.draw(); if (ok) setTimeout(exact, 350); } }); else exact();
+      };
     } else {
       // «ازرع بذرتك الأولى» — لحظة البداية (تحت سماء الفجر: بداية جديدة)
       const ph = 'dawn';
@@ -1224,14 +1246,20 @@ const Onboarding = {
   },
 };
 
+/* وسن 6.3: عند العودة من إعدادات الأذونات نحدّث خطوة «الأذان في وقته» */
+Bus.on('resume', () => { try { if (Onboarding.el && Onboarding.step === 3) setTimeout(() => Onboarding.draw(), 250); } catch (e) {} });
+
 /* ── وسن 6.1: «ما الجديد» مرة واحدة بعد التحديث، مع زرّ مباشر إلى الثيمات ── */
 function whatsNewSheet() {
   if (document.querySelector('.onb') || document.getElementById('splash') || Sheet.el) { setTimeout(whatsNewSheet, 2500); return; }
   if (!Router.cur || Router.cur.r !== 'home') { setTimeout(whatsNewSheet, 4000); return; }
-  Store.set('wnSeen', '6.2');
-  const items = WHATS_NEW[1][1].concat(WHATS_NEW[0][1]);   // ثيماتك المشرقة (6.1) ثم الجاهزية للمتجر (6.2)
-  const html = '<div class="sh-t">الجديد في وسن ' + N('6.2') + '</div><div class="sh-s">عادت ثيماتك المشرقة إلى أول القائمة</div>' +
+  Store.set('wnSeen', '6.3');
+  const items = WHATS_NEW[0][1];
+  const bad = (() => { try { const s = NotifHealth.state(); return NotifHealth.broken(s) || !s.loc; } catch (e) { return false; } })();
+  const html = '<div class="sh-t">الجديد في وسن ' + N('6.3') + '</div><div class="sh-s">أذان في دقيقته، ومواقيت مضبوطة على مسجدك، وقرّاء أكثر</div>' +
     '<div class="list mx">' + items.map(([ic, t, s]) => '<div class="li"><div class="ic g">' + icon(ic) + '</div><div class="grow"><div class="t">' + t + '</div><div class="s">' + s + '</div></div></div>').join('') + '</div>' +
-    '<div class="mx" style="margin-top:14px"><button class="btn primary block" id="wn-th">' + icon('palette') + 'اختاري ثيمًا مشرقًا</button><button class="btn ghost block" id="wn-x" style="margin-top:8px">لاحقًا</button></div>';
-  Sheet.open(html, el => { $('#wn-th', el).onclick = () => Sheet.close(() => themeSheet()); $('#wn-x', el).onclick = () => Sheet.close(); });
+    '<div class="mx" style="margin-top:14px">' + (bad ? '<button class="btn gold block" id="wn-nh">' + icon('bell') + 'تأكّد أن الأذان سيصلك في وقته</button>' : '') +
+    '<button class="btn primary block" id="wn-cb" style="margin-top:8px">' + icon('target') + 'اضبط المواقيت على مسجدك</button><button class="btn ghost block" id="wn-x" style="margin-top:8px">لاحقًا</button></div>';
+  Sheet.open(html, el => { const nh = $('#wn-nh', el); if (nh) nh.onclick = () => Sheet.close(() => notifHealthSheet());
+    $('#wn-cb', el).onclick = () => Sheet.close(() => Router.go('calib')); $('#wn-x', el).onclick = () => Sheet.close(); });
 }
