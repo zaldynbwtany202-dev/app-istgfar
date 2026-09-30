@@ -907,7 +907,8 @@ function themeSheet() {
       }
       if (T && T.rt) setSetting('readTheme', T.rt);   // وسن 6.1: والثيمات الحيّة المشرقة أيضًا تفتح المصحف بلون مشرق
       if (Settings.heroMode === 'mine') setSetting('heroMode', 'theme');   // اختيار ثيم = عرض مشهده (وتبقى صورتك محفوظة لتعودي إليها)
-      applyTheme(); $$('[data-th]', el).forEach(x => x.classList.toggle('on', x === b)); vibrate(8);
+      const paint = () => { applyTheme(); $$('[data-th]', el).forEach(x => x.classList.toggle('on', x === b)); };
+      if (typeof Motion !== 'undefined') Motion.reveal(e, paint); else paint(); vibrate(8);   // وسن 7.1: الثيم الجديد يتّسع كدائرة من موضع لمستك
       try { if (T && T.skin) kwCelebrate(T.skin); } catch (er) {}
     });
   }, () => Router.refresh());
@@ -996,12 +997,34 @@ function accentSheet() {
 const ACCENTS = [['emerald', '#0B5D4B', 'زمردي'], ['teal', '#12707E', 'فيروزي'], ['ocean', '#1F6F8B', 'بحري'], ['indigo', '#3A4B8A', 'أزرق ليلي'], ['plum', '#7A3F71', 'بنفسجي'], ['lilac', '#7E63B8', 'ليلكي'],
   ['pink', '#C2587A', 'وردي'], ['rosegold', '#B06A74', 'ذهبي وردي'], ['rose', '#9A4658', 'عنّابي'], ['coral', '#D0694E', 'مرجاني'], ['amber', '#8A6224', 'عسلي'], ['coffee', '#7A5236', 'قهوة'], ['olive', '#5E6B2E', 'زيتوني'], ['morpho', '#2D6FE0', 'أزرق']];
 const SOUND_NAMES = { adhan: 'الأذان كاملًا', takbir: 'التكبير فقط', system: 'نغمة الإشعارات الافتراضية', chime: 'نغمة وسن', custom: 'نغمة من هاتفك', silent: 'اهتزاز فقط' };
+/* وسن 7.1 · بحث فوري في الإعدادات: يُظهر الصفوف المطابقة وعناوين أقسامها فقط */
+function settingsSearch(el) {
+  const q = $('#s-q', el); if (!q) return;
+  const box = q.closest('.set-q'), rows = $$('.list > .li', el), lists = $$('.list', el);
+  const txt = rows.map(r => normAr((r.querySelector('.t') || r).textContent + ' ' + ((r.querySelector('.s') || {}).textContent || '')));
+  const run = () => {
+    const s = normAr(q.value.trim()); let any = false;
+    box.classList.toggle('has', !!s);
+    rows.forEach((r, i) => { const l = r.parentElement, p = l && l.previousElementSibling, st = p && p.classList.contains('sec') ? normAr(p.textContent) : '';
+      const hit = !s || txt[i].includes(s) || (s.length > 2 && st.includes(s)); r.classList.toggle('m-hide', !hit); if (hit) any = true; });
+    lists.forEach(l => { const vis = !s || !!l.querySelector(':scope > .li:not(.m-hide)'); l.classList.toggle('m-hide', !vis);
+      const p = l.previousElementSibling; if (p && p.classList.contains('sec')) p.classList.toggle('m-hide', !vis); });
+    $$('.foot-note', el).forEach(f => f.classList.toggle('m-hide', !!s));
+    box.classList.toggle('none', !!s && !any);
+  };
+  q.addEventListener('input', run);
+  $('#s-qx', el).onclick = () => { q.value = ''; run(); q.focus(); };
+}
 SCREENS.settings = {
   parent: 'more',
   render() {
     const n = Notif.supported();
     const hl = { angle: 'حسب الزاوية', middle: 'منتصف الليل', seventh: 'سُبع الليل' }[Settings.highLat];
+    if (!Settings.motionSet && typeof Motion !== 'undefined') Settings.motion = Motion.lvl;
     return hdr('الإعدادات', 'خصّص وسن كما تحب', { back: true, compact: true }) +
+      // وسن 7.1: ابحث في كل الإعدادات
+      '<div class="set-q"><div class="search">' + icon('search') + '<input id="s-q" type="search" placeholder="ابحث في الإعدادات… (الأذان، الخط، الحركة)" autocomplete="off"><button class="x" id="s-qx" aria-label="مسح">' + icon('x') + '</button></div></div>' +
+      '<div class="set-empty">لا يوجد إعداد بهذا الاسم</div>' +
       sec('المظهر') + '<div class="list mx">' +
       '<button class="li" id="s-th"><div class="ic">' + icon('palette') + '</div><div class="grow"><div class="t">السمة</div><div class="s">' + THEME_NAMES[Settings.theme] + '</div></div><div class="end">' + icon('chev') + '</div></button>' +
       // وسن 7: الشاشة الرئيسية كما تحب — وإظهار الشعار أو إخفاؤه بلمسة
@@ -1011,6 +1034,7 @@ SCREENS.settings = {
       '<div class="accents" id="s-acc">' + ACCENTS.map(([k, c]) => '<button class="' + (Settings.accent === k ? 'on' : '') + '" data-acc="' + k + '" style="background:' + c + '" aria-label="' + k + '"></button>').join('') +
       '<button class="acc-any' + (Settings.accent === 'custom' ? ' on' : '') + '" id="s-acc-c" aria-label="لون من اختيارك"' + (Settings.accent === 'custom' ? ' style="--c:' + Settings.accentHex + '"' : '') + '>' + icon('plus') + '</button></div></div>' +
       segRow('حجم خط التطبيق', 'يكبّر كل النصوص — مريح للعين', 'uiScale', [['0.9', 'صغير'], ['1', 'عادي'], ['1.12', 'كبير'], ['1.25', 'أكبر']]) +
+      segRow('الحركة والانتقالات', 'انتقالات ناعمة لا تُثقل الهاتف · «بدون» يوفّر البطارية', 'motion', [['full', 'كاملة'], ['soft', 'هادئة'], ['off', 'بدون']]) +
       segRow('مرشّح الضوء الدافئ', 'يقلّل الضوء الأزرق لراحة العين', 'warm', [['off', 'متوقف'], ['night', 'ليلًا'], ['on', 'دائمًا']]) +
       segRow('الأرقام', '', 'digits', [['latn', '123'], ['arab', '١٢٣']]) +
       segRow('صيغة الوقت', '', 'clock', [['24', '24 ساعة'], ['12', '12 ساعة']]) +
@@ -1053,6 +1077,7 @@ SCREENS.settings = {
       '<button class="li" data-go="about"><div class="ic">' + icon('info') + '</div><div class="grow"><div class="t">عن التطبيق</div><div class="s">الإصدار ' + APP_VERSION + '</div></div><div class="end">' + icon('chev') + '</div></button></div>';
   },
   mount(el) {
+    settingsSearch(el);
     $$('[data-seg]', el).forEach(s => s.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return; const k = s.dataset.seg; let v = b.dataset.v;
       if (k === 'hijriOffset') v = +v;
@@ -1072,7 +1097,8 @@ SCREENS.settings = {
     const pre = $('#s-pre', el); if (pre) pre.onclick = () => pickSheet('تذكير قبل الصلاة', '', [0, 5, 10, 15, 20, 30].map(v => ({ v, t: v ? 'قبل ' + pM(v) : 'بدون تذكير' })), Settings.preNotif, v => { setSetting('preNotif', v); Router.refresh(); });
     const pm = $('#s-perm', el); if (pm) pm.onclick = () => notifHealthSheet();
     $('#s-th', el).onclick = () => themeSheet();
-    $('#s-acc', el).onclick = e => { if (e.target.closest('#s-acc-c')) { accentSheet(); return; } const b = e.target.closest('[data-acc]'); if (!b) return; setSetting('accent', b.dataset.acc); setSetting('accentAuto', false); applyTheme(); Router.refresh(); };
+    $('#s-acc', el).onclick = e => { if (e.target.closest('#s-acc-c')) { accentSheet(); return; } const b = e.target.closest('[data-acc]'); if (!b) return; setSetting('accent', b.dataset.acc); setSetting('accentAuto', false); vibrate(6);
+      const go = () => { applyTheme(); Router.refresh(); }; if (typeof Motion !== 'undefined') Motion.reveal(e, go); else go(); };
     const snd = $('#s-snd', el); if (snd) snd.onclick = () => soundSheet();
     $$('[data-rm]', el).forEach(b => b.onclick = () => { const k = b.dataset.rm, rm = Object.assign({}, Settings.remind); rm[k] = !rm[k]; setSetting('remind', rm); b.classList.toggle('on', rm[k]);
       if (rm[k]) Native.call('ensureNotifPermission'); Notif.schedule(); });
@@ -1146,8 +1172,14 @@ function soundSheet() {
 window.onAdhanSound = function (j) { try { const s = $('#s-snd-s'); if (s) s.textContent = j.title || SOUND_NAMES[j.mode] || ''; toast('صوت الأذان: ' + (j.title || '')); } catch (e) {} };
 
 /* ═══════════════ عن التطبيق ═══════════════ */
-const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '7.0';
+const APP_VERSION = (window.NoorBridge && typeof NoorBridge.appVersion === 'function' && (() => { try { return NoorBridge.appVersion(); } catch (e) { return ''; } })()) || '7.1';
 const WHATS_NEW = [
+  ['7.1', [['sparkle', 'حركة احترافية في كل التطبيق', 'انتقالات ناعمة بين الصفحات تعرف اتجاهك (للأمام والرجوع والتبويبات)، وأقسام تظهر بتتابع هادئ، ومؤشّر ينزلق في شريط التنقل، وأرقام تعدّ وحلقات تُرسم وعلامة إنجاز تُخطّ — وكلها خفيفة لا تُثقل الهاتف'],
+    ['palette', 'الثيم الجديد يتّسع كدائرة', 'حين تختار ثيمًا أو لونًا ينتشر الجديد كدائرة من موضع لمستك نفسه'],
+    ['layers', 'أوراق تُسحب لتُغلق', 'كل ورقة سفلية تصعد بنابض ناعم، وتُغلقها بسحبها إلى الأسفل كما في تطبيقات أندرويد الحديثة'],
+    ['gear', 'تحكّم كامل بالحركة', 'من الإعدادات: «كاملة» أو «هادئة» أو «بدون» — و«بدون» يوقف الزخارف المتحركة ويوفّر البطارية'],
+    ['search', 'بحث في الإعدادات', 'اكتب ما تريد (الأذان، الخط، القارئ، الحركة…) فتظهر الإعدادات المطابقة فورًا'],
+    ['flame', 'أسرع وأثبت', 'صفحة «بستانك» تفتح أسرع بنحو ١٥ مرة، والرجوع يعيدك إلى موضعك في القائمة، وإصلاح النقرات السريعة المتتالية على التبويبات وزر الرجوع وأزرار الإغلاق']]],
   ['7.0', [['palette', 'الكتاكيت والأرانب', 'ثيمان كاملان مرسومان بالكامل مثل الفراشات: كتاكيت تمشي على العشب وتفقس من البيض بين عبّاد الشمس، وأرانب تقفز في مرج ليلكيّ مع الجزر والنفل — بمسبحتهما وزينتهما وبستانهما'],
     ['star8', 'ثيمات رجالية بصور حقيقية', 'صقر الصحراء، والخيل العربية، والأسد، وليل الصحراء بدرب التبّانة، والربع الخالي، وشراع الغروب، وجبل شمس، والقمر، وحافة العالم — بألوان مشتقة من كل صورة'],
     ['home', 'الشاشة الرئيسية كما تحب', 'أظهر شعار «وسن» أو أخفِه أو ضع مكانه تحية باسمك، وأخفِ أي جزء من الرئيسية (قوس الشمس، العدّ التنازلي، التاريخ، الأقسام…) واختر اختصاراتك من ٤ إلى ١٢ بالترتيب الذي تريده'],
@@ -1328,15 +1360,15 @@ Bus.on('resume', () => { try { if (Onboarding.el && Onboarding.step === 3) setTi
 function whatsNewSheet() {
   if (document.querySelector('.onb') || document.getElementById('splash') || Sheet.el) { setTimeout(whatsNewSheet, 2500); return; }
   if (!Router.cur || Router.cur.r !== 'home') { setTimeout(whatsNewSheet, 4000); return; }
-  Store.set('wnSeen', '7.0');
+  Store.set('wnSeen', '7.1');
   const items = WHATS_NEW[0][1];
   const bad = (() => { try { const s = NotifHealth.state(); return NotifHealth.broken(s) || !s.loc; } catch (e) { return false; } })();
-  const html = '<div class="sh-t">الجديد في وسن ' + N('7.0') + '</div><div class="sh-s">ثيمات جديدة، وتخصيص كامل للرئيسية، والمصحف كاملًا مع كل قارئ</div>' +
+  const html = '<div class="sh-t">الجديد في وسن ' + N('7.1') + '</div><div class="sh-s">حركة احترافية خفيفة، وتنظيم أوضح، وأداء أسرع</div>' +
     '<div class="list mx">' + items.map(([ic, t, s]) => '<div class="li"><div class="ic g">' + icon(ic) + '</div><div class="grow"><div class="t">' + t + '</div><div class="s">' + s + '</div></div></div>').join('') + '</div>' +
-    '<div class="mx" style="margin-top:14px"><button class="btn gold block" id="wn-th">' + icon('palette') + 'جرّب الثيمات الجديدة</button>' +
-    '<button class="btn primary block" id="wn-hm" style="margin-top:8px">' + icon('home') + 'خصّص شاشتك الرئيسية</button>' +
+    '<div class="mx" style="margin-top:14px"><button class="btn gold block" id="wn-th">' + icon('palette') + 'جرّب تغيير الثيم بالحركة الجديدة</button>' +
+    '<button class="btn primary block" id="wn-hm" style="margin-top:8px">' + icon('gear') + 'اضبط الحركة من الإعدادات</button>' +
     (bad ? '<button class="btn ghost block" id="wn-nh" style="margin-top:8px">' + icon('bell') + 'تأكّد أن الأذان سيصلك في وقته</button>' : '') +
     '<button class="btn ghost block" id="wn-x" style="margin-top:8px">لاحقًا</button></div>';
   Sheet.open(html, el => { const nh = $('#wn-nh', el); if (nh) nh.onclick = () => Sheet.close(() => notifHealthSheet());
-    $('#wn-th', el).onclick = () => Sheet.close(() => themeSheet()); $('#wn-hm', el).onclick = () => Sheet.close(() => Router.go('homecfg')); $('#wn-x', el).onclick = () => Sheet.close(); });
+    $('#wn-th', el).onclick = () => Sheet.close(() => themeSheet()); $('#wn-hm', el).onclick = () => Sheet.close(() => Router.go('settings')); $('#wn-x', el).onclick = () => Sheet.close(); });
 }

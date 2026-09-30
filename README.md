@@ -1,16 +1,28 @@
 <div dir="rtl">
 
-# وسن · Wasan 7.0
+# وسن · Wasan 7.1
 
 **رفيقك اليومي للصلاة والقرآن والذكر** — تطبيق أندرويد يعمل دون إنترنت ودون إعلانات.
 
-![وسن 7.0](docs/wasan-7.0.png)
+![وسن 7.1](docs/wasan-7.1.png)
 
 ## التحميل
 
-- **التطبيق الجاهز:** [Wasan-7.0.apk](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v7.0/Wasan-7.0.apk) · لمتجر Google Play: [Wasan-7.0.aab](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v7.0/Wasan-7.0.aab) (من صفحة الإصدارات Releases) — يُثبَّت فوق النسخ السابقة مباشرة وتبقى بياناتك.
-- النسخ السابقة: [الإصدار 6.3](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.3) · [الإصدار 6.2](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.2) · [الإصدار 6.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.1) · [الإصدار 6.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.0) · [الإصدار 5.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.1) · [الإصدار 5.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.0) · [الإصدار 4.8](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v4.8) · [release/Wasan-4.7.apk](release/Wasan-4.7.apk).
+- **التطبيق الجاهز:** [Wasan-7.1.apk](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v7.1/Wasan-7.1.apk) · لمتجر Google Play: [Wasan-7.1.aab](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/download/v7.1/Wasan-7.1.aab) (من صفحة الإصدارات Releases) — يُثبَّت فوق النسخ السابقة مباشرة وتبقى بياناتك.
+- النسخ السابقة: [الإصدار 7.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v7.0) · [الإصدار 6.3](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.3) · [الإصدار 6.2](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.2) · [الإصدار 6.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.1) · [الإصدار 6.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v6.0) · [الإصدار 5.1](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.1) · [الإصدار 5.0](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v5.0) · [الإصدار 4.8](https://github.com/zaldynbwtany202-dev/app-istgfar/releases/tag/v4.8) · [release/Wasan-4.7.apk](release/Wasan-4.7.apk).
 
+
+## ما الجديد في 7.1 · «حركة احترافية خفيفة، وتنظيم أوضح، وأداء أسرع»
+
+- **نظام حركة موحّد** (`js/motion.js` · `css/motion.css`): كل الحركات على `transform`/`opacity` فقط (مركّبة على معالج الرسوميات، بلا كلفة تخطيط)، بمنحنيات موحّدة (`--e-out` · `--e-std` · `--e-spring`).
+- **انتقالات الصفحات تعرف اتجاهك:** «محور مشترك» للأمام والرجوع (مرآة عربية)، و«تلاشٍ عابر» بين التبويبات، عبر View Transitions الأصلية في WebView الحديث، ومحاكاة CSS خفيفة في القديم؛ وشريط التنقل والتنبيه والمشغّل ثابتة لا تنزلق مع الصفحة. الأقسام تظهر بتتابع هادئ (أول ثمانية فقط).
+- **الثيم الجديد يتّسع كدائرة** من موضع لمستك عند اختيار ثيم أو لون.
+- **الأوراق السفلية:** صعود بنابض ناعم ونزول أسرع، وتُغلق بسحبها إلى الأسفل (مع مراعاة التمرير داخلها والحقول والمنزلقات).
+- **لمسات دقيقة:** هالة تنزلق بين تبويبات شريط التنقل ونجمة تنبثق (وتبقى رموز الثيمات المرسومة كما هي)، وحبّة تنزلق بين خيارات «المقطع»، وضغطات بنابض، وعلامة إنجاز تُخطّ عند تسجيل صلاة أو عادة، وأرقام الإحصاءات تعدّ، وحلقات التقدّم تُرسم، ووهج هادئ حول الصلاة القادمة، وافتتاحية تصعد فيها الرئيسية مع تلاشي شاشة البداية، وهياكل لامعة مكان المحتوى أثناء التحميل.
+- **تحكّم كامل** (`Settings.motion`): «كاملة» · «هادئة» · «بدون» — و«بدون» يوقف زخارف الثيمات المتحركة ويوفّر البطارية؛ ويُحترم «تقليل الحركة» في النظام ما لم تختر بنفسك. والزخارف خارج الشاشة تتوقف تلقائيًا.
+- **بحث فوري في الإعدادات**، يُظهر الصفوف المطابقة وأقسامها.
+- **أداء وإصلاحات:** صفحة «بستانك» تفتح أسرع بنحو ١٥ مرة (رسوم «مراحل النموّ» العشر تُرسم حين تظهر فقط بدل قرابة مليون حرف دفعة واحدة)؛ الرجوع يعيدك إلى موضعك في القائمة السابقة؛ النقرات السريعة المتتالية على التبويبات لم تعد تفتح تبويبًا خاطئًا، وزر الرجوع وأزرار الإغلاق لم تعد تتجاوز الصفحة؛ سطر «الجزء · الحزب · الصفحة» في المصحف يظهر فورًا.
+- الإصدار 7.1 (versionCode 20)، بالتوقيع نفسه — يُثبَّت فوق السابق وتبقى بياناتك.
 
 ## ما الجديد في 7.0 · «ثيمات جديدة، وتخصيص كامل، والمصحف كاملًا مع كل قارئ»
 

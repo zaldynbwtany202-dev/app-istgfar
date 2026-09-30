@@ -1,0 +1,182 @@
+/* ════════════════════════════════════════════════════════════════
+   وسن 7.1 · الحركة — منحنيات موحّدة، انتقالات صفحات، أوراق، ضغطات، مؤشّرات
+   كل ما هنا transform/opacity (مركّب على معالج الرسوميات) — لا ثقل على الهاتف
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  --e-out:cubic-bezier(.22,1,.36,1);      /* خروج ناعم: بداية سريعة وهبوط هادئ */
+  --e-in:cubic-bezier(.4,0,1,1);          /* دخول للإغلاق */
+  --e-std:cubic-bezier(.4,0,.2,1);        /* معيار Material */
+  --e-spring:cubic-bezier(.34,1.45,.64,1);
+  --e-spring-s:cubic-bezier(.3,1.22,.52,1);
+}
+
+/* ───────── انتقالات الصفحات (بديل CSS حين لا تتوفر View Transitions) ───────── */
+.screen.still{animation:none!important}
+html[data-motion=full] .screen.m-fwd{animation:m-in-fwd .36s var(--e-out) backwards}
+html[data-motion=full] .screen.m-back{animation:m-in-back .36s var(--e-out) backwards}
+html[data-motion=full] .screen.m-tab{animation:m-in-tab .34s var(--e-out) backwards}
+html[data-motion=full] .screen.m-fade,html[data-motion=soft] .screen.m-fade{animation:m-fade .22s ease-out backwards}
+html[data-motion=soft] .screen:not(.still):not(.m-fade),html[data-motion=off] .screen{animation:none!important}
+@keyframes m-in-fwd{from{opacity:0;transform:translate3d(-26px,0,0)}to{opacity:1;transform:none}}
+@keyframes m-in-back{from{opacity:0;transform:translate3d(26px,0,0)}to{opacity:1;transform:none}}
+@keyframes m-in-tab{from{opacity:0;transform:scale(.975)}to{opacity:1;transform:none}}
+@keyframes m-fade{from{opacity:0}to{opacity:1}}
+
+/* دخول متتابع لأقسام الصفحة (أول ثمانية فقط — ما تحتها يظهر فورًا) */
+html[data-motion=full] .screen.m-stg>:nth-child(-n+8){animation:m-rise .5s var(--e-out) backwards}
+html[data-motion=full] .screen.m-stg>:nth-child(2){animation-delay:.035s}
+html[data-motion=full] .screen.m-stg>:nth-child(3){animation-delay:.07s}
+html[data-motion=full] .screen.m-stg>:nth-child(4){animation-delay:.1s}
+html[data-motion=full] .screen.m-stg>:nth-child(5){animation-delay:.13s}
+html[data-motion=full] .screen.m-stg>:nth-child(6){animation-delay:.155s}
+html[data-motion=full] .screen.m-stg>:nth-child(7){animation-delay:.18s}
+html[data-motion=full] .screen.m-stg>:nth-child(8){animation-delay:.2s}
+html[data-motion=full] .screen.m-stg>.hdr{animation:none}
+@keyframes m-rise{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:none}}
+
+/* ───────── View Transitions الأصلية: «محور مشترك» و«تلاشٍ عابر» ───────── */
+::view-transition-old(root),::view-transition-new(root){mix-blend-mode:normal}
+html[data-vt=fwd]::view-transition-old(root){animation:vt-out-fwd .3s var(--e-std) both}
+html[data-vt=fwd]::view-transition-new(root){animation:vt-in-fwd .3s var(--e-std) both}
+html[data-vt=back]::view-transition-old(root){animation:vt-out-back .3s var(--e-std) both}
+html[data-vt=back]::view-transition-new(root){animation:vt-in-back .3s var(--e-std) both}
+html[data-vt=tab]::view-transition-old(root),html[data-vt=fade]::view-transition-old(root){animation:vt-fade-out .1s linear both}
+html[data-vt=tab]::view-transition-new(root),html[data-vt=fade]::view-transition-new(root){animation:vt-in-tab .26s var(--e-out) .08s both}
+html[data-vt=reveal]::view-transition-old(root),html[data-vt=reveal]::view-transition-new(root){animation:none}
+html[data-vt=reveal]::view-transition-new(root){z-index:2}
+@keyframes vt-out-fwd{0%{opacity:1;transform:none}35%{opacity:0}100%{opacity:0;transform:translate3d(30px,0,0)}}
+@keyframes vt-in-fwd{0%{opacity:0;transform:translate3d(-30px,0,0)}30%{opacity:0}100%{opacity:1;transform:none}}
+@keyframes vt-out-back{0%{opacity:1;transform:none}35%{opacity:0}100%{opacity:0;transform:translate3d(-30px,0,0)}}
+@keyframes vt-in-back{0%{opacity:0;transform:translate3d(30px,0,0)}30%{opacity:0}100%{opacity:1;transform:none}}
+@keyframes vt-fade-out{to{opacity:0}}
+@keyframes vt-in-tab{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+/* شريط التنقل والتنبيه والمشغّل ثابتة لا تنزلق مع الصفحة */
+#tabbar{view-transition-name:tabbar}
+#toast{view-transition-name:toast}
+.pbar{view-transition-name:pbar}
+html[data-vt=reveal] #tabbar,html[data-vt=reveal] .pbar{view-transition-name:none}
+::view-transition-group(tabbar),::view-transition-group(toast),::view-transition-group(pbar){animation:none;z-index:5}
+::view-transition-old(tabbar),::view-transition-old(toast),::view-transition-old(pbar){display:none}
+::view-transition-new(tabbar),::view-transition-new(toast),::view-transition-new(pbar){animation:none}
+
+/* ───────── الورقة السفلية: صعود بنابض ناعم، ونزول أسرع، وسحب للإغلاق ───────── */
+.sheet{transition:transform .26s var(--e-in);will-change:transform;overscroll-behavior:contain}
+.sheet.open{transition:transform .44s var(--e-out)}
+.sheet.drag{transition:none!important}
+.sheet-bg{transition:opacity .3s ease}
+.sheet .grab{position:relative}
+.sheet .grab::before{content:'';position:absolute;inset:-12px -60px}
+html[data-motion=full] .sheet.enter>:nth-child(n+2):nth-child(-n+9){animation:m-rise .46s var(--e-out) backwards}
+html[data-motion=full] .sheet.enter>:nth-child(3){animation-delay:.03s}
+html[data-motion=full] .sheet.enter>:nth-child(4){animation-delay:.06s}
+html[data-motion=full] .sheet.enter>:nth-child(5){animation-delay:.09s}
+html[data-motion=full] .sheet.enter>:nth-child(6){animation-delay:.12s}
+html[data-motion=full] .sheet.enter>:nth-child(7){animation-delay:.14s}
+html[data-motion=full] .sheet.enter>:nth-child(8){animation-delay:.16s}
+html[data-motion=full] .sheet.enter>:nth-child(9){animation-delay:.18s}
+
+/* ───────── شريط التنقل: هالة تنزلق بين التبويبات ونجمة تنبثق ───────── */
+.tab-ind{position:absolute;left:0;top:0;z-index:0;pointer-events:none;border-radius:18px;
+  transition:transform .52s var(--e-spring-s),width .3s var(--e-out),opacity .25s}
+.tab-ind::before{content:'';position:absolute;left:50%;top:2px;width:48px;height:42px;margin-left:-24px;border-radius:50%;
+  background:radial-gradient(closest-side,var(--soft),transparent)}
+.tab-ind.off{opacity:0}
+#tabbar.has-ind .tab.on::before{display:none}
+#tabbar .tab{z-index:1;transition:color .25s,background .25s,transform .3s var(--e-spring-s)}
+#tabbar .tab:active{transition-duration:.08s}
+:where(html[data-motion=full]) .tab.on::after{animation:m-star .55s var(--e-spring) backwards}
+html[data-motion=full] .tab.on .i{animation:m-tabi .5s var(--e-spring) backwards}
+@keyframes m-star{0%{opacity:0;transform:scale(.2) rotate(-60deg)}100%{opacity:1;transform:none}}
+@keyframes m-tabi{0%{transform:translateY(2px) scale(.86)}100%{transform:translateY(-1px) scale(1.06)}}
+
+/* ───────── الضغط: انكماش سريع ورجوع بنابض ───────── */
+:where(.btn,.ibtn,.act,.chip,.azc,.nm-c,.qa-btn,.bdg,.hl-c,.dg-c,.hm-qi,.counter,.amb,.pcell,.pb-b,.thm,button.hc,a.hc,.hc[data-go],.stile,.emptyc,.lvchip,.pl-btn){
+  transition:transform .34s var(--e-spring-s),background-color .22s,color .22s,border-color .22s,box-shadow .25s,opacity .22s}
+:where(.btn,.ibtn,.act,.chip,.azc,.nm-c,.qa-btn,.bdg,.hl-c,.dg-c,.hm-qi,.counter,.amb,.pcell,.pb-b,.thm,button.hc,a.hc,.hc[data-go],.emptyc,.lvchip,.pl-btn):active{transition-duration:.09s}
+button.hc:active,a.hc:active,.hc[data-go]:active,.pcell:active,.emptyc:active{transform:scale(.982)}
+.chip:active,.lvchip:active,.pb-b:active,.pl-btn:active,.amb:active{transform:scale(.95)}
+.thm:active{transform:scale(.97)}
+.li{transition:background-color .2s}
+.li:active{transition-duration:0s}
+.q .qi{transition:transform .34s var(--e-spring-s)}
+.q:active .qi{transition-duration:.09s}
+/* المفتاح: الزر ينكمش قليلًا عند الضغط */
+.switch:active::after{transform:scale(.86)}
+.switch.on:active::after{transform:translateX(-20px) scale(.86)}
+
+/* ───────── المقطع: حبّة تنزلق بين الخيارات ───────── */
+.seg{position:relative}
+.seg-pill{position:absolute;z-index:0;border-radius:11px;background:var(--card);box-shadow:var(--shadow-sm);pointer-events:none;transform-origin:center}
+.seg.seg-mv>button{position:relative;z-index:1}
+.seg>button.seg-to{background:transparent!important;box-shadow:none!important}
+
+/* ───────── التنبيه العابر: ينزلق بنابض ───────── */
+#toast{transform:translate(-50%,18px) scale(.94);transition:transform .42s var(--e-spring-s),opacity .2s ease}
+#toast.show{transform:translate(-50%,0) scale(1)}
+
+/* ───────── الهيكل المؤقت أثناء التحميل: لمعة مركّبة بلا إعادة رسم ───────── */
+.skel{position:relative;overflow:hidden;background:var(--card)!important;animation:none!important}
+.skel::after{content:'';position:absolute;inset:0;transform:translateX(100%);
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--tx) 7%,transparent),transparent);animation:m-shim 1.25s ease-in-out infinite}
+@keyframes m-shim{to{transform:translateX(-100%)}}
+.skel.ln{height:18px;border-radius:9px;margin:14px 20px}
+.skel.ln.w8{width:80%}.skel.ln.w6{width:60%;margin-inline-start:auto}.skel.ln.w9{width:92%}
+
+/* ───────── الزخارف خارج الشاشة تتوقف (توفير المعالج) ───────── */
+.m-zz,.m-zz *{animation-play-state:paused!important}
+
+/* ───────── بحث الإعدادات ───────── */
+.set-q{margin:12px 16px 2px}
+.set-q .search{height:46px}
+.set-q .x{display:none;width:30px;height:30px;border-radius:50%;place-items:center;color:var(--tx-3)}
+.set-q.has .x{display:grid}
+.set-empty{display:none;text-align:center;color:var(--tx-3);font-size:13.5px;padding:26px 20px}
+.set-q.none~.set-empty{display:block}
+.m-hide{display:none!important}
+mark.m-hl{background:color-mix(in srgb,var(--gold) 30%,transparent);color:inherit;border-radius:4px;padding:0 2px}
+
+/* ───────── مستوى «هادئة»: تلاشٍ قصير فقط ───────── */
+html[data-motion=soft] .sheet.open{transition-duration:.3s}
+html[data-motion=soft] .tab-ind{transition:transform .28s var(--e-out),opacity .2s}
+
+/* ───────── مستوى «بدون حركة»: الواجهة ساكنة والزخارف هادئة (توفير البطارية) ───────── */
+html[data-motion=off] .screen,html[data-motion=off] .screen>*,html[data-motion=off] .sheet>*{animation:none!important}
+html[data-motion=off] .sheet,html[data-motion=off] .sheet-bg,html[data-motion=off] #toast,html[data-motion=off] .tab-ind,html[data-motion=off] #tabbar,
+html[data-motion=off] .tab,html[data-motion=off] .tab .i,html[data-motion=off] .switch::after,html[data-motion=off] .seg button{transition:none!important}
+html[data-motion=off] .tab.on::after,html[data-motion=off] .tab.on .i,html[data-motion=off] .skel::after{animation:none!important}
+html[data-motion=off] #splash .mk,html[data-motion=off] #splash .ld::after{animation:none!important}
+html[data-motion=off] .scene .sky-stars i,html[data-motion=off] .scene .clouds i,html[data-motion=off] .scene .shoot{animation:none!important}
+html[data-motion=off] .skin-fx{display:none}
+html[data-motion=off] .skin-stk .bob,html[data-motion=off] .skin-fx,html[data-motion=off] .gemo{animation:none!important}
+html[data-motion=off] .fx-art{display:none}
+html[data-motion=off] .wg,html[data-motion=off] .kw-mk .spin{animation:none!important}
+html[data-motion=off] .pz-card,html[data-motion=off] .pz-c{animation:none}
+html[data-motion=off] .garden-svg *{animation:none!important}
+html[data-motion=off] .kwpt,html[data-motion=off] .kwcel{display:none}
+html[data-motion=off] .dg-c .dg-svg{animation:none}
+html[data-motion=off][data-ph] *,html[data-motion=off][data-ph] *::before,html[data-motion=off][data-ph] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+html[data-motion=off] .an-w *{animation:none!important}
+html[data-motion=off] .ckw,html[data-motion=off] .fx-art .kck,html[data-motion=off] .fx-art .kbn,html[data-motion=off] .fx-art .kck b,html[data-motion=off] .fx-art .kbn b{animation:none!important}
+
+/* ───────── علامة الإنجاز تُرسم بخطّها حين تسجّل صلاة أو عادة أو مهمة ───────── */
+.m-pop{animation:m-bounce .5s var(--e-spring)}
+.m-pop svg path{stroke-dasharray:20;animation:m-draw .42s var(--e-out) .06s backwards}
+@keyframes m-draw{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
+@keyframes m-bounce{0%{transform:scale(.72)}55%{transform:scale(1.15)}100%{transform:scale(1.05)}}
+/* ───────── الصلاة القادمة: وهج هادئ يتنفّس (شفافية فقط) ───────── */
+html[data-motion=full] .pcell.next::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:inset 0 0 0 1.5px rgba(234,211,155,.7),0 0 16px rgba(212,175,99,.2);opacity:0;animation:m-breath 3.8s ease-in-out infinite}
+@keyframes m-breath{0%,100%{opacity:0}50%{opacity:1}}
+html[data-motion=off] .m-pop,html[data-motion=off] .m-pop svg path{animation:none!important}
+
+/* ───────── لوحة الهدية: لمعة إلى أن تُرسم البطاقة ───────── */
+.m-ld{position:relative;overflow:hidden}
+.m-ld::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;transform:translateX(100%);
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--tx) 8%,transparent),transparent);animation:m-shim 1.25s ease-in-out infinite}
+html[data-motion=off] .m-ld::after{animation:none;transform:none;opacity:.5}
+
+/* ───────── الافتتاحية: الشعار يتّسع قليلًا وهو يتلاشى، والرئيسية تصعد ───────── */
+#splash .wm-splash{transition:transform .6s var(--e-out)}
+#splash.out .wm-splash{transform:scale(1.07)}
+html[data-motion=full] .screen.m-intro{animation:m-fade .45s ease-out backwards}
+html[data-motion=full] .screen.m-intro>:nth-child(1){animation-delay:.04s}
