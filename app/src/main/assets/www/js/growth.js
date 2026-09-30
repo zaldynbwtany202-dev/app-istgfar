@@ -203,7 +203,7 @@ SCREENS.garden = {
     const g = Growth.info(), today = Growth.day(), st = g.stage;
     const road = Garden.STAGES.map((s, i) => {
       const open = g.L >= s.from, lv = open ? Math.min(g.L, (Garden.STAGES[i + 1] || { from: 1001 }).from - 1) : s.from;
-      return '<div class="gstage ' + (open ? 'open' : 'lock') + (i === st ? ' cur' : '') + '"><div class="gs-art">' + Garden.render(lv, { phase: 'day', id: 'st' + i, lite: true }) +
+      return '<div class="gstage ' + (open ? 'open' : 'lock') + (i === st ? ' cur' : '') + '"><div class="gs-art" data-glv="' + lv + '" data-gi="' + i + '">' +
         (open ? '' : '<div class="gs-lock">' + icon('target') + '</div>') + '</div><div class="gs-t">' + esc(s.name) + '</div><div class="gs-s num">' +
         (open ? (i === st ? 'أنت هنا' : 'تمّت') : 'من المستوى ' + N(s.from)) + '</div><div class="gs-n">' + esc(STAGE_NEW[i] || '') + '</div></div>';
     }).join('');
@@ -222,7 +222,19 @@ SCREENS.garden = {
       sec('كيف ينمو بستانك؟') + '<div class="list mx">' + XP_INFO.map(([ic, t, v]) => '<div class="li"><div class="ic">' + icon(ic) + '</div><div class="grow"><div class="t">' + t + '</div></div><div class="end gold num" style="font-weight:700">+' + N(v) + '</div></div>').join('') + '</div>' +
       '<div class="foot-note">النقاط تحفيز على الخير لا ميزان للأعمال · «أحبّ الأعمال إلى الله أدومها وإن قلّ»</div>';
   },
+  leave() { if (this._gio) { this._gio.disconnect(); this._gio = null; } },
   mount(el) {
+    // وسن 7.1: رسوم «مراحل النموّ» العشر تُرسم حين تظهر فقط — كانت تُثقل فتح الصفحة (قرابة مليون حرف من الرسم دفعة واحدة)
+    const arts = $$('.gs-art[data-glv]', el);
+    const fill = a => { if (!a || a.dataset.done) return; a.dataset.done = '1';
+      a.insertAdjacentHTML('afterbegin', Garden.render(+a.dataset.glv, { phase: 'day', id: 'st' + a.dataset.gi, lite: true }));
+      if (typeof Motion !== 'undefined') Motion.watch(a); };
+    const idle = window.requestIdleCallback || (f => setTimeout(f, 60));
+    if ('IntersectionObserver' in window) {
+      const io = this._gio = new IntersectionObserver(es => es.forEach(x => { if (!x.isIntersecting) return; io.unobserve(x.target); fill(x.target);
+        const nx = arts[arts.indexOf(x.target) + 1]; if (nx && !nx.dataset.done) idle(() => fill(nx)); }), { rootMargin: '160px 0px' });
+      arts.forEach(a => io.observe(a));
+    } else arts.forEach(fill);
     const dg = $('#dg', el);
     if (dg) dg.onclick = e => { const b = e.target.closest('[data-dg]'); if (!b) return; const dd = new Date(b.dataset.dg + 'T12:00:00'), x = +b.dataset.x, p = +b.dataset.p;
       vibrate(6); toast(weekday(dd) + ' ' + fmtG(dd) + ' · ' + (x ? N(x) + ' نقطة' : 'لم يُسقَ') + ' · ' + N(p) + '/' + N(5) + ' صلوات', 3200); };

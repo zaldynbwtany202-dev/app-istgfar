@@ -5,6 +5,7 @@
 (function boot() {
   applyTheme();
   try { FX.init(); } catch (e) {}
+  try { Motion.init(); } catch (e) { console.error(e); }   // وسن 7.1: نظام الحركة
   const TABS = [['home', 'home', 'الرئيسية'], ['quran', 'book', 'القرآن'], ['prayer', 'mosque', 'المواقيت'], ['azkar', 'moonstar', 'الأذكار'], ['more', 'sprout', 'بستاني']];
   $('#tabbar').innerHTML = TABS.map(([t, ic, n]) => '<button class="tab" data-t="' + t + '" data-tab="' + t + '">' + icon(ic) + '<span>' + n + '</span></button>').join('');
 
@@ -56,9 +57,9 @@
   try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (Settings.theme === 'auto') { applyTheme(); Router.refresh(); } }); } catch (e) {}
 
   const sp = $('#splash');
-  setTimeout(() => { sp.classList.add('out'); setTimeout(() => sp.remove(), 600); }, 850);
-  if (!Store.get('onboarded', 0)) { Store.set('wnSeen', '7.0'); setTimeout(() => Onboarding.show(), 900); }
-  else if (Store.get('wnSeen', '') !== '7.0') setTimeout(() => { try { whatsNewSheet(); } catch (e) { console.error(e); } }, 2400);   // وسن 6.1
+  setTimeout(() => { sp.classList.add('out'); try { Motion.intro(); } catch (e) {} setTimeout(() => sp.remove(), 600); }, 850);
+  if (!Store.get('onboarded', 0)) { Store.set('wnSeen', '7.1'); setTimeout(() => Onboarding.show(), 900); }
+  else if (Store.get('wnSeen', '') !== '7.1') setTimeout(() => { try { whatsNewSheet(); } catch (e) { console.error(e); } }, 2400);   // وسن 6.1
   // وسن 6.3: إن كان الأذان لن يصل في وقته (أذونات ناقصة أو موقع تقريبي) نعرض خطوات الإصلاح — مرة كل ثلاثة أيام على الأكثر
   else setTimeout(() => { try { NotifHealth.maybeAsk(); } catch (e) { console.error(e); } }, 4200);
 })();

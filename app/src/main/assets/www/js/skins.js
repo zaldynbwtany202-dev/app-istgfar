@@ -474,7 +474,7 @@ function kwHero(sk) {
 
 /* وسن 4.7 · حركة لطيفة برمز الثيم: رمز يطير من المسبحة مع كل تسبيحة (وباقة عند إتمام الدورة)،
    ورموز تتساقط احتفالًا حين تختار ثيمًا جديدًا — وتهدأ مع «تقليل الحركة» */
-const reduceMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+const reduceMotion = () => { try { if (typeof Motion !== 'undefined' && Motion.lvl === 'off') return true; if (Settings.motionSet) return false; return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };   // وسن 7.1: يتبع إعداد «الحركة»
 /* وسن 4.8: زينة التسبيح لكل الثيمات — نجمة ذهبية، بتلة، قلب، أو لمعة حسب الثيم */
 function tasParticleSVG() {
   const T = THEMES[uiTheme()] || {}, A = Art._, d = A.doc('tp'), R = Math.random(); let b;

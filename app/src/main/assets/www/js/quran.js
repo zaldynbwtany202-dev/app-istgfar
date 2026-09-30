@@ -219,7 +219,7 @@ SCREENS.reader = {
       '<button class="ibtn' + (window.Ambient && Ambient.on ? ' on' : '') + '" id="r-amb" aria-label="أصوات الطبيعة">' + icon('leaf') + '</button>' +
       '<button class="ibtn" id="r-play" aria-label="استماع">' + icon('headphones') + '</button>' +
       '<button class="ibtn" id="r-set" aria-label="إعدادات القراءة">' + icon('text') + '</button></div>' +
-      '<div class="rbody" id="rb"><div class="empty">جارٍ تحميل المصحف…</div></div><div id="r-nav"></div></div>';
+      '<div class="rbody" id="rb"><div class="rb-skel" aria-label="جارٍ تحميل المصحف…"><div class="skel ln w6"></div><div class="skel ln w9"></div><div class="skel ln w8"></div><div class="skel ln w9"></div><div class="skel ln w6"></div><div class="skel ln w9"></div><div class="skel ln w8"></div></div></div><div id="r-nav"></div></div>';
   },
   mount(el, a) {
     this.el = el;

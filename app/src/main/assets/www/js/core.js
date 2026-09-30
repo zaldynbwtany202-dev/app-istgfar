@@ -49,6 +49,8 @@ const DEFAULTS = {
   calib: null,
   // وسن 7: تخصيص كامل — أجزاء الرئيسية (home) والاختصارات (quick) والتحية (userName) · إكمال المصحف مع كل قارئ
   home: {}, quick: null, userName: '', recFill: true, recFillWith: '',
+  // وسن 7.1: مستوى الحركة — full كاملة · soft هادئة · off بدون
+  motion: 'full',
 };
 const Settings = Object.assign({}, DEFAULTS, Store.get('settings', {}));
 Settings.adjust = Object.assign({}, DEFAULTS.adjust, Settings.adjust || {});
@@ -162,21 +164,23 @@ const Sheet = {
     if (this.el) this._remove();
     this.onClose = onClose || null;
     const bg = document.createElement('div'); bg.className = 'sheet-bg';
-    const el = document.createElement('div'); el.className = 'sheet';
+    const el = document.createElement('div'); el.className = 'sheet' + (typeof Motion !== 'undefined' && Motion.full ? ' enter' : '');
     el.innerHTML = '<div class="grab"></div>' + html;
     document.body.appendChild(bg); document.body.appendChild(el);
     this.el = el; this.bg = bg;
     bg.addEventListener('click', () => this.close());
     requestAnimationFrame(() => { bg.classList.add('open'); el.classList.add('open'); });
+    if (typeof Motion !== 'undefined') { Motion.sheetDrag(el, bg); setTimeout(() => el.classList.remove('enter'), 700); }
     Router.depth++; history.pushState({ d: Router.depth, r: Router.cur.r, a: Router.cur.a || null, sheet: 1 }, '');
     if (onMount) try { onMount(el); } catch (e) { console.error(e); }
     return el;
   },
-  close(then) { if (!this.el) { if (then) then(); return; } this.after = then || null; history.back(); },
+  close(then) { if (!this.el) { if (then) then(); return; } if (this._closing) { if (then) this.after = then; return; } this._closing = true; this.after = then || null; Router._hb = Date.now(); history.back(); },
   _remove() {
-    const el = this.el, bg = this.bg; this.el = this.bg = null;
+    const el = this.el, bg = this.bg; this.el = this.bg = null; this._closing = false;
     const oc = this.onClose; this.onClose = null; if (oc) try { oc(); } catch (e) { console.error(e); }
     if (!el) return;
+    el.classList.remove('drag'); el.style.transform = ''; bg.style.opacity = '';
     el.classList.remove('open'); bg.classList.remove('open');
     setTimeout(() => { el.remove(); bg.remove(); }, 320);
   },
@@ -206,56 +210,82 @@ function pickSheet(title, sub, options, current, onPick) {
 /* ───────── التوجيه (مع دعم زر الرجوع في أندرويد) ───────── */
 const SCREENS = {};
 const Router = {
-  depth: 0, cur: null, pending: null,
+  depth: 0, cur: null, pending: null, _seq: 0, _mounted: null, _sy: {}, _hb: 0,
+  // وسن 7.1: قفزة سجلّ جارية (رجوع/تبويب) — تمنع النقرات السريعة المتتالية من تجاوز الصفحة الأولى
+  busy() { return Date.now() - this._hb < 650; },
   init(r, a) {
     history.replaceState({ d: 0, r, a: a || null }, '');
     window.addEventListener('popstate', e => this.onPop(e.state));
-    this.show(r, a);
+    this.show(r, a, false, 'none');
   },
   onPop(st) {
     st = st || { d: 0, r: 'home' };
+    this._hb = 0;
     if (Sheet.el) {
       Sheet._remove(); this.depth = st.d;
       const after = Sheet.after; Sheet.after = null;
       if (after) setTimeout(after, 30);
       if (!this.pending) return;
     }
+    const how = st.d < this.depth ? 'back' : 'fwd';
     this.depth = st.d;
     if (this.pending) {
       const p = this.pending; this.pending = null;
       if (p.r !== 'home') { this.depth++; history.pushState({ d: this.depth, r: p.r, a: p.a || null }, ''); }
-      this.show(p.r, p.a); return;
+      this.show(p.r, p.a, false, 'tab'); return;
     }
-    this.show(st.r, st.a);
+    // وسن 7.1: الرجوع يعيدك إلى موضعك في الصفحة السابقة
+    const sv = how === 'back' ? this._sy[st.d] : null;
+    this.show(st.r, st.a, false, how, sv && sv.r === st.r ? sv.y : 0);
   },
-  go(r, a) { this.depth++; history.pushState({ d: this.depth, r, a: a || null }, ''); this.show(r, a); },
-  replace(r, a) { history.replaceState({ d: this.depth, r, a: a || null }, ''); this.show(r, a); },
+  _save() { if (this.cur) this._sy[this.depth] = { r: this.cur.r, y: window.scrollY }; },
+  go(r, a) { this._save(); this.depth++; history.pushState({ d: this.depth, r, a: a || null }, ''); this.show(r, a, false, 'fwd'); },
+  replace(r, a) { history.replaceState({ d: this.depth, r, a: a || null }, ''); this.show(r, a, false, 'fade'); },
   tab(r) {
-    if (this.cur && this.cur.r === r) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-    if (this.depth === 0) { if (r === 'home') this.show('home'); else this.go(r); return; }
-    this.pending = { r }; history.go(-this.depth);
+    if (this.pending) { if (this.busy()) { this.pending = { r }; return; } this.pending = null; }   // قفزة جارية: نغيّر وجهتها فقط
+    if (this.cur && this.cur.r === r) { window.scrollTo({ top: 0, behavior: (typeof Motion === 'undefined' || Motion.on) ? 'smooth' : 'auto' }); return; }
+    if (this.depth === 0) {
+      if (r === 'home') this.show('home', null, false, 'tab');
+      else { this._save(); this.depth++; history.pushState({ d: this.depth, r, a: null }, ''); this.show(r, null, false, 'tab'); }
+      return;
+    }
+    this.pending = { r }; this._hb = Date.now(); history.go(-this.depth);
   },
-  back() { if (this.depth > 0) history.back(); else this.show('home'); },
+  back() { if (this.busy()) return; if (this.depth > 0) { this._hb = Date.now(); history.back(); } else this.show('home', null, false, 'back'); },
   refresh() { if (this.cur) this.show(this.cur.r, this.cur.a, true); },
-  show(r, a, keepScroll) {
-    const S = SCREENS[r] || SCREENS.home;
-    if (this.cur && this.cur.s && this.cur.s.leave) try { this.cur.s.leave(); } catch (e) { console.error(e); }
-    const y = window.scrollY;
+  /** how: fwd | back | tab | fade | none — اتجاه الحركة؛ y: موضع التمرير المستعاد */
+  show(r, a, keepScroll, how, y) {
+    const S = SCREENS[r] || SCREENS.home, seq = ++this._seq;
     this.cur = { r, a: a || null, s: S };
+    if (keepScroll) how = 'none';
+    const run = vt => { if (seq === this._seq) this._render(S, r, a, keepScroll, how || 'none', vt, y); };
+    if (typeof Motion !== 'undefined' && Motion.page(how, () => run(true))) return;
+    run(false);
+  },
+  _render(S, r, a, keepScroll, how, vt, ry) {
+    const m = this._mounted; this._mounted = S; const seq0 = this._seq;
+    if (m && m.leave) try { m.leave(); } catch (e) { console.error(e); }
+    const y = window.scrollY;
     const v = $('#view');
     v.className = S.nav === false ? 'no-nav' : '';
     let html;
     try { html = S.render(a || {}); } catch (e) { console.error(e); html = '<div class="empty">حدث خطأ غير متوقع</div>'; }
-    v.innerHTML = '<div class="screen ' + (S.tab ? '' : 'sub') + (keepScroll ? '" style="animation:none' : '') + '">' + html + '</div>';
-    window.scrollTo(0, keepScroll ? y : 0);
+    const mc = typeof Motion !== 'undefined' ? Motion.cls(how, vt) : (keepScroll ? ' still' : '');
+    v.innerHTML = '<div class="screen ' + (S.tab ? '' : 'sub') + mc + '">' + html + '</div>';
+    const to = keepScroll ? y : (ry || 0);
+    window.scrollTo(0, to);
     $('#tabbar').classList.toggle('hide', S.nav === false);
     const tb = S.tab || S.parent;
     $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.t === tb));
+    if (typeof Motion !== 'undefined') Motion.tabInd();
     if (S.mount) try { S.mount(v.firstElementChild, a || {}); } catch (e) { console.error(e); }
+    // إن اكتمل المحتوى بعد التركيب نعيد المحاولة لبلوغ الموضع المحفوظ
+    if (ry && window.scrollY < ry - 4) requestAnimationFrame(() => { if (seq0 === this._seq && window.scrollY < ry - 4) window.scrollTo(0, ry); });
     const sbar = typeof S.statusBar === 'function' ? (function () { try { return S.statusBar(); } catch (e) { return null; } })() : null;
     if (sbar) statusBar(sbar[0], sbar[1]);
     else statusBar(S.status || (getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#0B5D4B'), false);
     Native.call('keepScreenOn', !!S.keepOn);
+    if (typeof Motion !== 'undefined') Motion.enter(v.firstElementChild, how);
   },
 };
 window.addEventListener('click', e => {

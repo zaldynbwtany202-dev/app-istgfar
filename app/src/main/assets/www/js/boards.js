@@ -369,7 +369,9 @@ SCREENS.gift = {
       '<div class="faint" style="font-size:12px;margin-top:8px;text-align:center">الأدعية من السنّة الصحيحة والقرآن الكريم · يمكنك كتابة دعائك الخاص</div></div>';
   },
   mount(el) {
-    const draw = debounce(async () => { const c = $('#gf-c', el); if (!c) return; const r = await Gift.render(Gift.st); c.getContext('2d').drawImage(r, 0, 0); }, 250);
+    // وسن 7.1: لمعة هادئة مكان البطاقة إلى أن تكتمل (بدل إطار فارغ داكن)
+    const pv = $('#gf-c', el) && $('#gf-c', el).parentElement; if (pv) pv.classList.add('m-ld');
+    const draw = debounce(async () => { const c = $('#gf-c', el); if (!c) return; const r = await Gift.render(Gift.st); c.getContext('2d').drawImage(r, 0, 0); if (c.parentElement) c.parentElement.classList.remove('m-ld'); }, 250);
     const save = () => { Store.set('gift', Gift.st); draw(); };
     $('#gf-n', el).oninput = e => { Gift.st.name = e.target.value.trim(); save(); };
     $('#gf-d', el).oninput = e => { Gift.st.dua = e.target.value.trim(); save(); };

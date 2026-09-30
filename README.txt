@@ -1,3 +1,11 @@
+وسن · Wasan 7.1 — «حركة احترافية خفيفة، وتنظيم أوضح، وأداء أسرع»
+=====================================================
+  - js/motion.js (جديد): Motion.level/apply (data-motion = full|soft|off، Settings.motion/motionSet، يحترم prefers-reduced-motion)، page() بـ document.startViewTransition (data-vt = fwd|back|tab|fade|reveal)، cls() للبديل CSS (m-fwd/m-back/m-tab/m-fade + m-stg)، enter() (rings/countUp/watch)، tabInd() هالة منزلقة، sheetDrag() سحب للإغلاق، reveal() دائرة الثيم، _segDown() حبّة المقطع FLIP، intro()، علامة الإنجاز m-pop.
+  - css/motion.css (جديد): منحنيات --e-*، مفاتيح vt-*/m-*، أسماء view-transition للشريط/التنبيه/المشغّل، الأوراق، الضغطات، المقطع، التنبيه، .skel بلمعة مركّبة، .m-zz لإيقاف الزخارف خارج الشاشة، مستويا soft/off (قواعد off مولّدة من كتل prefers-reduced-motion في كل الأوراق).
+  - core.js: Router.show(r,a,keepScroll,how,y) + _render + _seq/_mounted (leave للمركّبة فعلًا)، اتجاه الحركة في go/back/tab/replace/onPop، حفظ موضع التمرير واستعادته عند الرجوع (_sy)، busy()/_hb يمنع تجاوز السجلّ بالنقرات السريعة، Sheet: enter + sheetDrag + _closing (لا رجوع مزدوج)، DEFAULTS.motion.
+  - screens.js: settingsSearch() + صفّ «الحركة والانتقالات»، Motion.reveal للثيم ولون التطبيق، WHATS_NEW 7.1؛ growth.js: رسوم مراحل النموّ كسولة بـ IntersectionObserver (486ms ← 31ms)؛ boards.js: لمعة m-ld للوحة الهدية؛ quran.js: هيكل تحميل للمصحف؛ skins.js: reduceMotion يتبع الإعداد؛ main.js: Motion.init/intro.
+  - الإصدار 7.1 (versionCode 20) · targetSdk 36 · التوقيع نفسه.
+
 وسن · Wasan 7.0 — «ثيمات جديدة، وتخصيص كامل، والمصحف كاملًا مع كل قارئ»
 =====================================================
   - art.js: رسوم جديدة (chick/egg/nest/sunflower/coop/bunny/carrot/carrotTop/clover/bush/feather/bow) + HERO/ICON/marker/CORNER/PATTERN/TB/THUMB/BEADTOP/sprites/particle/HDRA لـ kchick وkbunny؛ skins.js KW + M؛ garden.js meadowItem (chick/sunflower/clover/carrot/bunny)؛ wasan7.css (tone/accent/skin + kck/kbn/ckw).
